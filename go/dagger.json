@@ -1,0 +1,12 @@
+{
+  "name": "go",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "golangci-lint",
+      "source": "github.com/sagikazarmark/daggerverse/golangci-lint@b45dbd7448bb967aca4a538af9ce7f042abf0316"
+    }
+  ],
+  "source": ".",
+  "engineVersion": "v0.13.3"
+}
