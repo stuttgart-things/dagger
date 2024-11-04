@@ -53,6 +53,6 @@ func (m *Go) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory
 	return outputDir
 }
 
-func (m *Go) Lint(ctx context.Context) *dagger.Container {
-	return dag.GolangciLint().Run(m.Src)
+func (m *Go) Lint(ctx context.Context, src *dagger.Directory) *dagger.Container {
+	return dag.GolangciLint().Run(src)
 }
