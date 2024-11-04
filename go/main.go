@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"dagger/go/internal/dagger"
+	"fmt"
 )
 
 func New(
@@ -26,9 +27,13 @@ type Go struct {
 func (m *Go) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	// LINT THE APPLICATION
-	m.Lint(ctx, src)
+	fmt.Println("Linting the application")
+	container := m.Lint(ctx, src)
+	fmt.Println("Linting done")
+	fmt.Print(container)
 
 	// BUILD THE APPLICATION
+	fmt.Println("Building the application")
 	outputDir := m.Build(ctx, src)
 	return outputDir
 
