@@ -38,7 +38,7 @@ func (m *Go) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Direct
 func (m *Go) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	// GET `GOLANG` IMAGE
-	golang := dag.Container().From("sthings-golang:latest")
+	golang := dag.Container().From("golang:latest")
 
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
 	golang = golang.WithDirectory("/src", src).WithWorkdir("/src")
