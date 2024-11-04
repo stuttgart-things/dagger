@@ -21,6 +21,15 @@ import (
 
 type Golang struct{}
 
+// Execute Dev pipeline for golang application
+func (m *Golang) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+
+	// BUILD THE APPLICATION
+	outputDir := m.Build(ctx, src)
+	return outputDir
+
+}
+
 // Builds golang application
 func (m *Golang) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
