@@ -45,6 +45,8 @@ func (m *Go) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory
 }
 
 // Lint golang application
-func (m *Go) Lint(ctx context.Context, base *dagger.Container, src *dagger.Directory) (string, error) {
-	return dag.Golang(base, src).Lint(ctx)
+func (m *Go) Lint(ctx context.Context, base *dagger.Container, src *dagger.Directory) {
+
+	dag.Golang(base, src).Lint(ctx)
+
 }
