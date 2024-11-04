@@ -1,4 +1,4 @@
-module dagger/golang
+module dagger/go
 
 go 1.23.1
 
