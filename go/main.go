@@ -26,7 +26,7 @@ type Go struct {
 func (m *Go) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	// LINT THE APPLICATION
-	m.Lint(ctx)
+	m.Lint(ctx, m.Src)
 
 	// BUILD THE APPLICATION
 	outputDir := m.Build(ctx, src)
