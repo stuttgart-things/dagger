@@ -17,12 +17,17 @@ package main
 import (
 	"context"
 	"dagger/golang/internal/dagger"
+	"fmt"
 )
 
 type Golang struct{}
 
 // Execute Dev pipeline for golang application
 func (m *Golang) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+
+	// LINT THE APPLICATION
+	result, err := m.Lint(ctx, dag.Container().From("golang:latest"), src)
+	fmt.Println(result, err)
 
 	// BUILD THE APPLICATION
 	outputDir := m.Build(ctx, src)
@@ -49,9 +54,6 @@ func (m *Golang) Build(ctx context.Context, src *dagger.Directory) *dagger.Direc
 	return outputDir
 }
 
-func (m *Golang) Lint(ctx context.Context, src string) {
-
-	// RUN GOLANGCI-LINT
-	dag.GolangciLint().
-		Run(dag.CurrentModule().Source().Directory(src))
+func (m *Golang) Lint(ctx context.Context, base *dagger.Container, src *dagger.Directory) (string, error) {
+	return dag.Golang(base, src).Lint(ctx)
 }
