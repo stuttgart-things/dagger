@@ -27,14 +27,14 @@ type Go struct {
 func (m *Go) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	// LINT THE APPLICATION
-	fmt.Println("Linting the application")
-	container := m.Lint(ctx, src)
-	fmt.Println("Linting done")
-	fmt.Print(container)
+	// fmt.Println("Linting the application")
+	// container := m.Lint(ctx, src)
+	// fmt.Println("Linting done")
+	// fmt.Print(container)
 
 	// BUILD THE APPLICATION
 	fmt.Println("Building the application")
-	outputDir := m.Build(ctx, src, container)
+	outputDir := m.Build(ctx, src, m.Lint(ctx, src))
 	return outputDir
 
 }
