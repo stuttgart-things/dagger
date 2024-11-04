@@ -49,9 +49,9 @@ func (m *Golang) Build(ctx context.Context, src *dagger.Directory) *dagger.Direc
 	return outputDir
 }
 
-func (m *Golang) Lint(ctx context.Context, src string) {
+func (m *Golang) Lint(ctx context.Context, src *dagger.Directory) {
 
 	// RUN GOLANGCI-LINT
 	dag.GolangciLint().
-		Run(dag.CurrentModule().Source().Directory(src))
+		Run(dag.CurrentModule().Source().WithDirectory("/src", src))
 }
