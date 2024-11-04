@@ -34,19 +34,19 @@ func (m *Go) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Direct
 
 	// BUILD THE APPLICATION
 	fmt.Println("Building the application")
-	outputDir := m.Build(ctx, src)
+	outputDir := m.Build(ctx, src, container)
 	return outputDir
 
 }
 
 // Returns lines that match a pattern in the files of the provided Directory
-func (m *Go) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+func (m *Go) Build(ctx context.Context, src *dagger.Directory, container *dagger.Container) *dagger.Directory {
 
 	// GET `GOLANG` IMAGE
-	golang := dag.Container().From("golang:latest")
+	// golang := dag.Container().From("golang:latest")
 
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
-	golang = golang.WithDirectory("/src", src).WithWorkdir("/src")
+	golang := container.WithDirectory("/src", src).WithWorkdir("/src")
 
 	// DEFINE THE APPLICATION BUILD COMMAND
 	path := "build/"
