@@ -10,7 +10,7 @@ import (
 )
 
 func New(
-	// +defaultPath="/"
+	// +defaultPath="./"
 	src *dagger.Directory,
 ) *Go {
 	return &Go{
