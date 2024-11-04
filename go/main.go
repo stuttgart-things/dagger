@@ -7,17 +7,26 @@ package main
 import (
 	"context"
 	"dagger/go/internal/dagger"
-	"fmt"
 )
 
-type Go struct{}
+func New(
+	// +defaultPath="/"
+	src *dagger.Directory,
+) *Go {
+	return &Go{
+		Src: src,
+	}
+}
+
+type Go struct {
+	Src *dagger.Directory
+}
 
 // Execute Dev pipeline for sthings-golang application
 func (m *Go) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	// LINT THE APPLICATION
-	result, err := m.Lint(ctx, dag.Container().From("golang:latest"), src)
-	fmt.Println(result, err)
+	m.Lint(ctx)
 
 	// BUILD THE APPLICATION
 	outputDir := m.Build(ctx, src)
@@ -44,9 +53,6 @@ func (m *Go) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory
 	return outputDir
 }
 
-// Lint golang application
-func (m *Go) Lint(ctx context.Context, base *dagger.Container, src *dagger.Directory) {
-
-	dag.Golang(base, src).Lint(ctx)
-
+func (m *Go) Lint(ctx context.Context) *dagger.Container {
+	return dag.GolangciLint().Run(m.Src)
 }
