@@ -23,6 +23,13 @@ type Go struct {
 	Src *dagger.Directory
 }
 
+// Lint
+func (m *Go) Lint(
+	ctx context.Context,
+) *dagger.Container {
+	return dag.GolangciLint().Run(m.Src)
+}
+
 // Execute Dev pipeline for sthings-golang application
 // RunPipeline method: Orchestrates running both Lint and Build steps
 func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
@@ -32,6 +39,15 @@ func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Di
 	// Step 1: Lint the source code
 	fmt.Println("Running linting...")
 	dag.GolangciLint().Run(src)
+	// run linter
+	lintOutput, err := m.Lint(ctx).Stdout(ctx)
+	if err != nil {
+		fmt.Sprint(err)
+	}
+
+	output := "\n" + lintOutput
+	fmt.Println(output)
+
 	// You can check the lint result or logs here if necessary
 
 	// Step 2: Build the source code
@@ -61,8 +77,9 @@ func (m *Go) Build(ctx context.Context, src *dagger.Directory, container *dagger
 	return outputDir
 }
 
-func (m *Go) Lint(ctx context.Context, src *dagger.Directory) {
+// func (m *Go) Lint(ctx context.Context, src *dagger.Directory) {
 
-	lint := dag.GolangciLint().Run(src)
-	fmt.Println(lint)
-}
+// 	lint := dag.GolangciLint().Run(src)
+
+// 	fmt.Println(lint)
+// }
