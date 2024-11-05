@@ -31,7 +31,7 @@ func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Di
 
 	// Step 1: Lint the source code
 	fmt.Println("Running linting...")
-	m.Lint(ctx, src)
+	dag.GolangciLint().Run(src)
 	// You can check the lint result or logs here if necessary
 
 	// Step 2: Build the source code
