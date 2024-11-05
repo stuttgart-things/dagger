@@ -11,7 +11,7 @@ import (
 )
 
 func New(
-	// +defaultPath="./"
+	// +defaultPath="/"
 	src *dagger.Directory,
 ) *Go {
 	return &Go{
@@ -24,9 +24,7 @@ type Go struct {
 }
 
 // Lint
-func (m *Go) Lint(
-	ctx context.Context,
-) *dagger.Container {
+func (m *Go) Lint(ctx context.Context) *dagger.Container {
 	return dag.GolangciLint().Run(m.Src)
 }
 
