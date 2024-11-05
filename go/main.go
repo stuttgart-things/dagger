@@ -38,7 +38,7 @@ func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Di
 
 	// Step 1: Lint the source code
 	fmt.Println("Running linting...")
-	dag.GolangciLint().Run(src)
+	//dag.GolangciLint().Run(src)
 	// run linter
 	lintOutput, err := m.Lint(ctx).Stdout(ctx)
 	if err != nil {
@@ -46,7 +46,7 @@ func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Di
 	}
 
 	output := "\n" + lintOutput
-	fmt.Println(output)
+	fmt.Println("LINT!!!!", output)
 
 	// You can check the lint result or logs here if necessary
 
