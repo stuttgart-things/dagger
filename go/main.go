@@ -24,19 +24,23 @@ type Go struct {
 }
 
 // Execute Dev pipeline for sthings-golang application
-func (m *Go) DevBuild(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+// RunPipeline method: Orchestrates running both Lint and Build steps
+func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
+	// Create a container for the Go build environment
+	container := dag.Container().From("golang:latest")
 
-	// LINT THE APPLICATION
-	// fmt.Println("Linting the application")
-	// container := m.Lint(ctx, src)
-	// fmt.Println("Linting done")
-	// fmt.Print(container)
+	// Step 1: Lint the source code
+	fmt.Println("Running linting...")
+	lintResult := m.Lint(ctx, src)
+	fmt.Println(lintResult)
+	// You can check the lint result or logs here if necessary
 
-	// BUILD THE APPLICATION
-	fmt.Println("Building the application")
-	outputDir := m.Build(ctx, src, m.Lint(ctx, src))
-	return outputDir
+	// Step 2: Build the source code
+	fmt.Println("Running build...")
+	buildOutput := m.Build(ctx, src, container)
 
+	// Returning the build output
+	return buildOutput, nil
 }
 
 // Returns lines that match a pattern in the files of the provided Directory
