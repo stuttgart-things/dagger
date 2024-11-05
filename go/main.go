@@ -63,6 +63,6 @@ func (m *Go) Build(ctx context.Context, src *dagger.Directory, container *dagger
 
 func (m *Go) Lint(ctx context.Context, src *dagger.Directory) {
 
-	dag.GolangciLint().Run(src)
-
+	lint := dag.GolangciLint().Run(src)
+	fmt.Println(lint)
 }
