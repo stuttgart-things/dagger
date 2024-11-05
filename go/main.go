@@ -10,6 +10,10 @@ import (
 	"fmt"
 )
 
+type Go struct {
+	Src *dagger.Directory
+}
+
 func New(
 	// +defaultPath="/"
 	src *dagger.Directory,
@@ -19,13 +23,9 @@ func New(
 	}
 }
 
-type Go struct {
-	Src *dagger.Directory
-}
-
 // Lint
-func (m *Go) Lint(ctx context.Context) *dagger.Container {
-	return dag.GolangciLint().Run(m.Src)
+func (m *Go) Lint(ctx context.Context, src *dagger.Directory) *dagger.Container {
+	return dag.GolangciLint().Run(src)
 }
 
 // Execute Dev pipeline for sthings-golang application
@@ -38,9 +38,9 @@ func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Di
 	fmt.Println("Running linting...")
 	//dag.GolangciLint().Run(src)
 	// run linter
-	lintOutput, err := m.Lint(ctx).Stdout(ctx)
+	lintOutput, err := m.Lint(ctx, src).Stdout(ctx)
 	if err != nil {
-		fmt.Sprint(err)
+		fmt.Println("Error running linter: ", err)
 	}
 
 	output := "\n" + lintOutput
