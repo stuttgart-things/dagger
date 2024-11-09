@@ -37,6 +37,25 @@ func (m *Helm) GetHelmContainer() *dagger.Container {
 		From("alpine/helm:3.14.3")
 }
 
+// RunPipeline method: Orchestrates running both Lint and Build steps
+func (m *Helm) RunPipeline(ctx context.Context, src *dagger.Directory) {
+
+	fmt.Println("Running linting...")
+
+	lint, err := m.Lint(ctx, src)
+	if err != nil {
+		fmt.Println("Error running linter: ", err)
+	}
+
+	fmt.Print("Lint: ", lint)
+
+	fmt.Println("Running templating...")
+
+	templatedChart := m.Template(ctx, src)
+	fmt.Println("Templated Chart: ", templatedChart)
+
+}
+
 // Lint
 func (m *Helm) Lint(ctx context.Context, src *dagger.Directory) (string, error) {
 	return dag.HelmDisaster37().Lint(ctx, src)
