@@ -1,0 +1,12 @@
+{
+  "name": "helm",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "helm-disaster37",
+      "source": "github.com/disaster37/dagger-library-go/helm@9289c3d5d1b23d1619919280c8db3ec791ed5c39"
+    }
+  ],
+  "source": ".",
+  "engineVersion": "v0.13.3"
+}

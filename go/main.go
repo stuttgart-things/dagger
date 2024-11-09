@@ -28,7 +28,6 @@ func (m *Go) Lint(ctx context.Context, src *dagger.Directory) *dagger.Container 
 	return dag.GolangciLint().Run(src)
 }
 
-// Execute Dev pipeline for sthings-golang application
 // RunPipeline method: Orchestrates running both Lint and Build steps
 func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
 	// Create a container for the Go build environment
