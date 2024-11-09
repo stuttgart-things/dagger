@@ -26,8 +26,17 @@ MODULE=example #example
 dagger functions -m ${MODULE}
 ```
 
+## CALL FUNCTION FROM LOCAL
 
-## CALL FUNCTION (FROM DIFFERENT REPO / FROM EVERYWHERE)
+```bash
+MODULE=helm #example
+dagger call -m ./${MODULE} \
+lint --source tests/test-chart/ \
+--progress plain
+```
+
+
+## CALL FUNCTION FROM GIT
 
 ```bash
 MODULE=golang #example
