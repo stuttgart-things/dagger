@@ -8,6 +8,7 @@ vars:
 
 tasks:
   test-go:
+    desc: Test go modules
     cmds:
       - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --progress plain || true
       - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
@@ -18,6 +19,7 @@ tasks:
       OUTPUT_DIR: /tmp/calc
 
   test-helm:
+    desc: Test helm modules
     cmds:
       - dagger call -m {{ .MODULE }} lint --src {{ .TEST_CHART }} --progress plain
       - dagger call -m {{ .MODULE }} template --src {{ .TEST_CHART }} --progress plain
@@ -62,10 +64,6 @@ tasks:
 
   pr:
     desc: Create pull request into main
-    deps:
-      - dagger-format
-      - dagger-lint
-      - dagger-build
     cmds:
       - task: commit
       - gh pr create -t "{{ .BRANCH }}" -b "{{ .BRANCH }} branch into main"
