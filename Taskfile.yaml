@@ -7,6 +7,13 @@ vars:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
 
 tasks:
+  create:
+    desc: Create new dagger module
+    cmds:
+      - dagger init --sdk=go --source=./{{ .MODULE }} --name={{ .MODULE }}
+      - jq '.source = "."' dagger.json > tmp.json && mv tmp.json dagger.json
+      - mv dagger.json ./{{ .MODULE }}/dagger.json
+
   test-go:
     desc: Test go modules
     cmds:

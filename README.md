@@ -12,6 +12,15 @@ task: Available tasks for this project:
 * test-helm:       Test helm modules
 ```
 
+<details><summary><b>CREATE NEW MODULE</b></summary>
+
+```bash
+MODULE=crossplane task create
+```
+
+</details>
+
+
 ## DAGGER
 
 <details><summary><b>LIST FUNCTIONS</b></summary>
