@@ -10,7 +10,8 @@ tasks:
   test-go:
     cmds:
       - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --progress plain || true
-      - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --progress plain export --path={{ .OUTPUT_DIR }} && {{ .OUTPUT_BIN }}/main && rm -rf {{ .OUTPUT_BIN }}
+      - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
+      - dagger call -m ./{{ .MODULE }} run-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
     vars:
       MODULE: go
       TEST_GO_CODE: tests/calculator/
@@ -19,9 +20,9 @@ tasks:
   test-helm:
     cmds:
       - dagger call -m {{ .MODULE }} lint --src {{ .TEST_CHART }} --progress plain
-      - dagger call -m {{ .MODULE }} template --src {{ .TEST_CHART }}--progress plain
+      - dagger call -m {{ .MODULE }} template --src {{ .TEST_CHART }} --progress plain
       - dagger call -m {{ .MODULE }} package --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
-      - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
+      - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --progress plain
     vars:
       MODULE: helm
       TEST_CHART: tests/test-chart/
