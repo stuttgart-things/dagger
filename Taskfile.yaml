@@ -7,6 +7,26 @@ vars:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
 
 tasks:
+  test-go:
+    cmds:
+      - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --progress plain || true
+      - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --progress plain export --path={{ .OUTPUT_DIR }} && {{ .OUTPUT_BIN }}/main && rm -rf {{ .OUTPUT_BIN }}
+    vars:
+      MODULE: go
+      TEST_GO_CODE: tests/calculator/
+      OUTPUT_DIR: /tmp/calc
+
+  test-helm:
+    cmds:
+      - dagger call -m {{ .MODULE }} lint --src {{ .TEST_CHART }} --progress plain
+      - dagger call -m {{ .MODULE }} template --src {{ .TEST_CHART }}--progress plain
+      - dagger call -m {{ .MODULE }} package --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
+      - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
+    vars:
+      MODULE: helm
+      TEST_CHART: tests/test-chart/
+      TEST_PACKAGE: tests/chart.tgz
+
   branch:
     desc: Create branch from main
     cmds:
@@ -48,7 +68,7 @@ tasks:
     cmds:
       - task: commit
       - gh pr create -t "{{ .BRANCH }}" -b "{{ .BRANCH }} branch into main"
-      - sleep 20s
-      - gh pr checks $(gh pr list | grep "^[^#;]" | awk '{print $1}') --watch
+      - sleep 10s
+      #- gh pr checks $(gh pr list | grep "^[^#;]" | awk '{print $1}') --watch
       - gh pr merge $(gh pr list | grep "^[^#;]" | awk '{print $1}') --auto --rebase --delete-branch
       - git checkout main && git pull

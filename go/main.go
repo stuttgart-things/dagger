@@ -11,58 +11,68 @@ import (
 )
 
 type Go struct {
-	Src *dagger.Directory
+	Src             *dagger.Directory
+	GoLangContainer *dagger.Container
+}
+
+// GetGoLangContainer return the default image for golang
+func (m *Go) GetGoLangContainer() *dagger.Container {
+	return dag.Container().
+		From("golang:1.23.3")
 }
 
 func New(
+	// helm container
+	// It need contain helm
+	// +optional
+	goLangContainer *dagger.Container,
+
 	// +defaultPath="/"
 	src *dagger.Directory,
+
 ) *Go {
-	return &Go{
-		Src: src,
+	golang := &Go{}
+
+	if goLangContainer != nil {
+		golang.GoLangContainer = goLangContainer
+	} else {
+		golang.GoLangContainer = golang.GetGoLangContainer()
 	}
+
+	golang.Src = src
+
+	return golang
 }
 
-// Lint
+// Lint runs the linter on the provided source code
 func (m *Go) Lint(ctx context.Context, src *dagger.Directory) *dagger.Container {
 	return dag.GolangciLint().Run(src)
 }
 
-// RunPipeline method: Orchestrates running both Lint and Build steps
+// RunPipeline orchestrates running both Lint and Build steps
 func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
-	// Create a container for the Go build environment
-	container := dag.Container().From("golang:latest")
 
-	// Step 1: Lint the source code
-	fmt.Println("Running linting...")
-	//dag.GolangciLint().Run(src)
-	// run linter
+	// STAGE 0: LINT
+	fmt.Println("RUNNING LINTING...")
 	lintOutput, err := m.Lint(ctx, src).Stdout(ctx)
 	if err != nil {
-		fmt.Println("Error running linter: ", err)
+		fmt.Println("ERROR RUNNING LINTER: ", err)
 	}
+	fmt.Print("LINT RESULT: ", "\n"+lintOutput)
 
-	output := "\n" + lintOutput
-	fmt.Println("LINT!!!!", output)
-
-	// You can check the lint result or logs here if necessary
-
-	// Step 2: Build the source code
-	fmt.Println("Running build...")
-	buildOutput := m.Build(ctx, src, container)
+	// STAGE 1: BUILD SOURCE CODE
+	fmt.Println("RUNNING BUILD...")
+	buildOutput := m.Build(ctx, src)
 
 	// Returning the build output
 	return buildOutput, nil
 }
 
 // Returns lines that match a pattern in the files of the provided Directory
-func (m *Go) Build(ctx context.Context, src *dagger.Directory, container *dagger.Container) *dagger.Directory {
-
-	// GET `GOLANG` IMAGE
-	// golang := dag.Container().From("golang:latest")
+func (m *Go) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
-	golang := container.WithDirectory("/src", src).WithWorkdir("/src")
+	golang := m.GoLangContainer.WithDirectory("/src", src).WithWorkdir("/src")
 
 	// DEFINE THE APPLICATION BUILD COMMAND
 	path := "build/"
@@ -73,10 +83,3 @@ func (m *Go) Build(ctx context.Context, src *dagger.Directory, container *dagger
 
 	return outputDir
 }
-
-// func (m *Go) Lint(ctx context.Context, src *dagger.Directory) {
-
-// 	lint := dag.GolangciLint().Run(src)
-
-// 	fmt.Println(lint)
-// }
