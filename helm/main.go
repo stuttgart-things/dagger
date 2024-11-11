@@ -37,31 +37,39 @@ func (m *Helm) GetHelmContainer() *dagger.Container {
 		From("alpine/helm:3.14.3")
 }
 
-// RunPipeline method: Orchestrates running both Lint and Build steps
+// RunPipeline orchestrates all pipeline steps
 func (m *Helm) RunPipeline(ctx context.Context, src *dagger.Directory) {
 
-	fmt.Println("Running linting...")
-
+	// STAGE 0: LINT
+	fmt.Println("RUNNING CHART LINTING...")
 	lint, err := m.Lint(ctx, src)
 	if err != nil {
 		fmt.Println("Error running linter: ", err)
 	}
+	fmt.Print("LINT RESULT: ", lint)
 
-	fmt.Print("Lint: ", lint)
-
-	fmt.Println("Running templating...")
-
+	// STAGE 0: TEST-TEMPLATE
+	fmt.Println("RUNNING TEST-TEMPLATING OF CHART...")
 	templatedChart := m.Template(ctx, src)
-	fmt.Println("Templated Chart: ", templatedChart)
+	fmt.Println("TEMPLATED MANIFESTS: ", templatedChart)
 
+	// STAGE 1: PACKAGE CHART
+	fmt.Println("RUNNING CHART PACKAGING...")
+	packedChart := m.Package(ctx, src)
+	fmt.Println("PACKAGED CHART: ", packedChart)
 }
 
-// Lint
+// Lints a chart
 func (m *Helm) Lint(ctx context.Context, src *dagger.Directory) (string, error) {
 	return dag.HelmDisaster37().Lint(ctx, src)
 }
 
-// Template
+// Packages a chart into a versioned chart archive file (.tgz)
+func (m *Helm) Package(ctx context.Context, src *dagger.Directory) *dagger.File {
+	return dag.HelmOci().Package(src)
+}
+
+// Renders a chart as Kubernetes manifests
 func (m *Helm) Template(ctx context.Context, src *dagger.Directory) (templatedChart string) {
 
 	templatedChart, err := m.HelmContainer.
