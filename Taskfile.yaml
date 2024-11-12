@@ -14,6 +14,13 @@ tasks:
       - jq '.source = "."' dagger.json > tmp.json && mv tmp.json dagger.json
       - mv dagger.json ./{{ .MODULE }}/dagger.json
 
+  test-crossplane:
+    desc: Test crossplame modules
+    cmds:
+      - dagger call -m ./{{ .MODULE }} init-package --name test
+    vars:
+      MODULE: crossplane
+
   test-go:
     desc: Test go modules
     cmds:

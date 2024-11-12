@@ -7,21 +7,46 @@ package main
 import (
 	"context"
 	"dagger/crossplane/internal/dagger"
+	"fmt"
 )
 
-type Crossplane struct{}
-
-// Returns a container that echoes whatever string argument is provided
-func (m *Crossplane) ContainerEcho(stringArg string) *dagger.Container {
-	return dag.Container().From("alpine:latest").WithExec([]string{"echo", stringArg})
+type Crossplane struct {
+	XplaneContainer *dagger.Container
 }
 
-// Returns lines that match a pattern in the files of the provided Directory
-func (m *Crossplane) GrepDir(ctx context.Context, directoryArg *dagger.Directory, pattern string) (string, error) {
-	return dag.Container().
-		From("alpine:latest").
-		WithMountedDirectory("/mnt", directoryArg).
-		WithWorkdir("/mnt").
-		WithExec([]string{"grep", "-R", pattern, "."}).
+// Init Crossplane Package
+func (m *Crossplane) InitPackage(ctx context.Context, name string) {
+
+	output, err := m.XplaneContainer.
+		WithWorkdir("/project").
+		WithExec(
+			[]string{"crossplane", "xpkg", "init", name, "configuration-template"}).
 		Stdout(ctx)
+
+	fmt.Println(err)
+
+	fmt.Println(output)
+}
+
+// GetXplaneContainer return the default image for helm
+func (m *Crossplane) GetXplaneContainer() *dagger.Container {
+	return dag.Container().
+		From("ghcr.io/stuttgart-things/crossplane-cli:v1.18.0")
+}
+
+func New(
+	// xplane container
+	// It need contain xplane
+	// +optional
+	xplaneContainer *dagger.Container,
+
+) *Crossplane {
+	xplane := &Crossplane{}
+
+	if xplaneContainer != nil {
+		xplane.XplaneContainer = xplaneContainer
+	} else {
+		xplane.XplaneContainer = xplane.GetXplaneContainer()
+	}
+	return xplane
 }
