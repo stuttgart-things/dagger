@@ -1,4 +1,5 @@
 # stuttgart-things/dagger
+
 collection of dagger modules
 
 ## TASKS
@@ -15,6 +16,7 @@ task: Available tasks for this project:
 <details><summary><b>CREATE NEW MODULE</b></summary>
 
 ```bash
+# EXAMPLE MODULE
 MODULE=crossplane task create
 ```
 
