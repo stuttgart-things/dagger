@@ -17,9 +17,10 @@ tasks:
   test-crossplane:
     desc: Test crossplame modules
     cmds:
-      - dagger call -m ./{{ .MODULE }} init-package --name test
+      - dagger call -m ./{{ .MODULE }} init-package --name test --progress plain export --path={{ .OUTPUT_DIR }}
     vars:
       MODULE: crossplane
+      OUTPUT_DIR: /tmp/crossplane
 
   test-go:
     desc: Test go modules
