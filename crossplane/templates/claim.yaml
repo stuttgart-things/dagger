@@ -1,0 +1,7 @@
+---
+apiVersion: resources.stuttgart-things.com/v1alpha1
+kind: Minio
+metadata:
+  name: incluster
+  namespace: crossplane-system
+spec:
