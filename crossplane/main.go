@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"context"
 	"dagger/crossplane/internal/dagger"
-	"fmt"
 	"html/template"
 	"log"
 )
@@ -17,8 +16,18 @@ type Crossplane struct {
 	XplaneContainer *dagger.Container
 }
 
-// Init Crossplane Package
-func (m *Crossplane) InitPackage(ctx context.Context, name string) *dagger.Directory {
+type Data struct {
+	Name  string
+	Title string
+}
+
+// Init Crossplane Package based on custom templates and a configuration file
+func (m *Crossplane) InitCustomPackage(ctx context.Context, name string) *dagger.Directory {
+
+	// DEFINE INTERFACE MAP FOR TEMPLATE DATA INLINE - LATER LOAD AS YAML FILE
+	// DEFINE A STRUCT WITH THE NEEDED PACKAGE FOLDER STRUCTURE AND TARGET PATHS
+	// RENDER THE TEMPLATES WITH THE DATA
+	// COPY TO CONTAINER AND RETURN OR TRY TO RETURN FOR EXPORTING WITHOUT USING A CONTAINER
 
 	// Define a simple template
 	tmpl := `Hello {{.Title}} {{.Name}}!`
@@ -30,22 +39,24 @@ func (m *Crossplane) InitPackage(ctx context.Context, name string) *dagger.Direc
 	}
 
 	rendered := RenderTemplate(tmpl, data)
-	fmt.Println(rendered)
 
 	output := m.XplaneContainer.
 		WithNewFile("/templates/configmap.yaml", rendered).
+		WithExec([]string{"cat", "/templates/configmap.yaml"})
+
+	return output.Directory(name)
+}
+
+// Init Crossplane Package
+func (m *Crossplane) InitPackage(ctx context.Context, name string) *dagger.Directory {
+
+	output := m.XplaneContainer.
 		WithExec([]string{"crossplane", "xpkg", "init", name, "configuration-template", "-d", name}).
 		WithExec([]string{"ls", "-lta", name}).
 		WithExec([]string{"rm", "-rf", name + "/NOTES.txt"}).
 		WithExec([]string{"cat", "/templates/configmap.yaml"})
 
-	//fmt.Println(output)
 	return output.Directory(name)
-}
-
-type Data struct {
-	Name  string
-	Title string
 }
 
 // GetXplaneContainer return the default image for helm
