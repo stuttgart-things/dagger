@@ -79,7 +79,9 @@ func (m *Helm) Template(ctx context.Context, src *dagger.Directory) (templatedCh
 			[]string{"helm", "template", "."}).
 		Stdout(ctx)
 
-	fmt.Println(err)
+	if err != nil {
+		fmt.Println("ERROR RUNNING VERSION COMMAND: ", err)
+	}
 
 	return templatedChart
 }

@@ -1,0 +1,14 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  creationTimestamp: "2024-10-20T08:04:36Z"
+  labels:
+    crossplane.io/xrd: xminio.resources.stuttgart-things.com
+  name: minio
+spec:
+  compositeTypeRef:
+    apiVersion: resources.stuttgart-things.com/v1alpha1
+    kind: XMinio
+  mode: Pipeline
+  pipeline:
