@@ -18,16 +18,19 @@ tasks:
     desc: Test crossplame modules
     cmds:
       - dagger call -m ./{{ .MODULE }} init-package --name test --progress plain export --path={{ .OUTPUT_DIR }}
+      - dagger call -m ./{{ .MODULE }} package --src {{ .TEST_PACKAGE }} --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}
     vars:
       MODULE: crossplane
+      TEST_PACKAGE: tests/registry
       OUTPUT_DIR: /tmp/crossplane
+      OUTPUT_DIR_PACKAGE: /tmp/crossplane/package
 
   test-go:
     desc: Test go modules
     cmds:
       - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --progress plain || true
       - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
-      - dagger call -m ./{{ .MODULE }} run-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
+      - dagger call -m ./{{ .MODULE }} run/home/sthings/projects/dagger/helm/internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
     vars:
       MODULE: go
       TEST_GO_CODE: tests/calculator/

@@ -2,6 +2,8 @@
 Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
 */
 
+// https://github.com/dagger/dagger/pull/5833/files#diff-42807a87b4d8f4c8adb3861609de1a2a6a6158cf11b00b9b1b342c0a23f1bc03
+
 package main
 
 import (

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"dagger/crossplane/internal/dagger"
+	"fmt"
 	"html/template"
 	"log"
 )
@@ -19,6 +20,33 @@ type Crossplane struct {
 type Data struct {
 	Name  string
 	Title string
+}
+
+// Init Crossplane Package
+func (m *Crossplane) Package(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+
+	xplane := m.XplaneContainer.
+		WithDirectory("/src", src).
+		WithWorkdir("/src").
+		WithExec([]string{"crossplane", "xpkg", "build"})
+
+	buildArtifact, err := xplane.WithExec(
+		[]string{"find", "-maxdepth", "1", "-name", "*.xpkg", "-exec", "basename", "{}", ";"}).
+		Stdout(ctx)
+
+	if err != nil {
+		fmt.Println("ERROR GETTING BUILD ARTIFACT: ", err)
+	}
+
+	fmt.Println("BUILD PACKAGE: ", buildArtifact)
+
+	return xplane.Directory("/src")
+}
+
+// GetXplaneContainer return the default image for helm
+func (m *Crossplane) GetXplaneContainer() *dagger.Container {
+	return dag.Container().
+		From("ghcr.io/stuttgart-things/crossplane-cli:v1.18.0")
 }
 
 // Init Crossplane Package based on custom templates and a configuration file
@@ -53,16 +81,9 @@ func (m *Crossplane) InitPackage(ctx context.Context, name string) *dagger.Direc
 	output := m.XplaneContainer.
 		WithExec([]string{"crossplane", "xpkg", "init", name, "configuration-template", "-d", name}).
 		WithExec([]string{"ls", "-lta", name}).
-		WithExec([]string{"rm", "-rf", name + "/NOTES.txt"}).
-		WithExec([]string{"cat", "/templates/configmap.yaml"})
+		WithExec([]string{"rm", "-rf", name + "/NOTES.txt"})
 
 	return output.Directory(name)
-}
-
-// GetXplaneContainer return the default image for helm
-func (m *Crossplane) GetXplaneContainer() *dagger.Container {
-	return dag.Container().
-		From("ghcr.io/stuttgart-things/crossplane-cli:v1.18.0")
 }
 
 func New(
