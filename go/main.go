@@ -15,6 +15,7 @@ import (
 type Go struct {
 	Src             *dagger.Directory
 	GoLangContainer *dagger.Container
+	KoContainer     *dagger.Container
 }
 
 // GetGoLangContainer return the default image for golang
@@ -23,11 +24,18 @@ func (m *Go) GetGoLangContainer() *dagger.Container {
 		From("golang:1.23.3")
 }
 
+func (m *Go) GetKoContainer() *dagger.Container {
+	return dag.Container().
+		From("ghcr.io/ko-build/ko:v0.17.1")
+}
+
 func New(
-	// helm container
-	// It need contain helm
+	// golang container
+	// It need contain golang
 	// +optional
 	goLangContainer *dagger.Container,
+	// +optional
+	koContainer *dagger.Container,
 
 	// +defaultPath="/"
 	src *dagger.Directory,
@@ -39,6 +47,12 @@ func New(
 		golang.GoLangContainer = goLangContainer
 	} else {
 		golang.GoLangContainer = golang.GetGoLangContainer()
+	}
+
+	if koContainer != nil {
+		golang.KoContainer = koContainer
+	} else {
+		golang.KoContainer = golang.GetKoContainer()
 	}
 
 	golang.Src = src
@@ -84,4 +98,41 @@ func (m *Go) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory
 	outputDir := golang.Directory(path)
 
 	return outputDir
+}
+
+// Returns lines that match a pattern in the files of the provided Directory
+func (m *Go) KoBuild(
+	ctx context.Context,
+	src *dagger.Directory,
+	// +optional
+	// +default="GITHUB_TOKEN"
+	tokenName string,
+	token *dagger.Secret,
+	// +optional
+	// +default="ko.local"
+	repo string,
+	// +optional
+	// +default="."
+	buildArg string,
+) (buildOutput string) {
+
+	srcDir := "/src"
+	// MOUNT CLONED REPOSITORY INTO `KO` IMAGE
+	ko := m.KoContainer.WithDirectory(srcDir, src).WithWorkdir(srcDir)
+
+	// DEFINE THE APPLICATION BUILD COMMAND W/ KO
+	buildOutput, err := ko.
+		WithEnvVariable("KO_DOCKER_REPO", repo).
+		WithSecretVariable(tokenName, token).
+		WithExec(
+			[]string{"ko", "build", buildArg},
+		).Stdout(ctx)
+
+	if err != nil {
+		fmt.Println("ERROR RUNNING KO", err)
+	}
+
+	fmt.Println("BUILD IMAGE: ", buildOutput)
+
+	return buildOutput
 }
