@@ -5,24 +5,17 @@ Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
 package main
 
 import (
-	"bytes"
 	"context"
 	"dagger/crossplane/internal/dagger"
+	"dagger/crossplane/templates"
 	"fmt"
-	"html/template"
-	"log"
 )
 
 type Crossplane struct {
 	XplaneContainer *dagger.Container
 }
 
-type Data struct {
-	Name  string
-	Title string
-}
-
-// Init Crossplane Package
+// Package Crossplane Package
 func (m *Crossplane) Package(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	xplane := m.XplaneContainer.
@@ -50,29 +43,31 @@ func (m *Crossplane) GetXplaneContainer() *dagger.Container {
 }
 
 // Init Crossplane Package based on custom templates and a configuration file
-func (m *Crossplane) InitCustomPackage(ctx context.Context, name string) *dagger.Directory {
+func (m *Crossplane) InitCustomPackage(ctx context.Context) *dagger.Directory {
 
 	// DEFINE INTERFACE MAP FOR TEMPLATE DATA INLINE - LATER LOAD AS YAML FILE
 	// DEFINE A STRUCT WITH THE NEEDED PACKAGE FOLDER STRUCTURE AND TARGET PATHS
 	// RENDER THE TEMPLATES WITH THE DATA
 	// COPY TO CONTAINER AND RETURN OR TRY TO RETURN FOR EXPORTING WITHOUT USING A CONTAINER
 
-	// Define a simple template
-	tmpl := `Hello {{.Title}} {{.Name}}!`
+	xplane := m.XplaneContainer
+
+	packageName := "test"
+	workingDir := "/" + packageName + "/"
 
 	// Data to be used with the template
-	data := Data{
-		Name:  "John Doe",
-		Title: "Mr.",
+	data := map[string]interface{}{
+		"kind":      "test",
+		"namespace": "crossplane-system",
+		"claimName": "incluster",
 	}
 
-	rendered := RenderTemplate(tmpl, data)
+	for _, template := range templates.PackageFiles {
+		rendered := RenderTemplate(template.Template, data)
+		xplane = xplane.WithNewFile(workingDir+template.Destination, rendered)
+	}
 
-	output := m.XplaneContainer.
-		WithNewFile("/templates/configmap.yaml", rendered).
-		WithExec([]string{"cat", "/templates/configmap.yaml"})
-
-	return output.Directory(name)
+	return xplane.Directory(workingDir)
 }
 
 // Init Crossplane Package
@@ -101,24 +96,4 @@ func New(
 		xplane.XplaneContainer = xplane.GetXplaneContainer()
 	}
 	return xplane
-}
-
-func RenderTemplate(templateData string, data Data) (renderTemplate string) {
-
-	// PARSE THE TEMPLATE
-	t, err := template.New("dagger-xplane").Parse(templateData)
-	if err != nil {
-		log.Fatalf("Error parsing template: %v", err)
-	}
-
-	// EXECUTE THE TEMPLATE AND WRITE THE OUTPUT TO A BUFFER
-	var output bytes.Buffer
-	err = t.Execute(&output, data)
-	if err != nil {
-		log.Fatalf("Error executing template: %v", err)
-	}
-
-	renderTemplate = output.String()
-
-	return renderTemplate
 }
