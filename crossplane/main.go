@@ -8,6 +8,7 @@ import (
 	"context"
 	"dagger/crossplane/internal/dagger"
 	"dagger/crossplane/templates"
+
 	"fmt"
 )
 
@@ -63,7 +64,7 @@ func (m *Crossplane) InitCustomPackage(ctx context.Context) *dagger.Directory {
 	}
 
 	for _, template := range templates.PackageFiles {
-		rendered := RenderTemplate(template.Template, data)
+		rendered := templates.RenderTemplate(template.Template, data)
 		xplane = xplane.WithNewFile(workingDir+template.Destination, rendered)
 	}
 

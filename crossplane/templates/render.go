@@ -2,7 +2,7 @@
 Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
 */
 
-package main
+package templates
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 
 func RenderTemplate(templateData string, data map[string]interface{}) (renderTemplate string) {
 
-	// PARSE THE TEMPLATE
+	// PARSE THE TEMPLATEs
 	t, err := template.New("dagger-xplane").Parse(templateData)
 	if err != nil {
 		log.Fatalf("Error parsing template: %v", err)
