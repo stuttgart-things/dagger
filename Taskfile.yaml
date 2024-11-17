@@ -19,6 +19,7 @@ tasks:
     cmds:
       - dagger call -m ./{{ .MODULE }} init-package --name test --progress plain export --path={{ .OUTPUT_DIR }}
       - dagger call -m ./{{ .MODULE }} package --src {{ .TEST_PACKAGE }} --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}
+      - dagger call -m ./{{ .MODULE }} init-custom-package --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}-new
     vars:
       MODULE: crossplane
       TEST_PACKAGE: tests/registry
@@ -30,7 +31,8 @@ tasks:
     cmds:
       - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --progress plain || true
       - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
-      - dagger call -m ./{{ .MODULE }} run/home/sthings/projects/dagger/helm/internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
+      # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
+      - dagger call -m ./{{ .MODULE }} ko-build --src /home/sthings/projects/golang/clusterbook/tests/client --token=env:GITHUB_TOKEN --repo "ghcr.io/stuttgart-things/clusterbook" --progress plain
     vars:
       MODULE: go
       TEST_GO_CODE: tests/calculator/
