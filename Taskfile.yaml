@@ -7,6 +7,14 @@ vars:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
 
 tasks:
+
+  version:
+    # deps: [build]
+    desc: push new version
+    cmds:
+      - sbot release version
+      - sbot push version
+
   create:
     desc: Create new dagger module
     cmds:
