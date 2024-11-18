@@ -8,10 +8,14 @@ vars:
 
 tasks:
 
-  version:
-    # deps: [build]
+  release:
+    deps:
+      - test-crossplane
+      - test-go
+      - test-helm
     desc: push new version
     cmds:
+      - task: pr
       - sbot release version
       - sbot push version
 
