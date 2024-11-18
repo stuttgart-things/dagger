@@ -32,11 +32,16 @@ tasks:
       - dagger call -m ./{{ .MODULE }} init-package --name test --progress plain export --path={{ .OUTPUT_DIR }}
       - dagger call -m ./{{ .MODULE }} package --src {{ .TEST_PACKAGE }} --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}
       - dagger call -m ./{{ .MODULE }} init-custom-package --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}-new
+      - dagger call -m ./{{ .MODULE }} push --src {{ .TEST_PACKAGE }} --progress plain --username stuttgart-things --password=env:GITHUB_TOKEN --registry {{ .PACKAGE_REGISTRY }} --destination {{ .DESTINATION }}/{{ .PACKAGE_NAME }}:{{ .TAG }}
     vars:
       MODULE: crossplane
       TEST_PACKAGE: tests/registry
       OUTPUT_DIR: /tmp/crossplane
       OUTPUT_DIR_PACKAGE: /tmp/crossplane/package
+      PACKAGE_REGISTRY: ghcr.io
+      DESTINATION: "{{ .PACKAGE_REGISTRY }}/stuttgart-things/stuttgart-things"
+      PACKAGE_NAME: xplane-registry
+      TAG: 2.2.7
 
   test-go:
     desc: Test go modules
