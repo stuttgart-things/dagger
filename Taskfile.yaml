@@ -63,10 +63,13 @@ tasks:
       - dagger call -m {{ .MODULE }} template --src {{ .TEST_CHART }} --progress plain
       - dagger call -m {{ .MODULE }} package --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
       - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --progress plain
+      - dagger call -m {{ .MODULE }} push --src {{ .TEST_CHART }} --progress plain --username {{ .USERNAME }} --password=env:GITHUB_TOKEN --registry {{ .PACKAGE_REGISTRY }} --repository {{ .USERNAME }}
     vars:
       MODULE: helm
       TEST_CHART: tests/test-chart/
       TEST_PACKAGE: tests/chart.tgz
+      PACKAGE_REGISTRY: ghcr.io
+      USERNAME: stuttgart-things
 
   branch:
     desc: Create branch from main

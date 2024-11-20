@@ -3,12 +3,12 @@
   "sdk": "go",
   "dependencies": [
     {
-      "name": "helm-oci",
-      "source": "github.com/purpleclay/daggerverse/helm-oci@d7438770bfab8844a89c2923b9e2942e78de5239"
-    },
-    {
       "name": "helm-disaster37",
       "source": "github.com/disaster37/dagger-library-go/helm@9289c3d5d1b23d1619919280c8db3ec791ed5c39"
+    },
+    {
+      "name": "helm-oci",
+      "source": "github.com/purpleclay/daggerverse/helm-oci@d7438770bfab8844a89c2923b9e2942e78de5239"
     }
   ],
   "source": ".",
