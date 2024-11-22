@@ -10,6 +10,7 @@ import (
 	reg "dagger/crossplane/registry"
 	"dagger/crossplane/templates"
 	"fmt"
+	"strings"
 )
 
 type Crossplane struct {
@@ -79,7 +80,7 @@ func (m *Crossplane) GetXplaneContainer() *dagger.Container {
 }
 
 // Init Crossplane Package based on custom templates and a configuration file
-func (m *Crossplane) InitCustomPackage(ctx context.Context) *dagger.Directory {
+func (m *Crossplane) InitCustomPackage(ctx context.Context, kind string) *dagger.Directory {
 
 	// DEFINE INTERFACE MAP FOR TEMPLATE DATA INLINE - LATER LOAD AS YAML FILE
 	// DEFINE A STRUCT WITH THE NEEDED PACKAGE FOLDER STRUCTURE AND TARGET PATHS
@@ -88,15 +89,29 @@ func (m *Crossplane) InitCustomPackage(ctx context.Context) *dagger.Directory {
 
 	xplane := m.XplaneContainer
 
-	packageName := "test"
+	packageName := strings.ToLower(kind)
 	workingDir := "/" + packageName + "/"
 
 	// Data to be used with the template
 	data := map[string]interface{}{
-		"kind":      "test",
-		"namespace": "crossplane-system",
-		"claimName": "incluster",
+		"namespace":           "crossplane-system",
+		"claimName":           "incluster",
+		"apiGroup":            "resources.stuttgart-things.com",
+		"claimApiVersion":     "v1alpha1",
+		"maintainer":          "patrick.hermann@sva.de",
+		"source":              "github.com/stuttgart-things/stuttgart-things",
+		"license":             "Apache-2.0",
+		"crossplaneVersion":   ">=v1.14.1-0",
+		"kindLower":           packageName,
+		"kindLowerX":          "x" + packageName,
+		"kind":                "X" + ToTitle(packageName),
+		"plural":              "x" + packageName + "s",
+		"claimKind":           ToTitle(packageName),
+		"claimPlural":         packageName + "s",
+		"compositeApiVersion": "apiextensions.crossplane.io/v1",
 	}
+
+	fmt.Println("KINDS: ", data)
 
 	for _, template := range templates.PackageFiles {
 		rendered := templates.RenderTemplate(template.Template, data)
@@ -132,4 +147,9 @@ func New(
 		xplane.XplaneContainer = xplane.GetXplaneContainer()
 	}
 	return xplane
+}
+
+func ToTitle(str string) string {
+	letters := strings.Split(str, "")
+	return strings.ToUpper(letters[0]) + strings.Join(letters[1:], "")
 }

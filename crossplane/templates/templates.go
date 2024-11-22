@@ -12,15 +12,11 @@ type TemplateDestination struct {
 var PackageFiles = []TemplateDestination{
 	{
 		Template:    Claim,
-		Destination: "example/claim.yaml",
+		Destination: "examples/claim.yaml",
 	},
 	{
 		Template:    Composition,
 		Destination: "apis/composition.yaml",
-	},
-	{
-		Template:    Function,
-		Destination: "apis/function.yaml",
 	},
 	{
 		Template:    Readme,
@@ -36,70 +32,65 @@ var PackageFiles = []TemplateDestination{
 	},
 }
 
-var Claim = `
-apiVersion: resources.stuttgart-things.com/v1alpha1
-kind: {{ .kind }}
+var Claim = `apiVersion: {{ .apiGroup }}/{{ .claimApiVersion }}
+kind: {{ .claimKind }}
 metadata:
   name: {{ .claimName }}
   namespace: {{ .namespace }}
 spec:
 `
 
-var Composition = `
-apiVersion: apiextensions.crossplane.io/v1
+var Composition = `apiVersion: {{ .compositionApiVersion }}
 kind: Composition
 metadata:
   labels:
-    crossplane.io/xrd: xminio.resources.stuttgart-things.com
-  name: {{ .kind }}
+    crossplane.io/xrd: {{ .kindLowerX }}.{{ .apiGroup }}
+  name: {{ .kindLower }}
 spec:
   compositeTypeRef:
-    apiVersion: resources.stuttgart-things.com/v1alpha1
-    kind: XMinio
+    apiVersion: {{ .apiGroup }}/{{ .claimApiVersion }}
+    kind: {{ .kind }}
   mode: Pipeline
   pipeline:
 `
 
-var Function = `
-apiVersion: pkg.crossplane.io/v1
-kind: Function
-metadata:
-  name: function-patch-and-transform
-spec:
-  package: xpkg.upbound.io/crossplane-contrib/function-patch-and-transform:v0.1.4
-`
-
-var Definition = `
-apiVersion: apiextensions.crossplane.io/v1
+var Definition = `apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xminios.resources.stuttgart-things.com
+  name: {{ .plural }}.{{ .apiGroup }}
 spec:
+  connectionSecretKeys:
+    - kubeconfig
+  group: {{ .apiGroup }}
+  names:
+    kind: {{ .kind }}
+    plural: {{ .plural }}
+  claimNames:
+    kind: {{ .claimKind }}
+    plural: {{ .claimPlural }}
 `
 
-var Configuration = `
-apiVersion: meta.pkg.crossplane.io/v1
+var Configuration = `apiVersion: meta.pkg.crossplane.io/v1
 kind: Configuration
 metadata:
-  name: minio
+  name: {{ .kind }}
   annotations:
-    meta.crossplane.io/maintainer: patrick.hermann@sva.de
-    meta.crossplane.io/source: github.com/stuttgart-things/stuttgart-things
-    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/maintainer: {{ .maintainer }}
+    meta.crossplane.io/source: {{ .source }}
+    meta.crossplane.io/license: {{ .license }}
     meta.crossplane.io/description: |
-      deploys minio with crossplane based on the official minio helm chart
+      deploys {{ .kind }} w/ crossplane
     meta.crossplane.io/readme: |
-      deploys minio with crossplane based on the official minio helm chart
+      deploys {{ .kind }} w/ crossplane
 spec:
   crossplane:
-    version: ">=v1.14.1-0"
+    version: ">={{ .crossplaneVersion }}"
   dependsOn:
     - provider: xpkg.upbound.io/crossplane-contrib/provider-helm
-      version: "v0.19.0"
+      version: ">=v0.19.0"
     - provider: xpkg.upbound.io/crossplane-contrib/provider-kubernetes
-      version: "v0.14.1"
+      version: ">=v0.14.1"
 `
 
-var Readme = `
-# CROSSPLANE CLAIM
+var Readme = `# CROSSPLANE CLAIM
 `
