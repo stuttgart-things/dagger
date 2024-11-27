@@ -2,6 +2,20 @@
 
 collection of dagger modules
 
+## MODULE INCLUDES
+
+<details><summary><b>HELM</b></summary>
+
+RENDER A CHART w/ VALUES
+
+```bash
+# EXAMPLE MODULE
+VERSION=v0.0.4
+dagger call -m github.com/stuttgart-things/dagger/helm@${VERSION} template --chart ./Service --values this-env.yaml
+```
+
+</details>
+
 ## TASKS
 
 ```bash

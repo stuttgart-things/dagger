@@ -40,7 +40,7 @@ func (m *Helm) GetHelmContainer() *dagger.Container {
 }
 
 // RunPipeline orchestrates all pipeline steps
-func (m *Helm) RunPipeline(ctx context.Context, src *dagger.Directory) {
+func (m *Helm) RunPipeline(ctx context.Context, src *dagger.Directory, values *dagger.File) {
 
 	// STAGE 0: LINT
 	fmt.Println("RUNNING CHART LINTING...")
@@ -52,7 +52,7 @@ func (m *Helm) RunPipeline(ctx context.Context, src *dagger.Directory) {
 
 	// STAGE 0: TEST-TEMPLATE
 	fmt.Println("RUNNING TEST-TEMPLATING OF CHART...")
-	templatedChart := m.Template(ctx, src)
+	templatedChart := m.Render(ctx, src, values)
 	fmt.Println("TEMPLATED MANIFESTS: ", templatedChart)
 
 	// STAGE 1: PACKAGE CHART
@@ -114,13 +114,17 @@ func (m *Helm) Push(
 }
 
 // Renders a chart as Kubernetes manifests
-func (m *Helm) Template(ctx context.Context, src *dagger.Directory) (templatedChart string) {
+func (m *Helm) Render(ctx context.Context, chart *dagger.Directory, values *dagger.File) (templatedChart string) {
+
+	projectDir := "/project"
+	valuesFileName := "test-values.yaml"
 
 	templatedChart, err := m.HelmContainer.
-		WithDirectory("/project", src).
-		WithWorkdir("/project").
+		WithDirectory(projectDir, chart).
+		WithFile(projectDir+"/"+valuesFileName, values).
+		WithWorkdir(projectDir).
 		WithExec(
-			[]string{"helm", "template", "."}).
+			[]string{"helm", "template", ".", "--values", valuesFileName}).
 		Stdout(ctx)
 
 	if err != nil {
