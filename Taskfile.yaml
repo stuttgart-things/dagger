@@ -61,14 +61,15 @@ tasks:
     desc: Test helm modules
     cmds:
       - dagger call -m {{ .MODULE }} lint --src {{ .TEST_CHART }} --progress plain
-      - dagger call -m {{ .MODULE }} template --src {{ .TEST_CHART }} --progress plain
+      - dagger call -m {{ .MODULE }} render --chart {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain
       - dagger call -m {{ .MODULE }} package --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
-      - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --progress plain
+      - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain
       - dagger call -m {{ .MODULE }} push --src {{ .TEST_CHART }} --progress plain --username {{ .USERNAME }} --password=env:GITHUB_TOKEN --registry {{ .PACKAGE_REGISTRY }} --repository {{ .USERNAME }}
     vars:
       MODULE: helm
       TEST_CHART: tests/test-chart/
       TEST_PACKAGE: tests/chart.tgz
+      TEST_VALUES: tests/test-values.yaml
       PACKAGE_REGISTRY: ghcr.io
       USERNAME: stuttgart-things
 
