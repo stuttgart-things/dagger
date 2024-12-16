@@ -11,6 +11,8 @@ import (
 	"dagger/crossplane/templates"
 	"fmt"
 	"strings"
+
+	strcase "github.com/stoewer/go-strcase"
 )
 
 type Crossplane struct {
@@ -80,35 +82,53 @@ func (m *Crossplane) GetXplaneContainer() *dagger.Container {
 }
 
 // Init Crossplane Package based on custom templates and a configuration file
-func (m *Crossplane) InitCustomPackage(ctx context.Context, kind string) *dagger.Directory {
+func (m *Crossplane) InitCustomPackage(ctx context.Context, name string) *dagger.Directory {
 
 	// DEFINE INTERFACE MAP FOR TEMPLATE DATA INLINE - LATER LOAD AS YAML FILE
 	// DEFINE A STRUCT WITH THE NEEDED PACKAGE FOLDER STRUCTURE AND TARGET PATHS
 	// RENDER THE TEMPLATES WITH THE DATA
 	// COPY TO CONTAINER AND RETURN OR TRY TO RETURN FOR EXPORTING WITHOUT USING A CONTAINER
 
+	functions := []templates.FunctionPackage{
+		{
+			Name:       "function-go-templating",
+			PackageURL: "xpkg.upbound.io/crossplane-contrib/function-go-templating",
+			Version:    "v0.7.0",
+			ApiVersion: "pkg.crossplane.io/v1beta1",
+		},
+		{
+			Name:       "function-patch-and-transform",
+			PackageURL: "xpkg.upbound.io/crossplane-contrib/function-patch-and-transform",
+			Version:    "v0.1.4",
+			ApiVersion: "pkg.crossplane.io/v1beta1",
+		},
+	}
+
 	xplane := m.XplaneContainer
 
-	packageName := strings.ToLower(kind)
+	packageName := strings.ToLower(name)
 	workingDir := "/" + packageName + "/"
 
 	// Data to be used with the template
 	data := map[string]interface{}{
-		"namespace":           "crossplane-system",
-		"claimName":           "incluster",
-		"apiGroup":            "resources.stuttgart-things.com",
-		"claimApiVersion":     "v1alpha1",
-		"maintainer":          "patrick.hermann@sva.de",
-		"source":              "github.com/stuttgart-things/stuttgart-things",
-		"license":             "Apache-2.0",
-		"crossplaneVersion":   ">=v1.14.1-0",
-		"kindLower":           packageName,
-		"kindLowerX":          "x" + packageName,
-		"kind":                "X" + ToTitle(packageName),
-		"plural":              "x" + packageName + "s",
-		"claimKind":           ToTitle(packageName),
-		"claimPlural":         packageName + "s",
-		"compositeApiVersion": "apiextensions.crossplane.io/v1",
+		"name":                  packageName,
+		"namespace":             "crossplane-system",
+		"compositionApiVersion": "apiextensions.crossplane.io/v1",
+		"claimName":             "incluster",
+		"apiGroup":              "resources.stuttgart-things.com",
+		"claimApiVersion":       "v1alpha1",
+		"maintainer":            "patrick.hermann@sva.de",
+		"source":                "github.com/stuttgart-things/stuttgart-things",
+		"license":               "Apache-2.0",
+		"crossplaneVersion":     ">=v1.14.1-0",
+		"kindLower":             strings.ToLower(strcase.LowerCamelCase(name)),
+		"kindLowerX":            "x" + packageName,
+		"kind":                  "X" + ToTitle(strcase.LowerCamelCase(name)),
+		"plural":                strings.ToLower("x" + strcase.LowerCamelCase(name) + "s"),
+		"claimKind":             ToTitle(strcase.LowerCamelCase(name)),
+		"claimPlural":           strings.ToLower(strcase.LowerCamelCase(name)) + "s",
+		"compositeApiVersion":   "apiextensions.crossplane.io/v1",
+		"functions":             functions,
 	}
 
 	fmt.Println("KINDS: ", data)
