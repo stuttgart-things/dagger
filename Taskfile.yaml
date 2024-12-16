@@ -32,7 +32,7 @@ tasks:
     cmds:
       #- dagger call -m ./{{ .MODULE }} init-package --name test --progress plain export --path={{ .OUTPUT_DIR }}
       #- dagger call -m ./{{ .MODULE }} package --src {{ .TEST_PACKAGE }} --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}
-      - dagger call -m ./{{ .MODULE }} init-custom-package --kind {{ .NEW_MODULE_KIND }} --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}
+      - dagger call -m ./{{ .MODULE }} init-custom-package --name {{ .NEW_MODULE_KIND }} --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}
       #- dagger call -m ./{{ .MODULE }} push --src {{ .TEST_PACKAGE }} --progress plain --username stuttgart-things --password=env:GITHUB_TOKEN --registry {{ .PACKAGE_REGISTRY }} --destination {{ .DESTINATION }}/{{ .PACKAGE_NAME }}:{{ .TAG }}
     vars:
       MODULE: crossplane
