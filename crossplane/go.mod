@@ -3,7 +3,7 @@ module dagger/crossplane
 go 1.23.1
 
 require (
-	github.com/99designs/gqlgen v0.17.49
+	github.com/99designs/gqlgen v0.17.61
 	github.com/Khan/genqlient v0.7.0
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/vektah/gqlparser/v2 v2.5.16
