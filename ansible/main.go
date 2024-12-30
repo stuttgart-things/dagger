@@ -32,7 +32,6 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, nam
 		WithExec([]string{"ansible-galaxy", "collection", "init", namespace + "." + name})
 
 	return ansible.Directory("/src")
-
 }
 
 func New(
