@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"strings"
 
+	"dagger.io/dagger/dag"
 	strcase "github.com/stoewer/go-strcase"
 )
 
