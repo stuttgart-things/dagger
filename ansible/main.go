@@ -16,7 +16,21 @@ package main
 
 import (
 	"context"
+	"fmt"
+
+	// "dagger/ansible/collections"
+	"dagger/ansible/collections"
 	"dagger/ansible/internal/dagger"
+)
+
+var (
+	playbooks         = make(map[string]string)
+	vars              = make(map[string]string)
+	templates         = make(map[string]string)
+	meta              = make(map[string]string)
+	requirements      = make(map[string]string)
+	src2              *dagger.Directory
+	collectionWorkDir = "/collection"
 )
 
 type Ansible struct {
@@ -25,13 +39,45 @@ type Ansible struct {
 
 // Init Ansible Collection Structure
 func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, namespace, name string) *dagger.Directory {
+	collectionContentDir := collectionWorkDir + "/" + namespace + "/" + name + "/"
 
+	entires, err := src.Entries(ctx)
+
+	if err != nil {
+		fmt.Println("ERROR GETTING ENTRIES: ", err)
+	}
+
+	// INIT COLLECTION
 	ansible := m.AnsibleContainer.
-		WithDirectory("/src", src).
-		WithWorkdir("/src").
+		WithDirectory(collectionWorkDir, src).
+		WithWorkdir(collectionWorkDir).
 		WithExec([]string{"ansible-galaxy", "collection", "init", namespace + "." + name})
 
-	return ansible.Directory("/src")
+	// GET COLLECTION ENTRIES FROM THE (GIVEN) SOURCE DIRECTORY
+	for _, entry := range entires {
+		// fmt.Println(entry)
+		// fmt.Println(src.File(entry).Contents(ctx))
+		content, err := src.File(entry).Contents(ctx)
+		if err != nil {
+			fmt.Println("ERROR GETTING CONTENTS: ", err)
+		}
+		// fmt.Println("CONTENT", content)
+
+		playbooks, vars, templates, meta, requirements = collections.ProcessCollectionFile([]byte(content), playbooks, vars, templates, meta, requirements)
+
+	}
+
+	// CREATE PLAYBOOKS ON COLLECTION
+	for key, value := range playbooks {
+		ansible = ansible.WithNewFile(collectionContentDir+"plays/"+key+".yaml", value)
+	}
+
+	// CREATE VARS ON COLLECTION
+	for key, value := range vars {
+		ansible = ansible.WithNewFile(collectionContentDir+"plays/vars/"+key+".yaml", value)
+	}
+
+	return ansible.Directory(collectionWorkDir)
 }
 
 func New(
@@ -51,7 +97,7 @@ func New(
 	return ansible
 }
 
-// GetXplaneContainer return the default image for helm
+// GetAnsibleContainer return the default image for helm
 func (m *Ansible) GetAnsibleContainer() *dagger.Container {
 	return dag.Container().
 		From("ghcr.io/stuttgart-things/sthings-ansible:11.1.0")

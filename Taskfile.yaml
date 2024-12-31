@@ -33,7 +33,7 @@ tasks:
       - dagger call -m ./{{ .MODULE }} init-collection --src {{ .TEST_ANSIBLE_CODE }} --namespace={{ .NAMESPACE }} --name={{ .NAME }} --progress plain export --path={{ .OUTPUT_COLLECTION_PACKAGE }}
     vars:
       MODULE: ansible
-      TEST_ANSIBLE_CODE: tests
+      TEST_ANSIBLE_CODE: tests/ansible/collection #tests
       NAMESPACE: sthings
       NAME: test
       OUTPUT_COLLECTION_PACKAGE: "/tmp/ansible/{{ .NAME }}"
