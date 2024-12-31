@@ -95,6 +95,11 @@ func ProcessCollectionFile(data []byte, playbooks, vars, templates, meta, requir
 		meta["namespace"] = config.Meta.Namespace
 	}
 
+	// ADD REQUIREMENTS TO THE REQUIREMENTS MAP
+	if config.Requirements != "" {
+		requirements["requirements"] = config.Requirements
+	}
+
 	// fmt.Println("PLAYBOOKS", playbooks)
 	// fmt.Println("VARS", vars)
 	// fmt.Println("TEMPLATES", templates)

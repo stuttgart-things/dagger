@@ -67,15 +67,29 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, nam
 
 	}
 
-	// CREATE PLAYBOOKS ON COLLECTION
+	// CREATE PLAYBOOKS ON COLLECTION DIRECTORY
 	for key, value := range playbooks {
 		ansible = ansible.WithNewFile(collectionContentDir+"plays/"+key+".yaml", value)
 	}
 
-	// CREATE VARS ON COLLECTION
+	// CREATE VARS ON COLLECTION DIRECTORY
 	for key, value := range vars {
 		ansible = ansible.WithNewFile(collectionContentDir+"plays/vars/"+key+".yaml", value)
 	}
+
+	// CREATE TEMPLATES ON COLLECTION DIRECTORY
+	for key, value := range templates {
+		ansible = ansible.WithNewFile(collectionContentDir+"plays/templates/"+key+".yaml", value)
+	}
+
+	// CREATE REQUIREMENTS FILE ON CONTAINER + INSTALL ROLES
+	if requirements["requirements"] != "" {
+		ansible = ansible.WithNewFile(collectionContentDir+"meta/collection-requirements.yaml", requirements["requirements"])
+		ansible = ansible.WithExec([]string{"ansible-galaxy", "install", "-r", collectionContentDir + "meta/collection-requirements.yaml", "-p", collectionContentDir + "/roles"})
+	}
+
+	fmt.Println("META: ", meta)
+	fmt.Println("REQUIREMENTS: ", requirements)
 
 	return ansible.Directory(collectionWorkDir)
 }
