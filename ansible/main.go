@@ -39,33 +39,30 @@ type Ansible struct {
 
 // Init Ansible Collection Structure
 func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, namespace, name string) *dagger.Directory {
-	collectionContentDir := collectionWorkDir + "/" + namespace + "/" + name + "/"
 
-	entires, err := src.Entries(ctx)
-
+	allCollectionFiles, err := src.Entries(ctx)
 	if err != nil {
 		fmt.Println("ERROR GETTING ENTRIES: ", err)
 	}
+
+	// GET COLLECTION ENTRIES FROM THE (GIVEN) SOURCE DIRECTORY
+	for _, entry := range allCollectionFiles {
+		content, err := src.File(entry).Contents(ctx)
+		if err != nil {
+			fmt.Println("ERROR GETTING CONTENTS: ", err)
+		}
+		playbooks, vars, templates, meta, requirements = collections.ProcessCollectionFile([]byte(content), playbooks, vars, templates, meta, requirements)
+	}
+
+	collectionNamespace := meta["namespace"]
+	collectionName := meta["name"]
+	collectionContentDir := collectionWorkDir + "/" + collectionNamespace + "/" + collectionName + "/"
 
 	// INIT COLLECTION
 	ansible := m.AnsibleContainer.
 		WithDirectory(collectionWorkDir, src).
 		WithWorkdir(collectionWorkDir).
-		WithExec([]string{"ansible-galaxy", "collection", "init", namespace + "." + name})
-
-	// GET COLLECTION ENTRIES FROM THE (GIVEN) SOURCE DIRECTORY
-	for _, entry := range entires {
-		// fmt.Println(entry)
-		// fmt.Println(src.File(entry).Contents(ctx))
-		content, err := src.File(entry).Contents(ctx)
-		if err != nil {
-			fmt.Println("ERROR GETTING CONTENTS: ", err)
-		}
-		// fmt.Println("CONTENT", content)
-
-		playbooks, vars, templates, meta, requirements = collections.ProcessCollectionFile([]byte(content), playbooks, vars, templates, meta, requirements)
-
-	}
+		WithExec([]string{"ansible-galaxy", "collection", "init", collectionNamespace + "." + collectionName})
 
 	// CREATE PLAYBOOKS ON COLLECTION DIRECTORY
 	for key, value := range playbooks {
@@ -87,9 +84,6 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, nam
 		ansible = ansible.WithNewFile(collectionContentDir+"meta/collection-requirements.yaml", requirements["requirements"])
 		ansible = ansible.WithExec([]string{"ansible-galaxy", "install", "-r", collectionContentDir + "meta/collection-requirements.yaml", "-p", collectionContentDir + "/roles"})
 	}
-
-	fmt.Println("META: ", meta)
-	fmt.Println("REQUIREMENTS: ", requirements)
 
 	return ansible.Directory(collectionWorkDir)
 }
