@@ -1,16 +1,6 @@
-// A generated module for Ansible functions
-//
-// This module has been generated via dagger init and serves as a reference to
-// basic module structure as you get started with Dagger.
-//
-// Two functions have been pre-created. You can modify, delete, or add to them,
-// as needed. They demonstrate usage of arguments and return types using simple
-// echo and grep commands. The functions can be called from the dagger CLI or
-// from one of the SDKs.
-//
-// The first line in this comment block is a short description line and the
-// rest is a long description with more detail on the module's purpose or usage,
-// if appropriate. All modules should have a short description.
+/*
+Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
+*/
 
 package main
 
@@ -29,7 +19,6 @@ var (
 	templates         = make(map[string]string)
 	meta              = make(map[string]string)
 	requirements      = make(map[string]string)
-	src2              *dagger.Directory
 	collectionWorkDir = "/collection"
 )
 
@@ -37,7 +26,20 @@ type Ansible struct {
 	AnsibleContainer *dagger.Container
 }
 
-// Init Ansible Collection Structure
+// Builds a given collection dir to a archive file (.tgz)
+func (m *Ansible) Build(ctx context.Context, src *dagger.Directory) {
+
+	ansible := m.AnsibleContainer.
+		WithDirectory(collectionWorkDir, src).
+		WithWorkdir(collectionWorkDir).
+		WithExec([]string{"ansible-galaxy", "collection", "build", collectionWorkDir})
+	// WithExec([]string{"ansible-galaxy", "collection", "build", collectionContentDir}).
+	// WithExec([]string{"ls", "-lta", collectionContentDir})
+
+	fmt.Println(ansible)
+}
+
+// INIT ANSIBLE COLLECTION STRUCTURE
 func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, namespace, name string) *dagger.Directory {
 
 	allCollectionFiles, err := src.Entries(ctx)
@@ -66,17 +68,17 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, nam
 
 	// CREATE PLAYBOOKS ON COLLECTION DIRECTORY
 	for key, value := range playbooks {
-		ansible = ansible.WithNewFile(collectionContentDir+"plays/"+key+".yaml", value)
+		ansible = ansible.WithNewFile(collectionContentDir+"playbooks/"+key+".yaml", value)
 	}
 
 	// CREATE VARS ON COLLECTION DIRECTORY
 	for key, value := range vars {
-		ansible = ansible.WithNewFile(collectionContentDir+"plays/vars/"+key+".yaml", value)
+		ansible = ansible.WithNewFile(collectionContentDir+"playbooks/vars/"+key+".yaml", value)
 	}
 
 	// CREATE TEMPLATES ON COLLECTION DIRECTORY
 	for key, value := range templates {
-		ansible = ansible.WithNewFile(collectionContentDir+"plays/templates/"+key+".yaml", value)
+		ansible = ansible.WithNewFile(collectionContentDir+"playbooks/templates/"+key+".yaml", value)
 	}
 
 	// CREATE REQUIREMENTS FILE ON CONTAINER + INSTALL ROLES
