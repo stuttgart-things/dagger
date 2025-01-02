@@ -30,13 +30,16 @@ tasks:
   test-ansible:
     desc: Test ansible modules
     cmds:
-      - dagger call -m ./{{ .MODULE }} init-collection --src {{ .TEST_ANSIBLE_CODE }} --namespace={{ .NAMESPACE }} --name={{ .NAME }} --progress plain export --path={{ .OUTPUT_COLLECTION_PACKAGE }}
+      - dagger call -m ./{{ .MODULE }} init-collection --src {{ .TEST_ANSIBLE_CODE }} --namespace={{ .NAMESPACE }} --name={{ .NAME }} --progress plain export --path={{ .OUTPUT_COLLECTION_FOLDER }}
+      - dagger call -m ./{{ .MODULE }} build --src {{ .OUTPUT_COLLECTION_FOLDER }}/{{ .NAMESPACE }}/{{ .NAME }} --progress plain export --path={{ .OUTPUT_COLLECTION_PACKAGE }}
+      - ls -lta {{ .OUTPUT_COLLECTION_PACKAGE }}
     vars:
       MODULE: ansible
       TEST_ANSIBLE_CODE: tests/ansible/collection #tests
       NAMESPACE: sthings
-      NAME: test
-      OUTPUT_COLLECTION_PACKAGE: "/tmp/ansible/{{ .NAME }}"
+      NAME: container
+      OUTPUT_COLLECTION_FOLDER: "/tmp/ansible/{{ .NAME }}"
+      OUTPUT_COLLECTION_PACKAGE: "/tmp/ansible/{{ .NAME }}/package"
 
   test-crossplane:
     desc: Test crossplame modules

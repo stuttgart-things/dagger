@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 
-	// "dagger/ansible/collections"
 	"dagger/ansible/collections"
 	"dagger/ansible/internal/dagger"
 )
@@ -27,16 +26,20 @@ type Ansible struct {
 }
 
 // Builds a given collection dir to a archive file (.tgz)
-func (m *Ansible) Build(ctx context.Context, src *dagger.Directory) {
+func (m *Ansible) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	ansible := m.AnsibleContainer.
 		WithDirectory(collectionWorkDir, src).
 		WithWorkdir(collectionWorkDir).
-		WithExec([]string{"ansible-galaxy", "collection", "build", collectionWorkDir})
-	// WithExec([]string{"ansible-galaxy", "collection", "build", collectionContentDir}).
-	// WithExec([]string{"ls", "-lta", collectionContentDir})
+		WithExec([]string{"ls", "-lta"}).
+		WithExec([]string{"ansible-galaxy", "collection", "build"}).
+		WithExec([]string{"ls", "-lta"})
 
-	fmt.Println(ansible)
+	// entries, err := ansible.Directory(collectionWorkDir).Entries(ctx)
+	// fmt.Sprintf("ENTRIES: ", entries, err)
+
+	return ansible.Directory(collectionWorkDir)
+
 }
 
 // INIT ANSIBLE COLLECTION STRUCTURE
