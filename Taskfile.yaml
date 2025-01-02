@@ -7,12 +7,12 @@ vars:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
 
 tasks:
-
   release:
     deps:
       - test-crossplane
       - test-go
       - test-helm
+      - test-ansible
     desc: push new version
     cmds:
       - task: pr
