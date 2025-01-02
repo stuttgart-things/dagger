@@ -20,6 +20,11 @@ tasks:
       - sbot push version
       - echo released version $(git describe --tags --abbrev=0)
 
+  check:
+    desc: "Run pre-commit hooks"
+    cmds:
+      - pre-commit run -a
+
   create:
     desc: Create new dagger module
     cmds:
