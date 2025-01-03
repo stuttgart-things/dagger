@@ -36,11 +36,7 @@ func (m *Ansible) Build(ctx context.Context, src *dagger.Directory) *dagger.Dire
 		WithExec([]string{"ansible-galaxy", "collection", "build"}).
 		WithExec([]string{"ls", "-lta"})
 
-	// entries, err := ansible.Directory(collectionWorkDir).Entries(ctx)
-	// fmt.Sprintf("ENTRIES: ", entries, err)
-
 	return ansible.Directory(collectionWorkDir)
-
 }
 
 // BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
@@ -76,9 +72,7 @@ func (m *Ansible) ModifyRoleIncludes(ctx context.Context, src *dagger.Directory)
 					collectionRoleName,
 				),
 			})
-
 		}
-
 	}
 
 	return ansible.Directory(collectionWorkDir)
