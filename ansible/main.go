@@ -60,48 +60,26 @@ func (m *Ansible) ModifyRoleIncludes(ctx context.Context, src *dagger.Directory)
 
 		if strings.Contains(roleDir, "-") {
 
+			// SET NEW COLLECTION ROLE NAME
+			collectionRoleName := strings.Replace(roleDir, "-", "_", -1)
+
 			// RENAME ROLE DIR
-			ansible = ansible.WithExec([]string{"mv", collectionWorkDir + "/roles/" + roleDir, collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1)})
+			ansible = ansible.WithExec([]string{"mv", collectionWorkDir + "/roles/" + roleDir, collectionWorkDir + "/roles/" + collectionRoleName})
+
+			// REPLACE ALL ROLE REFERENCES IN YAML FILES INSIDE THE ROLES DIRECTORY
+			ansible = ansible.WithExec([]string{
+				"sh", "-c",
+				fmt.Sprintf(
+					`find %s -name "*.yaml" -type f -exec sed -i "s/%s/%s/g" {} +`,
+					collectionWorkDir+"/roles/",
+					roleDir,
+					collectionRoleName,
+				),
+			})
+
 		}
 
 	}
-
-	updatedRoleDirs, err := ansible.Directory(collectionWorkDir + "/roles").Entries(ctx)
-	if err != nil {
-		fmt.Println("ERROR GETTING ENTRIES: ", err)
-	}
-
-	for _, roleDir := range updatedRoleDirs {
-
-		fmt.Println(roleDir)
-
-		roleIncludes, err := ansible.Directory(collectionWorkDir + "/roles/" + roleDir + "/tasks").Entries(ctx)
-		if err != nil {
-			fmt.Println("ERROR GETTING ROLEINCLUDES: ", err)
-		}
-
-		for _, roleInclude := range roleIncludes {
-			if strings.Contains(roleInclude, "-") {
-				ansible = ansible.WithExec([]string{"mv", collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1) + "/tasks/" + roleInclude, collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1) + "/tasks/" + strings.Replace(roleInclude, "-", "_", -1)})
-			}
-		}
-
-	}
-
-	// 	// RENAME ALL ROLE INCLUDES WITH DASHES TO UNDERSCORES
-	// 	roleIncludes, err := ansible.Directory(collectionWorkDir + "/roles/" + roleDir + "/tasks").Entries(ctx)
-	// 	fmt.Println("ROLE INCLUDES: ", roleIncludes, err)
-
-	// 	if err != nil {
-	// 		fmt.Println("ERROR GETTING ENTRIES: ", err)
-	// 	}
-
-	// 	// for _, roleInclude := range roleIncludes {
-	// 	// 	if strings.Contains(roleInclude, "-") {
-	// 	// 		ansible = ansible.WithExec([]string{"mv", collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1) + "/tasks/" + roleInclude, collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1) + "/tasks/" + strings.Replace(roleInclude, "-", "_", -1)})
-	// 	// 	}
-	// 	// }
-	// }
 
 	return ansible.Directory(collectionWorkDir)
 
