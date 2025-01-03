@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"dagger/ansible/collections"
 	"dagger/ansible/internal/dagger"
@@ -25,7 +26,7 @@ type Ansible struct {
 	AnsibleContainer *dagger.Container
 }
 
-// Builds a given collection dir to a archive file (.tgz)
+// BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
 func (m *Ansible) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory {
 
 	ansible := m.AnsibleContainer.
@@ -37,6 +38,70 @@ func (m *Ansible) Build(ctx context.Context, src *dagger.Directory) *dagger.Dire
 
 	// entries, err := ansible.Directory(collectionWorkDir).Entries(ctx)
 	// fmt.Sprintf("ENTRIES: ", entries, err)
+
+	return ansible.Directory(collectionWorkDir)
+
+}
+
+// BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
+func (m *Ansible) ModifyRoleIncludes(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+
+	ansible := m.AnsibleContainer.
+		WithDirectory(collectionWorkDir, src).
+		WithWorkdir(collectionWorkDir)
+
+	roleDirs, err := ansible.Directory(collectionWorkDir + "/roles").Entries(ctx)
+	if err != nil {
+		fmt.Println("ERROR GETTING ENTRIES: ", err)
+	}
+
+	// RENAME ALL ROLENAMES WITH DASHES TO UNDERSCORES
+	for _, roleDir := range roleDirs {
+
+		if strings.Contains(roleDir, "-") {
+
+			// RENAME ROLE DIR
+			ansible = ansible.WithExec([]string{"mv", collectionWorkDir + "/roles/" + roleDir, collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1)})
+		}
+
+	}
+
+	updatedRoleDirs, err := ansible.Directory(collectionWorkDir + "/roles").Entries(ctx)
+	if err != nil {
+		fmt.Println("ERROR GETTING ENTRIES: ", err)
+	}
+
+	for _, roleDir := range updatedRoleDirs {
+
+		fmt.Println(roleDir)
+
+		roleIncludes, err := ansible.Directory(collectionWorkDir + "/roles/" + roleDir + "/tasks").Entries(ctx)
+		if err != nil {
+			fmt.Println("ERROR GETTING ROLEINCLUDES: ", err)
+		}
+
+		for _, roleInclude := range roleIncludes {
+			if strings.Contains(roleInclude, "-") {
+				ansible = ansible.WithExec([]string{"mv", collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1) + "/tasks/" + roleInclude, collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1) + "/tasks/" + strings.Replace(roleInclude, "-", "_", -1)})
+			}
+		}
+
+	}
+
+	// 	// RENAME ALL ROLE INCLUDES WITH DASHES TO UNDERSCORES
+	// 	roleIncludes, err := ansible.Directory(collectionWorkDir + "/roles/" + roleDir + "/tasks").Entries(ctx)
+	// 	fmt.Println("ROLE INCLUDES: ", roleIncludes, err)
+
+	// 	if err != nil {
+	// 		fmt.Println("ERROR GETTING ENTRIES: ", err)
+	// 	}
+
+	// 	// for _, roleInclude := range roleIncludes {
+	// 	// 	if strings.Contains(roleInclude, "-") {
+	// 	// 		ansible = ansible.WithExec([]string{"mv", collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1) + "/tasks/" + roleInclude, collectionWorkDir + "/roles/" + strings.Replace(roleDir, "-", "_", -1) + "/tasks/" + strings.Replace(roleInclude, "-", "_", -1)})
+	// 	// 	}
+	// 	// }
+	// }
 
 	return ansible.Directory(collectionWorkDir)
 
