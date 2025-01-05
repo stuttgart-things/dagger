@@ -19,9 +19,9 @@ type Go struct {
 }
 
 // GetGoLangContainer return the default image for golang
-func (m *Go) GetGoLangContainer() *dagger.Container {
+func (m *Go) GetGoLangContainer(goVersion string) *dagger.Container {
 	return dag.Container().
-		From("golang:1.23.3")
+		From("golang:" + goVersion)
 }
 
 func (m *Go) GetKoContainer() *dagger.Container {
@@ -66,7 +66,11 @@ func (m *Go) Lint(ctx context.Context, src *dagger.Directory) *dagger.Container 
 }
 
 // RunPipeline orchestrates running both Lint and Build steps
-func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
+func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory, goVersion string) (*dagger.Directory, error) {
+
+	if goVersion == "" {
+		goVersion = "1.23.4"
+	}
 
 	// STAGE 0: LINT
 	fmt.Println("RUNNING LINTING...")
