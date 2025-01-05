@@ -35,7 +35,7 @@ func GenerateSemanticVersion() string {
 
 	// GET THE CURRENT DATE
 	currentDate := time.Now()
-	version := fmt.Sprintf("%d.%02d.%02d-%02d%02d", currentDate.Year(), currentDate.Month(), currentDate.Day(), currentDate.Hour(), currentDate.Minute())
+	version := fmt.Sprintf("%d.%02d.%02d%02d%02d", currentDate.Year(), currentDate.Month(), currentDate.Day(), currentDate.Hour(), currentDate.Minute())
 
 	return version
 }
