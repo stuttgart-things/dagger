@@ -32,16 +32,16 @@ build_ignore: []
 `
 
 func GenerateSemanticVersion() string {
-	// Get the current date and time
+	// GET THE CURRENT DATE AND TIME
 	currentDate := time.Now()
 
-	// Major: Year in two digits (2025 -> 25)
+	// MAJOR: YEAR IN TWO DIGITS (2025 -> 25)
 	major := currentDate.Year() % 100
 
-	// Minor: Day of the week (0 for Sunday to 6 for Saturday)
+	// MINOR: DAY OF THE WEEK (0 FOR SUNDAY TO 6 FOR SATURDAY)
 	minor := int(currentDate.Weekday())
 
-	// Patch: A number derived from the hour and minute (to ensure uniqueness within a day)
+	// PATCH: A NUMBER DERIVED FROM THE HOUR AND MINUTE (TO ENSURE UNIQUENESS WITHIN A DAY)
 	patch := currentDate.Hour()*60 + currentDate.Minute() // Total minutes since midnight
 
 	return fmt.Sprintf("%d.%d.%d", major, minor, patch)
