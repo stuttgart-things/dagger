@@ -5,10 +5,7 @@ Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
 package collections
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -38,20 +35,14 @@ func GenerateSemanticVersion() string {
 	// Get the current date and time
 	currentDate := time.Now()
 
-	// Major: Last two digits of the year
+	// Major: Year in two digits (2025 -> 25)
 	major := currentDate.Year() % 100
 
-	// Minor: Day of the week (0 for Sunday, 6 for Saturday)
+	// Minor: Day of the week (0 for Sunday to 6 for Saturday)
 	minor := int(currentDate.Weekday())
 
-	// Patch: Hash of the Unix timestamp, truncated to 3 digits
-	timestamp := strconv.FormatInt(currentDate.UnixNano(), 10) // Unix timestamp with nanoseconds
-	hash := sha256.Sum256([]byte(timestamp))
-	hashString := hex.EncodeToString(hash[:])
-	patch, _ := strconv.Atoi(hashString[:3]) // Convert first 3 hex digits to an integer
+	// Patch: A number derived from the hour and minute (to ensure uniqueness within a day)
+	patch := currentDate.Hour()*60 + currentDate.Minute() // Total minutes since midnight
 
-	// Format the version
-	version := fmt.Sprintf("%02d.%01d.%03d", major, minor, patch)
-
-	return version
+	return fmt.Sprintf("%d.%d.%d", major, minor, patch)
 }
