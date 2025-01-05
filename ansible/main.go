@@ -80,7 +80,9 @@ func (m *Ansible) ModifyRoleIncludes(ctx context.Context, src *dagger.Directory)
 }
 
 // INIT ANSIBLE COLLECTION STRUCTURE
-func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, namespace, name string) *dagger.Directory {
+func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+
+	metaInformation := make(map[string]interface{})
 
 	allCollectionFiles, err := src.Entries(ctx)
 	if err != nil {
@@ -96,15 +98,24 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, nam
 		playbooks, vars, templates, meta, requirements = collections.ProcessCollectionFile([]byte(content), playbooks, vars, templates, meta, requirements)
 	}
 
-	collectionNamespace := meta["namespace"]
-	collectionName := meta["name"]
-	collectionContentDir := collectionWorkDir + "/" + collectionNamespace + "/" + collectionName + "/"
+	metaInformation["namespace"] = meta["namespace"]
+	metaInformation["name"] = meta["name"]
+	metaInformation["version"] = collections.GenerateSemanticVersion()
+
+	collectionContentDir := collectionWorkDir + "/" + metaInformation["namespace"].(string) + "/" + metaInformation["name"].(string)
 
 	// INIT COLLECTION
 	ansible := m.AnsibleContainer.
 		WithDirectory(collectionWorkDir, src).
 		WithWorkdir(collectionWorkDir).
-		WithExec([]string{"ansible-galaxy", "collection", "init", collectionNamespace + "." + collectionName})
+		WithExec([]string{"ansible-galaxy", "collection", "init", metaInformation["namespace"].(string) + "." + metaInformation["name"].(string)})
+
+	// CHANGE META INFORMATION
+	renderedGalaxyFile := collections.RenderTemplate(collections.GalaxyConfig, metaInformation)
+	fmt.Println("RENDERED GALAXY FILE: ", renderedGalaxyFile)
+	ansible = ansible.WithNewFile(collectionContentDir+"/galaxy.yml", renderedGalaxyFile)
+
+	//ansible = ansible.WithExec([]string{"ansible-galaxy", "install", "-r", collectionContentDir + "meta/collection-requirements.yaml", "-p", collectionContentDir + "/roles"})
 
 	// CREATE PLAYBOOKS ON COLLECTION DIRECTORY
 	for key, value := range playbooks {
@@ -123,8 +134,8 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory, nam
 
 	// CREATE REQUIREMENTS FILE ON CONTAINER + INSTALL ROLES
 	if requirements["requirements"] != "" {
-		ansible = ansible.WithNewFile(collectionContentDir+"meta/collection-requirements.yaml", requirements["requirements"])
-		ansible = ansible.WithExec([]string{"ansible-galaxy", "install", "-r", collectionContentDir + "meta/collection-requirements.yaml", "-p", collectionContentDir + "/roles"})
+		ansible = ansible.WithNewFile(collectionContentDir+"/meta/collection-requirements.yaml", requirements["requirements"])
+		ansible = ansible.WithExec([]string{"ansible-galaxy", "install", "-r", collectionContentDir + "/meta/collection-requirements.yaml", "-p", collectionContentDir + "/roles"})
 	}
 
 	return ansible.Directory(collectionWorkDir)
