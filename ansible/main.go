@@ -17,6 +17,7 @@ var (
 	playbooks         = make(map[string]string)
 	vars              = make(map[string]string)
 	templates         = make(map[string]string)
+	modules           = make(map[string]string)
 	meta              = make(map[string]string)
 	requirements      = make(map[string]string)
 	collectionWorkDir = "/collection"
@@ -24,6 +25,29 @@ var (
 
 type Ansible struct {
 	AnsibleContainer *dagger.Container
+}
+
+// RunPipeline orchestrates running both Lint and Build steps
+func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
+
+	// INIT COLLECTION
+	src = m.InitCollection(ctx, src)
+
+	// LOOP OVER ALL FILES IN THE COLLECTION DIRECTORY
+	files, err := src.Entries(ctx)
+	if err != nil {
+		fmt.Println("ERROR GETTING ENTRIES: ", err)
+	}
+	fmt.Println("ALL CREATED FILES: ", files)
+
+	// // MODIFY ROLE INCLUDES
+	// src = m.ModifyRoleIncludes(ctx, src)
+
+	// // BUILD
+	// src = m.Build(ctx, src)
+
+	return src, nil
+
 }
 
 // BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
@@ -95,11 +119,12 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory) *da
 		if err != nil {
 			fmt.Println("ERROR GETTING CONTENTS: ", err)
 		}
-		playbooks, vars, templates, meta, requirements = collections.ProcessCollectionFile([]byte(content), playbooks, vars, templates, meta, requirements)
+		playbooks, vars, modules, templates, meta, requirements = collections.ProcessCollectionFile([]byte(content), playbooks, vars, modules, templates, meta, requirements)
 	}
 
 	metaInformation["namespace"] = meta["namespace"]
 	metaInformation["name"] = meta["name"]
+	metaInformation["authors"] = meta["authors"]
 	metaInformation["version"] = collections.GenerateSemanticVersion()
 
 	collectionContentDir := collectionWorkDir + "/" + metaInformation["namespace"].(string) + "/" + metaInformation["name"].(string)
@@ -130,6 +155,11 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory) *da
 	// CREATE TEMPLATES ON COLLECTION DIRECTORY
 	for key, value := range templates {
 		ansible = ansible.WithNewFile(collectionContentDir+"playbooks/templates/"+key+".yaml", value)
+	}
+
+	// CREATE MODULES ON COLLECTION DIRECTORY
+	for key, value := range modules {
+		ansible = ansible.WithNewFile(collectionContentDir+"plugins/module_utils/"+key+".py", value)
 	}
 
 	// CREATE REQUIREMENTS FILE ON CONTAINER + INSTALL ROLES

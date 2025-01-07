@@ -23,15 +23,20 @@ type Config struct {
 		Name string `yaml:"name"`
 		File string `yaml:"file"`
 	} `yaml:"templates"`
+	Modules []struct {
+		Name string `yaml:"name"`
+		File string `yaml:"file"`
+	} `yaml:"modules"`
 	Meta struct {
 		Name      string `yaml:"name"`
 		Namespace string `yaml:"namespace"`
+		// Authors   []string `yaml:"authors"`
 	} `yaml:",inline"` // Use inline to match top-level fields
 	Requirements string `yaml:"requirements"` // Field to capture requirements
 }
 
 // ProcessFile reads and processes the YAML file
-func ProcessCollectionFile(data []byte, playbooks, vars, templates, meta, requirements map[string]string) (map[string]string, map[string]string, map[string]string, map[string]string, map[string]string) {
+func ProcessCollectionFile(data []byte, playbooks, vars, modules, templates, meta, requirements map[string]string) (map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string) {
 
 	// PARSE YAML CONTENT
 	var config Config
@@ -55,10 +60,16 @@ func ProcessCollectionFile(data []byte, playbooks, vars, templates, meta, requir
 		templates[template.Name] = template.File
 	}
 
+	// ADD MODULES TO THE MODULES MAP
+	for _, module := range config.Modules {
+		modules[module.Name] = module.File
+	}
+
 	// ADD META INFORMATION IF BOTH KEYS ARE PRESENT
 	if config.Meta.Name != "" && config.Meta.Namespace != "" {
 		meta["name"] = config.Meta.Name
 		meta["namespace"] = config.Meta.Namespace
+		// meta["authors"] = config.Meta.Authors[0]
 	}
 
 	// ADD REQUIREMENTS TO THE REQUIREMENTS MAP
@@ -66,5 +77,5 @@ func ProcessCollectionFile(data []byte, playbooks, vars, templates, meta, requir
 		requirements["requirements"] = config.Requirements
 	}
 
-	return playbooks, vars, templates, meta, requirements
+	return playbooks, vars, modules, templates, meta, requirements
 }
