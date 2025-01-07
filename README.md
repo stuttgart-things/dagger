@@ -2,7 +2,14 @@
 
 collection of dagger modules
 
-## MODULE INCLUDES
+## MODULES
+
+<details><summary><b>ANSIBLE</b></summary>
+
+the idea of this module is to create versioned collection artifcat 'on the fly' -
+this module can work with a file structure like this:
+
+</details>
 
 <details><summary><b>HELM</b></summary>
 
