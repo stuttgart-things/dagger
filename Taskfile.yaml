@@ -40,11 +40,11 @@ tasks:
       - dagger call -m ./{{ .MODULE }} build --src {{ .BUILD_DIR }} --progress plain export --path={{ .OUTPUT_DIR }}
       - ls -lta {{ .OUTPUT_DIR }}
     vars:
-      MODULE: ansible
-      TEST_ANSIBLE_CODE: /home/sthings/projects/ansible/ansible/container # tests/ansible/collection #tests
-      NAMESPACE: sthings
-      NAME: container
+      NAME: baseos #container
+      TEST_ANSIBLE_CODE: /home/sthings/projects/ansible/ansible/collections/{{ .NAME }} # tests/ansible/collection #tests
       COLLECTION_TMP_DIR: /tmp/ansible/collections
+      MODULE: ansible
+      NAMESPACE: sthings
       OUTPUT_COLLECTION_FOLDER: "{{ .COLLECTION_TMP_DIR }}/{{ .NAME }}"
       OUTPUT_COLLECTION_PACKAGE: "{{ .COLLECTION_TMP_DIR }}/{{ .NAME }}/package"
       BUILD_DIR: "{{ .COLLECTION_TMP_DIR }}/build/"
