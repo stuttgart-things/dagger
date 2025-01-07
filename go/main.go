@@ -46,7 +46,7 @@ func New(
 	if goLangContainer != nil {
 		golang.GoLangContainer = goLangContainer
 	} else {
-		golang.GoLangContainer = golang.GetGoLangContainer()
+		golang.GoLangContainer = golang.GetGoLangContainer("1.23.4")
 	}
 
 	if koContainer != nil {
