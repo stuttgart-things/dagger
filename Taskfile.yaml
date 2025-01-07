@@ -10,8 +10,8 @@ tasks:
   release:
     deps:
       # - test-crossplane
-      # - test-go
-      # - test-helm
+      - test-go
+      - test-helm
       - test-ansible
     desc: push new version
     cmds:
@@ -36,16 +36,19 @@ tasks:
     desc: Test ansible modules
     cmds:
       - dagger call -m ./{{ .MODULE }} init-collection --src {{ .TEST_ANSIBLE_CODE }} --progress plain export --path={{ .OUTPUT_COLLECTION_FOLDER }}
-      - dagger call -m ./{{ .MODULE }} build --src {{ .OUTPUT_COLLECTION_FOLDER }}/{{ .NAMESPACE }}/{{ .NAME }} --progress plain export --path={{ .OUTPUT_COLLECTION_PACKAGE }}
-      - dagger call -m ./{{ .MODULE }} modify-role-includes --src /tmp/ansible/test/sthings/container/ --progress plain export --path /tmp/collection
-      - ls -lta {{ .OUTPUT_COLLECTION_PACKAGE }}
+      - dagger call -m ./{{ .MODULE }} modify-role-includes --src {{ .OUTPUT_COLLECTION_FOLDER }}/{{ .NAMESPACE }}/{{ .NAME }} --progress plain export --path {{ .BUILD_DIR }}
+      - dagger call -m ./{{ .MODULE }} build --src {{ .BUILD_DIR }} --progress plain export --path={{ .OUTPUT_DIR }}
+      - ls -lta {{ .OUTPUT_DIR }}
     vars:
       MODULE: ansible
       TEST_ANSIBLE_CODE: /home/sthings/projects/ansible/ansible/container # tests/ansible/collection #tests
       NAMESPACE: sthings
       NAME: container
-      OUTPUT_COLLECTION_FOLDER: "/tmp/ansible/{{ .NAME }}"
-      OUTPUT_COLLECTION_PACKAGE: "/tmp/ansible/{{ .NAME }}/package"
+      COLLECTION_TMP_DIR: /tmp/ansible/collections
+      OUTPUT_COLLECTION_FOLDER: "{{ .COLLECTION_TMP_DIR }}/{{ .NAME }}"
+      OUTPUT_COLLECTION_PACKAGE: "{{ .COLLECTION_TMP_DIR }}/{{ .NAME }}/package"
+      BUILD_DIR: "{{ .COLLECTION_TMP_DIR }}/build/"
+      OUTPUT_DIR: "{{ .COLLECTION_TMP_DIR }}/artifacts/"
 
   test-crossplane:
     desc: Test crossplame modules
