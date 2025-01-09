@@ -9,6 +9,13 @@ collection of dagger modules
 the idea of this module is to create versioned collection artifcat 'on the fly' -
 this module can work with a file structure like this:
 
+# EXAMPLE COLLECTION FILE
+
+```yaml
+
+```
+
+
 </details>
 
 <details><summary><b>HELM</b></summary>
