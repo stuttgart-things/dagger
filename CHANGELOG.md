@@ -1,3 +1,10 @@
+## [0.1.2](https://github.com/stuttgart-things/dagger/compare/v0.1.1...v0.1.2) (2025-01-09)
+
+
+### Bug Fixes
+
+* update playbook dir in ansible collection creation ([3676308](https://github.com/stuttgart-things/dagger/commit/367630827168dfe7c5fb24d4eb82e96af149129e))
+
 ## [0.1.1](https://github.com/stuttgart-things/dagger/compare/v0.1.0...v0.1.1) (2025-01-07)
 
 
