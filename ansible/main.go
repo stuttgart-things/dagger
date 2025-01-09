@@ -144,22 +144,22 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory) *da
 
 	// CREATE PLAYBOOKS ON COLLECTION DIRECTORY
 	for key, value := range playbooks {
-		ansible = ansible.WithNewFile(collectionContentDir+"playbooks/"+key+".yaml", value)
+		ansible = ansible.WithNewFile(collectionContentDir+"/playbooks/"+key+".yaml", value)
 	}
 
 	// CREATE VARS ON COLLECTION DIRECTORY
 	for key, value := range vars {
-		ansible = ansible.WithNewFile(collectionContentDir+"playbooks/vars/"+key+".yaml", value)
+		ansible = ansible.WithNewFile(collectionContentDir+"/playbooks/vars/"+key+".yaml", value)
 	}
 
 	// CREATE TEMPLATES ON COLLECTION DIRECTORY
 	for key, value := range templates {
-		ansible = ansible.WithNewFile(collectionContentDir+"playbooks/templates/"+key+".yaml", value)
+		ansible = ansible.WithNewFile(collectionContentDir+"/playbooks/templates/"+key+".yaml", value)
 	}
 
 	// CREATE MODULES ON COLLECTION DIRECTORY
 	for key, value := range modules {
-		ansible = ansible.WithNewFile(collectionContentDir+"plugins/module_utils/"+key+".py", value)
+		ansible = ansible.WithNewFile(collectionContentDir+"/plugins/module_utils/"+key+".py", value)
 	}
 
 	// CREATE REQUIREMENTS FILE ON CONTAINER + INSTALL ROLES
