@@ -86,7 +86,10 @@ func (m *Helm) DependencyUpdate(
 func (m *Helm) Lint(
 	ctx context.Context,
 	src *dagger.Directory) (string, error) {
-	return dag.HelmDisaster37().Lint(ctx, src)
+
+	updatedChart := m.DependencyUpdate(ctx, src)
+
+	return dag.HelmDisaster37().Lint(ctx, updatedChart)
 }
 
 // PACKAGES A CHART INTO A VERSIONED CHART ARCHIVE FILE (.tgz)
