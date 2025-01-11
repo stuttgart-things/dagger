@@ -1,3 +1,10 @@
+## [0.1.3](https://github.com/stuttgart-things/dagger/compare/v0.1.2...v0.1.3) (2025-01-11)
+
+
+### Bug Fixes
+
+* update helm dep update ([5e8769d](https://github.com/stuttgart-things/dagger/commit/5e8769dbfae6608eca36509c7100e1fada0d1617))
+
 ## [0.1.2](https://github.com/stuttgart-things/dagger/compare/v0.1.1...v0.1.2) (2025-01-09)
 
 
