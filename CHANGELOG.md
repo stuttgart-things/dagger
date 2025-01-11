@@ -1,3 +1,10 @@
+## [0.1.4](https://github.com/stuttgart-things/dagger/compare/v0.1.3...v0.1.4) (2025-01-11)
+
+
+### Bug Fixes
+
+* updated dep update ([efc8949](https://github.com/stuttgart-things/dagger/commit/efc89491a0a8774931cb8c1790daf5897dba0132))
+
 ## [0.1.3](https://github.com/stuttgart-things/dagger/compare/v0.1.2...v0.1.3) (2025-01-11)
 
 
