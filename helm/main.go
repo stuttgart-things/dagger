@@ -1,6 +1,4 @@
-/*
-Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
-*/
+// CI/CD pipeline (tasks) for verify, build and push Helm charts
 
 package main
 
@@ -36,15 +34,22 @@ func New(
 // GetHelmContainer return the default image for helm
 func (m *Helm) GetHelmContainer() *dagger.Container {
 	return dag.Container().
-		From("alpine/helm:3.14.3")
+		From("alpine/helm:3.16.4")
 }
 
 // RunPipeline orchestrates all pipeline steps
-func (m *Helm) RunPipeline(ctx context.Context, src *dagger.Directory, values *dagger.File) {
+func (m *Helm) RunPipeline(
+	ctx context.Context,
+	src *dagger.Directory,
+	values *dagger.File) {
+
+	// STAGE 0: DEPENDENCY UPDATE
+	fmt.Println("RUNNING CHART DEPENDENCY UPDATE...")
+	chartDirectory := m.DependencyUpdate(ctx, src)
 
 	// STAGE 0: LINT
 	fmt.Println("RUNNING CHART LINTING...")
-	lint, err := m.Lint(ctx, src)
+	lint, err := m.Lint(ctx, chartDirectory)
 	if err != nil {
 		fmt.Println("Error running linter: ", err)
 	}
@@ -52,22 +57,42 @@ func (m *Helm) RunPipeline(ctx context.Context, src *dagger.Directory, values *d
 
 	// STAGE 0: TEST-TEMPLATE
 	fmt.Println("RUNNING TEST-TEMPLATING OF CHART...")
-	templatedChart := m.Render(ctx, src, values)
+	templatedChart := m.Render(ctx, chartDirectory, values)
 	fmt.Println("TEMPLATED MANIFESTS: ", templatedChart)
 
 	// STAGE 1: PACKAGE CHART
 	fmt.Println("RUNNING CHART PACKAGING...")
-	packedChart := m.Package(ctx, src)
+	packedChart := m.Package(ctx, chartDirectory)
 	fmt.Println("PACKAGED CHART: ", packedChart)
 }
 
-// Lints a chart
-func (m *Helm) Lint(ctx context.Context, src *dagger.Directory) (string, error) {
+// DEPENDENCYUPDATE UPDATES THE DEPENDENCIES OF A CHART
+func (m *Helm) DependencyUpdate(
+	ctx context.Context,
+	src *dagger.Directory) *dagger.Directory {
+
+	projectDir := "/helm"
+
+	chartDir := m.HelmContainer.
+		WithDirectory(projectDir, src).
+		WithWorkdir(projectDir).
+		WithExec(
+			[]string{"helm", "dependency", "update"})
+
+	return chartDir.Directory(projectDir)
+}
+
+// LINTS A CHART
+func (m *Helm) Lint(
+	ctx context.Context,
+	src *dagger.Directory) (string, error) {
 	return dag.HelmDisaster37().Lint(ctx, src)
 }
 
-// Packages a chart into a versioned chart archive file (.tgz)
-func (m *Helm) Package(ctx context.Context, src *dagger.Directory) *dagger.File {
+// PACKAGES A CHART INTO A VERSIONED CHART ARCHIVE FILE (.tgz)
+func (m *Helm) Package(
+	ctx context.Context,
+	src *dagger.Directory) *dagger.File {
 	return dag.HelmOci().Package(src)
 }
 
@@ -114,7 +139,10 @@ func (m *Helm) Push(
 }
 
 // Renders a chart as Kubernetes manifests
-func (m *Helm) Render(ctx context.Context, chart *dagger.Directory, values *dagger.File) (templatedChart string) {
+func (m *Helm) Render(
+	ctx context.Context,
+	chart *dagger.Directory,
+	values *dagger.File) (templatedChart string) {
 
 	projectDir := "/project"
 	valuesFileName := "test-values.yaml"

@@ -36,12 +36,12 @@ tasks:
     desc: Test ansible modules
     cmds:
       - dagger call -m ./{{ .MODULE }} init-collection --src {{ .TEST_ANSIBLE_CODE }} --progress plain export --path={{ .OUTPUT_COLLECTION_FOLDER }}
-      - dagger call -m ./{{ .MODULE }} modify-role-includes --src {{ .OUTPUT_COLLECTION_FOLDER }}/{{ .NAMESPACE }}/{{ .NAME }} --progress plain export --path {{ .BUILD_DIR }}
-      - dagger call -m ./{{ .MODULE }} build --src {{ .BUILD_DIR }} --progress plain export --path={{ .OUTPUT_DIR }}
-      - ls -lta {{ .OUTPUT_DIR }}
+      #- dagger call -m ./{{ .MODULE }} modify-role-includes --src {{ .OUTPUT_COLLECTION_FOLDER }}/{{ .NAMESPACE }}/{{ .NAME }} --progress plain export --path {{ .BUILD_DIR }}
+      # - dagger call -m ./{{ .MODULE }} build --src {{ .BUILD_DIR }} --progress plain export --path={{ .OUTPUT_DIR }}
+      #- ls -lta {{ .OUTPUT_DIR }}
     vars:
       NAME: baseos #container
-      TEST_ANSIBLE_CODE: /home/sthings/projects/ansible/ansible/collections/{{ .NAME }} # tests/ansible/collection #tests
+      TEST_ANSIBLE_CODE: tests/ansible/collection # tests/ansible/collection #tests
       COLLECTION_TMP_DIR: /tmp/ansible/collections
       MODULE: ansible
       NAMESPACE: sthings
@@ -74,7 +74,7 @@ tasks:
       - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --progress plain || true
       - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
       # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
-      - dagger call -m ./{{ .MODULE }} ko-build --src /home/sthings/projects/golang/clusterbook/tests/client --token=env:GITHUB_TOKEN --repo "ghcr.io/stuttgart-things/clusterbook" --progress plain
+      #- dagger call -m ./{{ .MODULE }} ko-build --src /home/sthings/projects/golang/clusterbook/tests/client --token=env:GITHUB_TOKEN --repo "ghcr.io/stuttgart-things/clusterbook" --progress plain
     vars:
       MODULE: go
       TEST_GO_CODE: tests/calculator/
@@ -85,9 +85,9 @@ tasks:
     cmds:
       - dagger call -m {{ .MODULE }} lint --src {{ .TEST_CHART }} --progress plain
       - dagger call -m {{ .MODULE }} render --chart {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain
-      - dagger call -m {{ .MODULE }} package --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
+      #- dagger call -m {{ .MODULE }} package --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
       - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain
-      - dagger call -m {{ .MODULE }} push --src {{ .TEST_CHART }} --progress plain --username {{ .USERNAME }} --password=env:GITHUB_TOKEN --registry {{ .PACKAGE_REGISTRY }} --repository {{ .USERNAME }}
+      #- dagger call -m {{ .MODULE }} push --src {{ .TEST_CHART }} --progress plain --username {{ .USERNAME }} --password=env:GITHUB_TOKEN --registry {{ .PACKAGE_REGISTRY }} --repository {{ .USERNAME }}
     vars:
       MODULE: helm
       TEST_CHART: tests/test-chart/
