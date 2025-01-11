@@ -81,7 +81,7 @@ tasks:
   test-helm:
     desc: Test helm modules
     cmds:
-      - dagger call -m {{ .MODULE }} lint --src {{ .TEST_CHART }} --progress plain
+      - dagger call -m {{ .MODULE }} lint --chart {{ .TEST_CHART }} --progress plain
       - dagger call -m {{ .MODULE }} render --chart {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain
       #- dagger call -m {{ .MODULE }} package --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
       - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain

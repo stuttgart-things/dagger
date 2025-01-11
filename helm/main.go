@@ -85,9 +85,9 @@ func (m *Helm) DependencyUpdate(
 // LINTS A CHART
 func (m *Helm) Lint(
 	ctx context.Context,
-	src *dagger.Directory) (string, error) {
+	chart *dagger.Directory) (string, error) {
 
-	updatedChart := m.DependencyUpdate(ctx, src)
+	updatedChart := m.DependencyUpdate(ctx, chart)
 
 	return dag.HelmDisaster37().Lint(ctx, updatedChart)
 }
@@ -147,11 +147,13 @@ func (m *Helm) Render(
 	chart *dagger.Directory,
 	values *dagger.File) (templatedChart string) {
 
+	dependencyUpdatedChartDir := m.DependencyUpdate(ctx, chart)
+
 	projectDir := "/project"
 	valuesFileName := "test-values.yaml"
 
 	templatedChart, err := m.HelmContainer.
-		WithDirectory(projectDir, chart).
+		WithDirectory(projectDir, dependencyUpdatedChartDir).
 		WithFile(projectDir+"/"+valuesFileName, values).
 		WithWorkdir(projectDir).
 		WithExec(
