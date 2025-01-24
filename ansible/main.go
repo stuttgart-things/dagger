@@ -60,6 +60,18 @@ func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Di
 
 	buildCollection := m.Build(ctx, modifiedCollectionDir)
 
+	entries, err := buildCollection.Entries(ctx)
+	if err != nil {
+		fmt.Println("ERROR GETTING ENTRIES: ", err)
+	}
+
+	// Search for a .tgz file
+	for _, entry := range entries {
+		if strings.HasSuffix(entry, ".tar.gz") {
+			fmt.Println("Found .tgz file:", entry)
+		}
+	}
+
 	fmt.Println("BUILD COLLECTION: ", buildCollection)
 
 	// // MODIFY ROLE INCLUDES
