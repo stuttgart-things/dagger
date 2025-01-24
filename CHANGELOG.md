@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/stuttgart-things/dagger/compare/v0.1.4...v0.2.0) (2025-01-24)
+
+
+### Features
+
+* updated ansible module for gh release and orchestarate pipeline ([3713d00](https://github.com/stuttgart-things/dagger/commit/3713d0064680ab0593e531bf44edf53ebfe2ab7f))
+
 ## [0.1.4](https://github.com/stuttgart-things/dagger/compare/v0.1.3...v0.1.4) (2025-01-11)
 
 
