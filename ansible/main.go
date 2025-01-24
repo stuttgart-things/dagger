@@ -33,7 +33,7 @@ type Ansible struct {
 	AnsibleContainer *dagger.Container
 }
 
-// RunPipeline orchestrates running both Lint and Build steps
+// RunCollectionBuildPipeline orchestrates init, modify and build of an ansible collection
 func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
 
 	// INIT COLLECTION
@@ -43,16 +43,18 @@ func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Di
 	}
 	fmt.Println("Collection initialized with namespace:", collection.Namespace, "and name:", collection.Name)
 
+	// MODIFY COLLECTION
 	modifiedCollectionDir := m.ModifyRoleIncludes(ctx, collection.Directory.Directory(collection.Namespace+"/"+collection.Name))
 
+	// BUILD COLLECTION
 	buildCollection := m.Build(ctx, modifiedCollectionDir)
 
+	// SEARCH FOR BUILD ARTIFACT
 	entries, err := buildCollection.Entries(ctx)
 	if err != nil {
 		fmt.Println("ERROR GETTING ENTRIES: ", err)
 	}
 
-	// SEARCH FOR BUILD ARTIFACT
 	for _, entry := range entries {
 		if strings.HasSuffix(entry, ".tar.gz") {
 			fmt.Println("COLLECTION ARTIFACT", entry)

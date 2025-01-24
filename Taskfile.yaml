@@ -41,20 +41,13 @@ tasks:
   test-ansible:
     desc: Test ansible modules
     cmds:
-      - dagger call -m ./{{ .MODULE }} init-collection --src {{ .TEST_ANSIBLE_CODE }} --progress plain export --path={{ .OUTPUT_COLLECTION_FOLDER }}
-      #- dagger call -m ./{{ .MODULE }} modify-role-includes --src {{ .OUTPUT_COLLECTION_FOLDER }}/{{ .NAMESPACE }}/{{ .NAME }} --progress plain export --path {{ .BUILD_DIR }}
-      # - dagger call -m ./{{ .MODULE }} build --src {{ .BUILD_DIR }} --progress plain export --path={{ .OUTPUT_DIR }}
-      #- ls -lta {{ .OUTPUT_DIR }}
+      - dagger call -m ./{{ .MODULE }} run-collection-build-pipeline --src {{ .TEST_ANSIBLE_CODE }} --progress plain export --path={{ .OUTPUT_COLLECTION_FOLDER }}
+      - ls -lta {{ .OUTPUT_COLLECTION_FOLDER }}
     vars:
-      NAME: baseos #container
       TEST_ANSIBLE_CODE: tests/ansible/collection # tests/ansible/collection #tests
-      COLLECTION_TMP_DIR: /tmp/ansible/collections
       MODULE: ansible
-      NAMESPACE: sthings
-      OUTPUT_COLLECTION_FOLDER: "{{ .COLLECTION_TMP_DIR }}/{{ .NAME }}"
-      OUTPUT_COLLECTION_PACKAGE: "{{ .COLLECTION_TMP_DIR }}/{{ .NAME }}/package"
-      BUILD_DIR: "{{ .COLLECTION_TMP_DIR }}/build/"
-      OUTPUT_DIR: "{{ .COLLECTION_TMP_DIR }}/artifacts/"
+      OUTPUT_COLLECTION_FOLDER: /tmp/dagger/ansible
+
 
   test-crossplane:
     desc: Test crossplame modules
