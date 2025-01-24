@@ -7,6 +7,14 @@ vars:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
 
 tasks:
+  test:
+    desc: Select test to run
+    cmds:
+      - |
+        totest=$(gum choose "ansible" "go" "helm" "crossplane")
+        echo "Selected: ${totest}"
+        task test-${totest}
+
   release:
     desc: push new version
     cmds:

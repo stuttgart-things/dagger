@@ -1,6 +1,13 @@
 {
   "name": "ansible",
+  "engineVersion": "v0.13.3",
   "sdk": "go",
-  "source": ".",
-  "engineVersion": "v0.13.3"
+  "dependencies": [
+    {
+      "name": "gh",
+      "source": "github.com/sagikazarmark/daggerverse/gh@main",
+      "pin": "96c13b929c636316317f745ff36cda4e4c66f680"
+    }
+  ],
+  "source": "."
 }
