@@ -43,19 +43,6 @@ func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Di
 	}
 	fmt.Println("Collection initialized with namespace:", collection.Namespace, "and name:", collection.Name)
 
-	// initCollectionDir, nampespace, name := m.InitCollection(ctx, src)
-	// fmt.Println("NAMESPACE", nampespace)
-	// fmt.Println("NAME", name)
-
-	// LOOP OVER ALL FILES IN THE COLLECTION DIRECTORY
-	// files, err := initCollectionDir.Entries(ctx)
-	// if err != nil {
-	// 	fmt.Println("ERROR GETTING ENTRIES: ", err)
-	// }
-	// fmt.Println("ALL CREATED FILES: ", files)
-
-	// // MODIFY ROLE INCLUDES
-
 	modifiedCollectionDir := m.ModifyRoleIncludes(ctx, collection.Directory.Directory(collection.Namespace+"/"+collection.Name))
 
 	buildCollection := m.Build(ctx, modifiedCollectionDir)
@@ -65,20 +52,12 @@ func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Di
 		fmt.Println("ERROR GETTING ENTRIES: ", err)
 	}
 
-	// Search for a .tgz file
+	// SEARCH FOR BUILD ARTIFACT
 	for _, entry := range entries {
 		if strings.HasSuffix(entry, ".tar.gz") {
-			fmt.Println("Found .tgz file:", entry)
+			fmt.Println("COLLECTION ARTIFACT", entry)
 		}
 	}
-
-	fmt.Println("BUILD COLLECTION: ", buildCollection)
-
-	// // MODIFY ROLE INCLUDES
-	// src = m.ModifyRoleIncludes(ctx, src)
-
-	// // BUILD
-	// src = m.Build(ctx, src)
 
 	return buildCollection, nil
 
