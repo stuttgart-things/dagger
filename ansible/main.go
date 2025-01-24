@@ -23,6 +23,12 @@ var (
 	collectionWorkDir = "/collection"
 )
 
+type CollectionResult struct {
+	Directory *dagger.Directory
+	Namespace string
+	Name      string
+}
+
 type Ansible struct {
 	AnsibleContainer *dagger.Container
 }
@@ -31,14 +37,30 @@ type Ansible struct {
 func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
 
 	// INIT COLLECTION
-	src = m.InitCollection(ctx, src)
+	collection, err := m.InitCollection(ctx, src)
+	if err != nil {
+		fmt.Println("Failed to initialize collection: %v", err)
+	}
+	fmt.Println("Collection initialized with namespace:", collection.Namespace, "and name:", collection.Name)
+
+	// initCollectionDir, nampespace, name := m.InitCollection(ctx, src)
+	// fmt.Println("NAMESPACE", nampespace)
+	// fmt.Println("NAME", name)
 
 	// LOOP OVER ALL FILES IN THE COLLECTION DIRECTORY
-	files, err := src.Entries(ctx)
-	if err != nil {
-		fmt.Println("ERROR GETTING ENTRIES: ", err)
-	}
-	fmt.Println("ALL CREATED FILES: ", files)
+	// files, err := initCollectionDir.Entries(ctx)
+	// if err != nil {
+	// 	fmt.Println("ERROR GETTING ENTRIES: ", err)
+	// }
+	// fmt.Println("ALL CREATED FILES: ", files)
+
+	// // MODIFY ROLE INCLUDES
+
+	modifiedCollectionDir := m.ModifyRoleIncludes(ctx, collection.Directory.Directory(collection.Namespace+"/"+collection.Name))
+
+	buildCollection := m.Build(ctx, modifiedCollectionDir)
+
+	fmt.Println("BUILD COLLECTION: ", buildCollection)
 
 	// // MODIFY ROLE INCLUDES
 	// src = m.ModifyRoleIncludes(ctx, src)
@@ -46,8 +68,42 @@ func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Di
 	// // BUILD
 	// src = m.Build(ctx, src)
 
-	return src, nil
+	return buildCollection, nil
 
+}
+
+// BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
+func (m *Ansible) GithubRelease(
+	ctx context.Context,
+	tag string,
+	title string,
+	files []*dagger.File,
+	notes string,
+	token *dagger.Secret,
+) error {
+
+	releaseOptions := dagger.GhReleaseCreateOpts{
+		Repo:      "stuttgart-things/dagger",
+		VerifyTag: false,
+		Files:     files,
+		Token:     token,
+	}
+
+	// CREATE GITHUB RELEASE
+	err := dag.
+		Gh().
+		Release().
+		Create(
+			ctx,
+			tag,
+			title,
+			releaseOptions,
+		)
+	if err != nil {
+		return fmt.Errorf("failed to create GitHub release: %w", err)
+	}
+
+	return nil
 }
 
 // BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
@@ -104,7 +160,9 @@ func (m *Ansible) ModifyRoleIncludes(ctx context.Context, src *dagger.Directory)
 }
 
 // INIT ANSIBLE COLLECTION STRUCTURE
-func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+func (m *Ansible) InitCollection(
+	ctx context.Context,
+	src *dagger.Directory) (*CollectionResult, error) {
 
 	metaInformation := make(map[string]interface{})
 
@@ -168,7 +226,11 @@ func (m *Ansible) InitCollection(ctx context.Context, src *dagger.Directory) *da
 		ansible = ansible.WithExec([]string{"ansible-galaxy", "install", "-r", collectionContentDir + "/meta/collection-requirements.yaml", "-p", collectionContentDir + "/roles"})
 	}
 
-	return ansible.Directory(collectionWorkDir)
+	return &CollectionResult{
+		Directory: ansible.Directory(collectionWorkDir),
+		Namespace: metaInformation["namespace"].(string),
+		Name:      metaInformation["name"].(string),
+	}, nil
 }
 
 func New(
@@ -176,6 +238,8 @@ func New(
 	// It need contain ansible
 	// +optional
 	ansibleContainer *dagger.Container,
+	// +optional
+	githubContainer *dagger.Container,
 
 ) *Ansible {
 	ansible := &Ansible{}

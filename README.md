@@ -9,12 +9,16 @@ collection of dagger modules
 the idea of this module is to create versioned collection artifcat 'on the fly' -
 this module can work with a file structure like this:
 
-# EXAMPLE COLLECTION FILE
+### BUILD A GITHUB RELEASE FROM FILES
 
-```yaml
-
+```bash
+dagger call --progress plain -m ansible github-release \
+--token=env:GITHUB_TOKEN \
+--files "tests/test-values.yaml,tests/registry/README.md" \
+--notes "test" \
+--tag 09.1.6 \
+--title hello
 ```
-
 
 </details>
 
