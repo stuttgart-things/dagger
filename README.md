@@ -14,6 +14,8 @@ this module can work with a file structure like this:
 ```bash
 dagger call --progress plain -m ansible github-release \
 --token=env:GITHUB_TOKEN \
+--group stuttgart-things \
+--repo dagger  \
 --files "tests/test-values.yaml,tests/registry/README.md" \
 --notes "test" \
 --tag 09.1.6 \
