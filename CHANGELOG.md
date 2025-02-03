@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/stuttgart-things/dagger/compare/v0.2.0...v0.2.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* fix/update-ansible-release ([19a71a6](https://github.com/stuttgart-things/dagger/commit/19a71a6b97e31c389742bdc2c1bf9e53f031fad4))
+
 # [0.2.0](https://github.com/stuttgart-things/dagger/compare/v0.1.4...v0.2.0) (2025-01-24)
 
 
