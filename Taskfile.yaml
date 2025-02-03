@@ -118,12 +118,17 @@ tasks:
       - |
         git add *
         if [[ -n $(git status --porcelain) ]]; then
+          echo "committing changes"
           echo "ENTER COMMIT MESSAGE"
-          read COMMIT_MESSAGE;
-          echo "COMMITTING CHANGES"
+          COMMIT_MESSAGE=$(echo $(gum choose "feat: {{ .BRANCH }}" "fix: {{ .BRANCH }}" "BREAKING CHANGE: {{ .BRANCH }}" "ENTER CUSTOM COMMIT MESSAGE"))
+
+          if [ "$COMMIT_MESSAGE" == "ENTER CUSTOM COMMIT MESSAGE" ]; then
+            COMMIT_MESSAGE=$(echo $(gum input --placeholder "scope" --value "commit to {{ .BRANCH }}"))
+          fi
+
           git commit --allow-empty -a -m "$(echo ${COMMIT_MESSAGE})"
         else
-          echo "NO CHANGES"
+          echo "no changes"
         fi
         git push origin -u {{ .BRANCH }}
 
