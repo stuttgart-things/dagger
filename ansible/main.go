@@ -70,13 +70,15 @@ func (m *Ansible) GithubRelease(
 	ctx context.Context,
 	tag string,
 	title string,
+	group string,
+	repo string,
 	files []*dagger.File,
 	notes string,
 	token *dagger.Secret,
 ) error {
 
 	releaseOptions := dagger.GhReleaseCreateOpts{
-		Repo:      "stuttgart-things/dagger",
+		Repo:      group + "/" + repo,
 		VerifyTag: false,
 		Files:     files,
 		Token:     token,
