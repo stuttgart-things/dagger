@@ -9,6 +9,15 @@ collection of dagger modules
 the idea of this module is to create versioned collection artifcat 'on the fly' -
 this module can work with a file structure like this:
 
+### CREATE A COLLECTION PACKAGE
+
+```bash
+dagger call --progress plain -m ansible run-collection-build-pipeline \
+--src ansible/collections/baseos \
+--progress plain \
+export --path=/tmp/ansible/output/
+```
+
 ### BUILD A GITHUB RELEASE FROM FILES
 
 ```bash
