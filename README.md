@@ -6,6 +6,12 @@ collection of dagger modules.
 
 <details><summary><b>GOLANG</b></summary>
 
+### LINT PROJECT
+
+```bash
+dagger call -m "github.com/stuttgart-things/dagger/go@v0.2.1" lint --src "." --progress plain
+```
+
 </details>
 
 
