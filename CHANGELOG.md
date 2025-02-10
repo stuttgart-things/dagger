@@ -1,3 +1,12 @@
+## [0.2.2](https://github.com/stuttgart-things/dagger/compare/v0.2.1...v0.2.2) (2025-02-10)
+
+
+### Bug Fixes
+
+* fix/fix-timeout-for-go-lint ([c402d80](https://github.com/stuttgart-things/dagger/commit/c402d808f264271ac6291cc4bb8adb353b418e7f))
+* fix/fix-timeout-for-go-lint ([ab3474a](https://github.com/stuttgart-things/dagger/commit/ab3474a41b7a1dabbb7bfc08808fbf1fba55c3f0))
+* fix/update-readme ([41b083b](https://github.com/stuttgart-things/dagger/commit/41b083bbdfb7d0c73454841c697c17cfdf8ee280))
+
 ## [0.2.1](https://github.com/stuttgart-things/dagger/compare/v0.2.0...v0.2.1) (2025-02-03)
 
 
