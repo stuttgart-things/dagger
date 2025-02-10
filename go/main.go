@@ -24,9 +24,13 @@ func (m *Go) GetGoLangContainer(goVersion string) *dagger.Container {
 		From("golang:" + goVersion)
 }
 
-func (m *Go) GetKoContainer() *dagger.Container {
+func (m *Go) GetKoContainer(
+	// +optional
+	// +default="v0.17.1"
+	koVersion string,
+) *dagger.Container {
 	return dag.Container().
-		From("ghcr.io/ko-build/ko:v0.17.1")
+		From("ghcr.io/ko-build/ko:" + koVersion)
 }
 
 func New(
@@ -36,7 +40,9 @@ func New(
 	goLangContainer *dagger.Container,
 	// +optional
 	koContainer *dagger.Container,
-
+	// +optional
+	// +default="1.23.6"
+	goLangVersion string,
 	// +defaultPath="/"
 	src *dagger.Directory,
 
@@ -46,13 +52,13 @@ func New(
 	if goLangContainer != nil {
 		golang.GoLangContainer = goLangContainer
 	} else {
-		golang.GoLangContainer = golang.GetGoLangContainer("1.23.4")
+		golang.GoLangContainer = golang.GetGoLangContainer(goLangVersion)
 	}
 
 	if koContainer != nil {
 		golang.KoContainer = koContainer
 	} else {
-		golang.KoContainer = golang.GetKoContainer()
+		golang.KoContainer = golang.GetKoContainer("v0.17.1")
 	}
 
 	golang.Src = src
@@ -61,20 +67,36 @@ func New(
 }
 
 // Lint runs the linter on the provided source code
-func (m *Go) Lint(ctx context.Context, src *dagger.Directory) *dagger.Container {
-	return dag.GolangciLint().Run(src)
+func (m *Go) Lint(
+	ctx context.Context,
+	src *dagger.Directory,
+	// +optional
+	// +default="500s"
+	timeout string,
+) *dagger.Container {
+
+	golangciLintRunOpts := dagger.GolangciLintRunOpts{
+		Timeout: timeout,
+	}
+
+	return dag.GolangciLint().Run(src, golangciLintRunOpts)
 }
 
 // RunPipeline orchestrates running both Lint and Build steps
-func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory, goVersion string) (*dagger.Directory, error) {
-
-	if goVersion == "" {
-		goVersion = "1.23.4"
-	}
+func (m *Go) RunPipeline(
+	ctx context.Context,
+	src *dagger.Directory,
+	// +optional
+	// +default="1.23.6"
+	goVersion string,
+	// +optional
+	// +default="500s"
+	lintTimeout string,
+) (*dagger.Directory, error) {
 
 	// STAGE 0: LINT
 	fmt.Println("RUNNING LINTING...")
-	lintOutput, err := m.Lint(ctx, src).Stdout(ctx)
+	lintOutput, err := m.Lint(ctx, src, lintTimeout).Stdout(ctx)
 	if err != nil {
 		fmt.Println("ERROR RUNNING LINTER: ", err)
 	}
@@ -89,7 +111,9 @@ func (m *Go) RunPipeline(ctx context.Context, src *dagger.Directory, goVersion s
 }
 
 // Returns lines that match a pattern in the files of the provided Directory
-func (m *Go) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+func (m *Go) Build(
+	ctx context.Context,
+	src *dagger.Directory) *dagger.Directory {
 
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
 	golang := m.GoLangContainer.WithDirectory("/src", src).WithWorkdir("/src")
