@@ -1,8 +1,13 @@
 # stuttgart-things/dagger
 
-collection of dagger modules
+collection of dagger modules.
 
 ## MODULES
+
+<details><summary><b>GOLANG</b></summary>
+
+</details>
+
 
 <details><summary><b>ANSIBLE</b></summary>
 
