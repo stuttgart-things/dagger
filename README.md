@@ -9,7 +9,18 @@ collection of dagger modules.
 ### LINT PROJECT
 
 ```bash
-dagger call -m "github.com/stuttgart-things/dagger/go@v0.2.1" lint --src "." --progress plain
+dagger call -m \
+"github.com/stuttgart-things/dagger/go@v0.2.2" \
+lint --src "." --timeout 300s --progress plain
+```
+
+### BUILD PROJECT
+
+```bash
+dagger call -m \
+"github.com/stuttgart-things/dagger/go@v0.2.3" \
+build --src "." --os linux --arch amd64 --fileName main.go \
+export --path=/tmp/go/build/ --progress plain
 ```
 
 </details>

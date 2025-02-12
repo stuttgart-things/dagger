@@ -92,6 +92,15 @@ func (m *Go) RunPipeline(
 	// +optional
 	// +default="500s"
 	lintTimeout string,
+	// +optional
+	// +default="linux"
+	os string,
+	// +optional
+	// +default="amd64"
+	arch string,
+	// +optional
+	// +default="main.go"
+	fileName string,
 ) (*dagger.Directory, error) {
 
 	// STAGE 0: LINT
@@ -104,7 +113,7 @@ func (m *Go) RunPipeline(
 
 	// STAGE 1: BUILD SOURCE CODE
 	fmt.Println("RUNNING BUILD...")
-	buildOutput := m.Build(ctx, src)
+	buildOutput := m.Build(ctx, os, arch, fileName, src)
 
 	// Returning the build output
 	return buildOutput, nil
@@ -113,6 +122,15 @@ func (m *Go) RunPipeline(
 // Returns lines that match a pattern in the files of the provided Directory
 func (m *Go) Build(
 	ctx context.Context,
+	// +optional
+	// +default="linux"
+	os string,
+	// +optional
+	// +default="amd64"
+	arch string,
+	// +optional
+	// +default="main.go"
+	fileName string,
 	src *dagger.Directory) *dagger.Directory {
 
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
@@ -120,7 +138,16 @@ func (m *Go) Build(
 
 	// DEFINE THE APPLICATION BUILD COMMAND
 	path := "build/"
-	golang = golang.WithExec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", path, "./main.go"})
+	golang = golang.WithExec([]string{
+		"env",
+		"GOOS=" + os,
+		"GOARCH=" + arch,
+		"go",
+		"build",
+		"-o",
+		path,
+		fileName,
+	})
 
 	// GET REFERENCE TO BUILD OUTPUT DIRECTORY IN CONTAINER
 	outputDir := golang.Directory(path)
