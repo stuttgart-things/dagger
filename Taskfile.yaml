@@ -71,7 +71,7 @@ tasks:
     desc: Test go modules
     cmds:
       - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --timeout 300s --progress plain || true
-      - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
+      - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
       # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
       #- dagger call -m ./{{ .MODULE }} ko-build --src /home/sthings/projects/golang/clusterbook/tests/client --token=env:GITHUB_TOKEN --repo "ghcr.io/stuttgart-things/clusterbook" --progress plain
     vars:
