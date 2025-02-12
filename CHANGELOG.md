@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/stuttgart-things/dagger/compare/v0.2.3...v0.3.0) (2025-02-12)
+
+
+### Features
+
+* fix/add-bin-name-for-go-build ([159c2f8](https://github.com/stuttgart-things/dagger/commit/159c2f8f178b29acf9ed4864f4afc19c629de239))
+
 ## [0.2.3](https://github.com/stuttgart-things/dagger/compare/v0.2.2...v0.2.3) (2025-02-12)
 
 
