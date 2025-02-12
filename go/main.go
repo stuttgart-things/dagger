@@ -100,7 +100,10 @@ func (m *Go) RunPipeline(
 	arch string,
 	// +optional
 	// +default="main.go"
-	fileName string,
+	goMainFile string,
+	// +optional
+	// +default="main"
+	binName string,
 ) (*dagger.Directory, error) {
 
 	// STAGE 0: LINT
@@ -113,7 +116,7 @@ func (m *Go) RunPipeline(
 
 	// STAGE 1: BUILD SOURCE CODE
 	fmt.Println("RUNNING BUILD...")
-	buildOutput := m.Build(ctx, os, arch, fileName, src)
+	buildOutput := m.Build(ctx, goVersion, os, arch, goMainFile, binName, src)
 
 	// Returning the build output
 	return buildOutput, nil
@@ -123,6 +126,9 @@ func (m *Go) RunPipeline(
 func (m *Go) Build(
 	ctx context.Context,
 	// +optional
+	// +default="1.23.6"
+	goVersion string,
+	// +optional
 	// +default="linux"
 	os string,
 	// +optional
@@ -130,12 +136,22 @@ func (m *Go) Build(
 	arch string,
 	// +optional
 	// +default="main.go"
-	fileName string,
+	goMainFile string,
+	// +optional
+	// +default="main"
+	binName string,
 	src *dagger.Directory) *dagger.Directory {
 
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
-	golang := m.GoLangContainer.WithDirectory("/src", src).WithWorkdir("/src")
 
+	PrintDirectoryInfo(ctx, src)
+
+	golang := m.
+		GetGoLangContainer(goVersion).
+		WithDirectory("/src", src).
+		WithWorkdir("/src")
+
+	fmt.Println("DIR", src)
 	// DEFINE THE APPLICATION BUILD COMMAND
 	path := "build/"
 	golang = golang.WithExec([]string{
@@ -145,14 +161,37 @@ func (m *Go) Build(
 		"go",
 		"build",
 		"-o",
-		path,
-		fileName,
+		path + "/" + binName,
+		goMainFile,
 	})
 
 	// GET REFERENCE TO BUILD OUTPUT DIRECTORY IN CONTAINER
 	outputDir := golang.Directory(path)
 
 	return outputDir
+}
+
+func PrintDirectoryInfo(ctx context.Context, src *dagger.Directory) {
+	if src == nil {
+		fmt.Println("Directory is nil")
+		return
+	}
+
+	id, err := src.ID(ctx)
+	if err != nil {
+		fmt.Println("Error getting directory ID:", err)
+		return
+	}
+	fmt.Println("Dagger Directory ID:", id)
+
+	// List files inside the directory
+	entries, err := src.Entries(ctx)
+	if err != nil {
+		fmt.Println("Error retrieving directory entries:", err)
+		return
+	}
+
+	fmt.Println("Directory contains:", entries)
 }
 
 // Returns lines that match a pattern in the files of the provided Directory
