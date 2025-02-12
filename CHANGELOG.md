@@ -1,3 +1,10 @@
+## [0.2.3](https://github.com/stuttgart-things/dagger/compare/v0.2.2...v0.2.3) (2025-02-12)
+
+
+### Bug Fixes
+
+* fix/rework-go-build ([cadc061](https://github.com/stuttgart-things/dagger/commit/cadc0617025c7f35245e424692c09ae003f0ade9))
+
 ## [0.2.2](https://github.com/stuttgart-things/dagger/compare/v0.2.1...v0.2.2) (2025-02-10)
 
 
