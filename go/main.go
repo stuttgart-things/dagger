@@ -9,7 +9,9 @@ package main
 import (
 	"context"
 	"dagger/go/internal/dagger"
+	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 type Go struct {
@@ -98,6 +100,100 @@ func (m *Go) ScanTarBallImage(
 	}
 
 	return reportFile, nil
+}
+
+func (m *Go) KoBuildAndScan(
+	ctx context.Context,
+	src *dagger.Directory,
+	// +optional
+	// +default="GITHUB_TOKEN"
+	tokenName string,
+	token *dagger.Secret,
+	// +optional
+	// +default="ko.local"
+	repo string,
+	// +optional
+	// +default="."
+	buildArg string,
+	// +optional
+	// +default="v0.17.1"
+	koVersion string,
+	// +optional
+	// +default="true"
+	push string,
+	// +optional
+	// +default="HIGH,CRITICAL"
+	severityFilter string, // Comma-separated list of severities to filter (e.g., "HIGH,CRITICAL")
+) (string, error) {
+	// Step 1: Build the image using KoBuild
+	buildOutput := m.KoBuild(ctx, src, tokenName, token, repo, buildArg, koVersion, push)
+
+	// Step 2: Get the tarball from the build output
+	tarball := buildOutput.File("test.tar") // Adjust the path if necessary
+
+	// Step 3: Scan the tarball using Trivy
+	scanResult, err := m.ScanTarBallImage(ctx, tarball)
+	if err != nil {
+		return "", fmt.Errorf("error scanning image: %w", err)
+	}
+
+	// Step 4: Parse the Trivy scan report and search for vulnerabilities
+	vulnerabilities, err := m.SearchVulnerabilities(ctx, scanResult, severityFilter)
+	if err != nil {
+		return "", fmt.Errorf("error searching vulnerabilities: %w", err)
+	}
+
+	// Step 5: Return the vulnerabilities found
+	if len(vulnerabilities) > 0 {
+		return fmt.Sprintf("Found vulnerabilities: %v", vulnerabilities), nil
+	}
+
+	return "No vulnerabilities found.", nil
+}
+
+// SearchVulnerabilities parses the Trivy scan report and filters vulnerabilities by severity
+func (m *Go) SearchVulnerabilities(
+	ctx context.Context,
+	scanResult *dagger.File,
+	severityFilter string, // Comma-separated list of severities (e.g., "HIGH,CRITICAL")
+) ([]string, error) {
+	// Step 1: Read the scan result file
+	scanJSON, err := scanResult.Contents(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error reading scan result: %w", err)
+	}
+
+	// Step 2: Parse the JSON report
+	var report TrivyReport
+	if err := json.Unmarshal([]byte(scanJSON), &report); err != nil {
+		return nil, fmt.Errorf("error parsing scan report: %w", err)
+	}
+
+	// Step 3: Filter vulnerabilities by severity
+	severities := strings.Split(severityFilter, ",")
+	var vulnerabilities []string
+
+	for _, result := range report.Results {
+		for _, vulnerability := range result.Vulnerabilities {
+			for _, severity := range severities {
+				if strings.EqualFold(vulnerability.Severity, severity) {
+					vulnerabilities = append(vulnerabilities, vulnerability.VulnerabilityID)
+				}
+			}
+		}
+	}
+
+	return vulnerabilities, nil
+}
+
+// TrivyReport represents the structure of a Trivy JSON report
+type TrivyReport struct {
+	Results []struct {
+		Vulnerabilities []struct {
+			VulnerabilityID string `json:"VulnerabilityID"`
+			Severity        string `json:"Severity"`
+		} `json:"Vulnerabilities"`
+	} `json:"Results"`
 }
 
 // RunPipeline orchestrates running both Lint and Build steps
