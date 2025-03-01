@@ -82,6 +82,24 @@ func (m *Go) Lint(
 	return dag.GolangciLint().Run(src, golangciLintRunOpts)
 }
 
+// Lint runs the linter on the provided source code
+func (m *Go) ScanTarBallImage(
+	ctx context.Context,
+	file *dagger.File,
+) (*dagger.File, error) {
+	scans := []*dagger.TrivyScan{
+		dag.Trivy().ImageTarball(file),
+	}
+
+	// Grab the report as a file
+	reportFile, err := scans[0].Report("json").Sync(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error getting report: %w", err)
+	}
+
+	return reportFile, nil
+}
+
 // RunPipeline orchestrates running both Lint and Build steps
 func (m *Go) RunPipeline(
 	ctx context.Context,
@@ -208,25 +226,30 @@ func (m *Go) KoBuild(
 	// +optional
 	// +default="."
 	buildArg string,
-) (buildOutput string) {
+	// +optional
+	// +default="v0.17.1"
+	koVersion string,
+	// +optional
+	// +default="true"
+	push string,
+) *dagger.Directory {
 
 	srcDir := "/src"
-	// MOUNT CLONED REPOSITORY INTO `KO` IMAGE
-	ko := m.KoContainer.WithDirectory(srcDir, src).WithWorkdir(srcDir)
+
+	ko := m.
+		GetKoContainer(koVersion).
+		WithDirectory(srcDir, src).
+		WithWorkdir(srcDir)
 
 	// DEFINE THE APPLICATION BUILD COMMAND W/ KO
-	buildOutput, err := ko.
+	ko = ko.
 		WithEnvVariable("KO_DOCKER_REPO", repo).
 		WithSecretVariable(tokenName, token).
 		WithExec(
-			[]string{"ko", "build", buildArg},
-		).Stdout(ctx)
+			[]string{"ko", "build", "--push=" + push, buildArg},
+		)
 
-	if err != nil {
-		fmt.Println("ERROR RUNNING KO", err)
-	}
+	outputDir := ko.Directory(srcDir)
 
-	fmt.Println("BUILD IMAGE: ", buildOutput)
-
-	return buildOutput
+	return outputDir
 }

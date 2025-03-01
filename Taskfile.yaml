@@ -7,6 +7,31 @@ vars:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
 
 tasks:
+  tasks:
+    desc: Select a task to run
+    cmds:
+      - |
+        task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose)
+        task ${task}
+
+  switch-remote:
+    desc: Switch to remote branch
+    cmds:
+      - |
+        git fetch
+        branches=($(git branch -r | grep -v 'origin/HEAD' | sed 's|origin/||'))
+        branch=$(printf "%s\n" "${branches[@]}" | gum choose)
+        git switch -c ${branch} --track origin/${branch}
+        git branch && git status
+
+  switch-local:
+    desc: Switch to local branch
+    cmds:
+      - |
+        branches=$(git branch -a | grep -v 'remotes')
+        branch=$(printf "%s\n" "${branches[@]}" | gum choose)
+        git checkout ${branch} && git pull
+
   test:
     desc: Select test to run
     cmds:
@@ -19,7 +44,7 @@ tasks:
     desc: push new version
     cmds:
       - task: test-go
-      - task: test-helm
+      #- task: test-helm
       - task: test-ansible
       - task: pr
       - npx semantic-release --dry-run
@@ -48,7 +73,6 @@ tasks:
       MODULE: ansible
       OUTPUT_COLLECTION_FOLDER: /tmp/dagger/ansible
 
-
   test-crossplane:
     desc: Test crossplame modules
     cmds:
@@ -70,14 +94,20 @@ tasks:
   test-go:
     desc: Test go modules
     cmds:
-      - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --timeout 300s --progress plain || true
-      - dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
+      #- dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --timeout 300s --progress plain || true
+      #- dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
       # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
-      #- dagger call -m ./{{ .MODULE }} ko-build --src /home/sthings/projects/golang/clusterbook/tests/client --token=env:GITHUB_TOKEN --repo "ghcr.io/stuttgart-things/clusterbook" --progress plain
+      #- dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --progress plain --build-arg "--tarball={{ .TEST_IMG_TAR }}" --push false export --path={{ .OUTPUT_GO_DIR }}
+      - dagger call -m ./{{ .MODULE }} scan-tar-ball-image --file {{ .OUTPUT_GO_DIR }}/{{ .TEST_IMG_TAR }} --output {{ .OUTPUT_GO_DIR }}/report.json
+      #- dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --progress plain
     vars:
       MODULE: go
       TEST_GO_CODE: tests/calculator/
       OUTPUT_DIR: /tmp/calc
+      KO_REPO: ghcr.io/stuttgart-things/dagger
+      KO_VERSION: 3979dd70544adde24d336d5b605f4cf6f0ea9479
+      OUTPUT_GO_DIR: /tmp/go
+      TEST_IMG_TAR: test.tar
 
   test-helm:
     desc: Test helm modules

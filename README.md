@@ -25,7 +25,6 @@ export --path=/tmp/go/build/ --progress plain
 
 </details>
 
-
 <details><summary><b>ANSIBLE</b></summary>
 
 the idea of this module is to create versioned collection artifcat 'on the fly' -
@@ -67,16 +66,37 @@ dagger call -m github.com/stuttgart-things/dagger/helm@${VERSION} template --cha
 
 </details>
 
-## TASKS
+## DEV
+
+<details><summary>ALL TASKS</summary>
 
 ```bash
 task: Available tasks for this project:
-* branch:          Create branch from main
-* commit:          Commit + push code into branch
-* pr:              Create pull request into main
-* test-go:         Test go modules
-* test-helm:       Test helm modules
+* branch:                Create branch from main
+* check:                 Run pre-commit hooks
+* commit:                Commit + push code into branch
+* create:                Create new dagger module
+* pr:                    Create pull request into main
+* release:               push new version
+* switch-local:          Switch to local branch
+* switch-remote:         Switch to remote branch
+* tasks:                 Select a task to run
+* test:                  Select test to run
+* test-ansible:          Test ansible modules
+* test-crossplane:       Test crossplame modules
+* test-go:               Test go modules
+* test-helm:             Test helm modules
 ```
+
+</details>
+
+<details><summary>SELECT TASK</summary>
+
+```bash
+task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose) && task ${task}
+```
+
+</details>
 
 <details><summary><b>CREATE NEW MODULE</b></summary>
 
@@ -112,6 +132,9 @@ dagger init --sdk=go --source=./${MODULE} --name=${MODULE}
 
 ```bash
 dagger install github.com/purpleclay/daggerverse/golang@v0.5.0
+
+
+https://github.com/disaster37/dagger-library-go@v0.0.24
 ```
 
 </details>
