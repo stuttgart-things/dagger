@@ -1,3 +1,14 @@
+# [0.4.0](https://github.com/stuttgart-things/dagger/compare/v0.3.0...v0.4.0) (2025-03-01)
+
+
+### Features
+
+* feature/update-ko-build ([a45afcd](https://github.com/stuttgart-things/dagger/commit/a45afcd75c0a3afe9ac83f7edf87a65fe91a0543))
+* feature/update-ko-build ([3838b64](https://github.com/stuttgart-things/dagger/commit/3838b644fc937e3249e533f197f50984fe7fa19b))
+* feature/update-ko-build ([7beef2d](https://github.com/stuttgart-things/dagger/commit/7beef2dfb93873e5ff8810cbf68d293f6cc41665))
+* feature/update-ko-build ([d7bb166](https://github.com/stuttgart-things/dagger/commit/d7bb166b77e5446cd8eafb90c06ab300ca069491))
+* feature/update-ko-build ([b6770ed](https://github.com/stuttgart-things/dagger/commit/b6770edaf207d9adb85ad642c5a4538bc8f741ea))
+
 # [0.3.0](https://github.com/stuttgart-things/dagger/compare/v0.2.3...v0.3.0) (2025-02-12)
 
 
