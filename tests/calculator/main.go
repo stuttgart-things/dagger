@@ -27,8 +27,8 @@ func main() {
 	fmt.Print("Enter second number: ")
 	fmt.Scan(&b)
 
-	fmt.Println("Addition:", add(a, b))
-	fmt.Println("Subtraction:", Subtract(a, b))
-	fmt.Println("Multiplication:", multiply(a, b))
-	fmt.Println("Division:", Divide(a, b)) // potential runtime panic if b is zero
+	fmt.Println("ADDITION:", add(a, b))
+	fmt.Println("SUBTRACTION:", Subtract(a, b))
+	fmt.Println("MULTIPLICATION:", multiply(a, b))
+	fmt.Println("DIVISION:", Divide(a, b)) // potential runtime panic if b is zero
 }
