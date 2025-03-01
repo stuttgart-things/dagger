@@ -226,47 +226,7 @@ type TrivyReport struct {
 	} `json:"Results"`
 }
 
-// RunPipeline orchestrates running both Lint and Build steps
-func (m *Go) RunPipeline(
-	ctx context.Context,
-	src *dagger.Directory,
-	// +optional
-	// +default="1.23.6"
-	goVersion string,
-	// +optional
-	// +default="500s"
-	lintTimeout string,
-	// +optional
-	// +default="linux"
-	os string,
-	// +optional
-	// +default="amd64"
-	arch string,
-	// +optional
-	// +default="main.go"
-	goMainFile string,
-	// +optional
-	// +default="main"
-	binName string,
-) (*dagger.Directory, error) {
-
-	// STAGE 0: LINT
-	fmt.Println("RUNNING LINTING...")
-	lintOutput, err := m.Lint(ctx, src, lintTimeout).Stdout(ctx)
-	if err != nil {
-		fmt.Println("ERROR RUNNING LINTER: ", err)
-	}
-	fmt.Print("LINT RESULT: ", "\n"+lintOutput)
-
-	// STAGE 1: BUILD SOURCE CODE
-	fmt.Println("RUNNING BUILD...")
-	buildOutput := m.Build(ctx, goVersion, os, arch, goMainFile, binName, src)
-
-	// Returning the build output
-	return buildOutput, nil
-}
-
-func (m *Go) RunWorkflow(
+func (m *Go) RunWorkflowEntryStage(
 	ctx context.Context,
 	src *dagger.Directory,
 	// +optional
