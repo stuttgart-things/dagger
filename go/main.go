@@ -12,12 +12,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 )
 
 type Go struct {
 	Src             *dagger.Directory
 	GoLangContainer *dagger.Container
 	KoContainer     *dagger.Container
+}
+
+type WorkflowResult struct {
+	LintOutput  string            // Output from the lint step
+	BuildOutput *dagger.Directory // Output from the build step
+}
+
+type WorkflowStats struct {
+	Lint struct {
+		Duration string   `json:"duration"`
+		Findings []string `json:"findings"`
+	} `json:"lint"`
+	Build struct {
+		Duration   string `json:"duration"`
+		BinarySize string `json:"binarySize"`
+	} `json:"build"`
+	Test struct {
+		Duration string `json:"duration"`
+		Coverage string `json:"coverage"`
+	} `json:"test"`
+	TotalDuration string `json:"totalDuration"` // Total duration of the workflow
 }
 
 // GetGoLangContainer return the default image for golang
@@ -236,6 +258,131 @@ func (m *Go) RunPipeline(
 	return buildOutput, nil
 }
 
+func (m *Go) RunWorkflow(
+	ctx context.Context,
+	src *dagger.Directory,
+	// +optional
+	// +default="500s"
+	lintTimeout string,
+	// +optional
+	// +default="1.23.6"
+	goVersion string,
+	// +optional
+	// +default="linux"
+	os string,
+	// +optional
+	// +default="amd64"
+	arch string,
+	// +optional
+	// +default="main.go"
+	goMainFile string,
+	// +optional
+	// +default="main.go"
+	binName string,
+	// +optional
+	// +default="false"
+	lintCanFail bool, // If true, linting can fail without stopping the workflow
+	// +optional
+	// +default="./..."
+	testArg string, // Arguments for `go test`
+) (*dagger.File, error) {
+	// Create a struct to hold the statistics
+	stats := WorkflowStats{}
+
+	// Start timing the workflow
+	startTime := time.Now()
+
+	// Create a channel to collect errors from goroutines
+	errChan := make(chan error, 3) // Buffer size of 3 for lint, build, and test errors
+
+	// Run Lint step in a goroutine
+	go func() {
+		lintStart := time.Now()
+		lintOutput, err := m.Lint(ctx, src, lintTimeout).Stdout(ctx)
+		if err != nil {
+			if !lintCanFail {
+				errChan <- fmt.Errorf("error running lint: %w", err)
+				return
+			}
+			// If lintCanFail is true, log the error but continue
+			stats.Lint.Findings = []string{fmt.Sprintf("Linting failed: %v", err)}
+		} else {
+			stats.Lint.Findings = strings.Split(lintOutput, "\n") // Split lint output into findings
+		}
+		stats.Lint.Duration = time.Since(lintStart).String()
+		errChan <- nil
+	}()
+
+	// Run Build step in a goroutine
+	go func() {
+		buildStart := time.Now()
+		buildOutput := m.Build(ctx, goVersion, os, arch, goMainFile, binName, src)
+		stats.Build.Duration = time.Since(buildStart).String()
+
+		// Calculate binary size
+		binaryPath := binName
+		binarySize, err := buildOutput.File(binaryPath).Size(ctx)
+		if err != nil {
+			errChan <- fmt.Errorf("error getting binary size: %w", err)
+			return
+		}
+		stats.Build.BinarySize = fmt.Sprintf("%d bytes", binarySize)
+		errChan <- nil
+	}()
+
+	// Run Test step in a goroutine
+	go func() {
+		testStart := time.Now()
+		testOutput, err := m.Test(ctx, src, "1.23.2", "./...")
+		if err != nil {
+			errChan <- fmt.Errorf("error running tests: %w", err)
+			return
+		}
+		stats.Test.Duration = time.Since(testStart).String()
+
+		// Extract coverage from test output
+		coverage := extractCoverage(testOutput)
+		stats.Test.Coverage = coverage
+		errChan <- nil
+	}()
+
+	// Wait for all goroutines to complete
+	for i := 0; i < 3; i++ {
+		if err := <-errChan; err != nil {
+			return nil, err
+		}
+	}
+
+	// Track total workflow duration
+	stats.TotalDuration = time.Since(startTime).String()
+
+	// Generate JSON file with statistics
+	statsJSON, err := json.MarshalIndent(stats, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("error generating stats JSON: %w", err)
+	}
+
+	// Write JSON to a file in the container
+	statsFile := dag.Directory().
+		WithNewFile("workflow-stats.json", string(statsJSON)).
+		File("workflow-stats.json")
+
+	// Return the stats file
+	return statsFile, nil
+}
+
+// Helper function to extract coverage from test output
+func extractCoverage(testOutput string) string {
+	// Look for a line like "coverage: 75.0% of statements"
+	lines := strings.Split(testOutput, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "coverage:") {
+			return strings.TrimSpace(line)
+		}
+	}
+	return "coverage: unknown"
+}
+
 // Returns lines that match a pattern in the files of the provided Directory
 func (m *Go) Build(
 	ctx context.Context,
@@ -348,4 +495,29 @@ func (m *Go) KoBuild(
 	outputDir := ko.Directory(srcDir)
 
 	return outputDir
+}
+
+func (m *Go) Test(
+	ctx context.Context,
+	src *dagger.Directory,
+	goVersion string, // Go version to use for testing
+	// +optional
+	// +default="./..."
+	testArg string, // Arguments for `go test`
+) (string, error) {
+	// Create a container with the specified Go version
+	container := dag.Container().
+		From(fmt.Sprintf("golang:%s", goVersion)). // Use the specified Go version
+		WithDirectory("/src", src).
+		WithWorkdir("/src")
+
+	// Run Go tests with coverage
+	output, err := container.
+		WithExec([]string{"go", "test", "-cover", testArg}).
+		Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error running tests: %w", err)
+	}
+
+	return output, nil
 }
