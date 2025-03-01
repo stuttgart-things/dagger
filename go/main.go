@@ -39,6 +39,14 @@ type WorkflowStats struct {
 		Duration string `json:"duration"`
 		Coverage string `json:"coverage"`
 	} `json:"test"`
+	SecurityScan struct {
+		Duration string   `json:"duration"`
+		Findings []string `json:"findings"`
+	} `json:"securityScan"`
+	TrivyScan struct {
+		Duration string   `json:"duration"`
+		Findings []string `json:"findings"`
+	} `json:"trivyScan"`
 	TotalDuration string `json:"totalDuration"` // Total duration of the workflow
 }
 
@@ -277,7 +285,7 @@ func (m *Go) RunWorkflow(
 	// +default="main.go"
 	goMainFile string,
 	// +optional
-	// +default="main.go"
+	// +default="main"
 	binName string,
 	// +optional
 	// +default="false"
@@ -285,6 +293,12 @@ func (m *Go) RunWorkflow(
 	// +optional
 	// +default="./..."
 	testArg string, // Arguments for `go test`
+	// +optional
+	// +default="false"
+	securityScanCanFail bool, // If true, security scan can fail without stopping the workflow
+	// +optional
+	// +default="false"
+	trivyScanCanFail bool, // If true, Trivy scan can fail without stopping the workflow
 ) (*dagger.File, error) {
 	// Create a struct to hold the statistics
 	stats := WorkflowStats{}
@@ -293,7 +307,7 @@ func (m *Go) RunWorkflow(
 	startTime := time.Now()
 
 	// Create a channel to collect errors from goroutines
-	errChan := make(chan error, 3) // Buffer size of 3 for lint, build, and test errors
+	errChan := make(chan error, 5) // Buffer size of 5 for lint, build, test, security scan, and Trivy scan
 
 	// Run Lint step in a goroutine
 	go func() {
@@ -333,7 +347,7 @@ func (m *Go) RunWorkflow(
 	// Run Test step in a goroutine
 	go func() {
 		testStart := time.Now()
-		testOutput, err := m.Test(ctx, src, "1.23.2", "./...")
+		testOutput, err := m.Test(ctx, src, goVersion, testArg)
 		if err != nil {
 			errChan <- fmt.Errorf("error running tests: %w", err)
 			return
@@ -346,8 +360,44 @@ func (m *Go) RunWorkflow(
 		errChan <- nil
 	}()
 
+	// Run Security Scan step in a goroutine
+	go func() {
+		securityScanStart := time.Now()
+		securityScanOutput, err := m.SecurityScan(ctx, src)
+		if err != nil {
+			if !securityScanCanFail {
+				errChan <- fmt.Errorf("error running security scan: %w", err)
+				return
+			}
+			// If securityScanCanFail is true, log the error but continue
+			stats.SecurityScan.Findings = []string{fmt.Sprintf("Security scan failed: %v", err)}
+		} else {
+			stats.SecurityScan.Findings = strings.Split(securityScanOutput, "\n") // Split security scan output into findings
+		}
+		stats.SecurityScan.Duration = time.Since(securityScanStart).String()
+		errChan <- nil
+	}()
+
+	// Run Trivy Scan step in a goroutine
+	go func() {
+		trivyScanStart := time.Now()
+		trivyScanOutput, err := m.TrivyScan(ctx, src)
+		if err != nil {
+			if !trivyScanCanFail {
+				errChan <- fmt.Errorf("error running Trivy scan: %w", err)
+				return
+			}
+			// If trivyScanCanFail is true, log the error but continue
+			stats.TrivyScan.Findings = []string{fmt.Sprintf("Trivy scan failed: %v", err)}
+		} else {
+			stats.TrivyScan.Findings = strings.Split(trivyScanOutput, "\n") // Split Trivy scan output into findings
+		}
+		stats.TrivyScan.Duration = time.Since(trivyScanStart).String()
+		errChan <- nil
+	}()
+
 	// Wait for all goroutines to complete
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		if err := <-errChan; err != nil {
 			return nil, err
 		}
@@ -517,6 +567,48 @@ func (m *Go) Test(
 		Stdout(ctx)
 	if err != nil {
 		return "", fmt.Errorf("error running tests: %w", err)
+	}
+
+	return output, nil
+}
+
+func (m *Go) TrivyScan(
+	ctx context.Context,
+	src *dagger.Directory,
+) (string, error) {
+	// Create a container with Trivy installed
+	container := dag.Container().
+		From("aquasec/trivy:latest"). // Use the official Trivy image
+		WithDirectory("/src", src).
+		WithWorkdir("/src")
+
+	// Run Trivy to scan the source folder
+	output, err := container.
+		WithExec([]string{"trivy", "fs", "--severity", "HIGH,CRITICAL", "/src"}).
+		Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error running Trivy: %w", err)
+	}
+
+	return output, nil
+}
+
+func (m *Go) SecurityScan(
+	ctx context.Context,
+	src *dagger.Directory,
+) (string, error) {
+	// Create a container with gosec installed
+	container := dag.Container().
+		From("securego/gosec:latest"). // Use the official gosec image
+		WithDirectory("/src", src).
+		WithWorkdir("/src")
+
+	// Run gosec to scan the source code
+	output, err := container.
+		WithExec([]string{"gosec", "./..."}).
+		Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error running gosec: %w", err)
 	}
 
 	return output, nil
