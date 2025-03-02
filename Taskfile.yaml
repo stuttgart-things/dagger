@@ -98,7 +98,6 @@ tasks:
       #- dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
       # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
       #- dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --progress plain --build-arg "--tarball={{ .TEST_IMG_TAR }}" --push false export --path={{ .OUTPUT_GO_DIR }}
-
       - dagger call -m ./{{ .MODULE }} security-scan --src {{ .TEST_GO_CODE }} --progress plain
       - dagger call -m ./{{ .MODULE }} scan-tar-ball-image --file {{ .OUTPUT_GO_DIR }}/{{ .TEST_IMG_TAR }} --output {{ .OUTPUT_GO_DIR }}/report.json
       - dagger call -m ./go/ ko-build-and-scan --src tests/calculator/ --token=env:GITHUB_TOKEN --token-name GITHUB_TOKEN --repo ghcr.io/stuttgart-things/dagger --build-arg "--tarball=test.tar" --ko-version 3979dd70544adde24d336d5b605f4cf6f0ea9479 --push false --output /tmp/report2.json
