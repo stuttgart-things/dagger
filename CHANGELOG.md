@@ -1,3 +1,10 @@
+## [0.4.3](https://github.com/stuttgart-things/dagger/compare/v0.4.2...v0.4.3) (2025-03-02)
+
+
+### Bug Fixes
+
+* fix/docker-build ([979a662](https://github.com/stuttgart-things/dagger/commit/979a662e53ae6d8bcae19c9736f7610bf613f409))
+
 ## [0.4.2](https://github.com/stuttgart-things/dagger/compare/v0.4.1...v0.4.2) (2025-03-02)
 
 
