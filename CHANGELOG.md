@@ -1,3 +1,10 @@
+## [0.4.4](https://github.com/stuttgart-things/dagger/compare/v0.4.3...v0.4.4) (2025-03-02)
+
+
+### Bug Fixes
+
+* fix/fix-go-build ([d6b4e61](https://github.com/stuttgart-things/dagger/commit/d6b4e61cdff938b74462515f7f6ad6cc0d1c6b95))
+
 ## [0.4.3](https://github.com/stuttgart-things/dagger/compare/v0.4.2...v0.4.3) (2025-03-02)
 
 
