@@ -153,15 +153,8 @@ func (m *Go) RunWorkflowEntryStage(
 	// Run Build step in a goroutine
 	go func() {
 		buildStart := time.Now()
-		buildOpts := GoBuildOpts{
-			GoVersion:  goVersion,  // Go version
-			OS:         os,         // OS
-			Arch:       arch,       // Architecture
-			GoMainFile: goMainFile, // Main Go file
-			BinName:    binName,    // Binary name
-		}
 
-		buildOutput := m.Build(ctx, src, buildOpts)
+		buildOutput := m.Binary(ctx, src, goVersion, os, arch, goMainFile, binName)
 		stats.Build.Duration = time.Since(buildStart).String()
 
 		// Calculate binary size
@@ -367,10 +360,10 @@ func (m *Go) SearchVulnerabilities(
 	return vulnerabilities, nil
 }
 
-func (m *Go) Build(
+func (m *Go) build(
 	ctx context.Context,
 	src *dagger.Directory,
-	opts GoBuildOpts, // Use a struct for parameters
+	opts GoBuildOpts, // Use the struct for parameters
 ) *dagger.Directory {
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
 	golang := m.
@@ -396,6 +389,44 @@ func (m *Go) Build(
 	outputDir := golang.Directory(path)
 
 	return outputDir
+}
+
+func (m *Go) Binary(
+	ctx context.Context,
+	src *dagger.Directory,
+	// +optional
+	// +default="1.23.6"
+	goVersion string,
+	// +optional
+	// +default="linux"
+	os string,
+	// +optional
+	// +default="amd64"
+	arch string,
+	// +optional
+	// +default="main.go"
+	goMainFile string,
+	// +optional
+	// +default="main"
+	binName string,
+) *dagger.Directory {
+	// Call the core build function with the struct
+	return m.build(ctx, src, GoBuildOpts{
+		GoVersion:  goVersion,
+		OS:         os,
+		Arch:       arch,
+		GoMainFile: goMainFile,
+		BinName:    binName,
+	})
+}
+
+func (m *Go) Build(
+	ctx context.Context,
+	src *dagger.Directory,
+	opts GoBuildOpts, // Use the struct for parameters
+) *dagger.Directory {
+	// Call the core build function
+	return m.build(ctx, src, opts)
 }
 
 func (m *Go) KoBuild(

@@ -95,7 +95,7 @@ tasks:
     desc: Test go modules
     cmds:
       #- dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --timeout 300s --progress plain || true
-      #- dagger call -m ./{{ .MODULE }} build --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
+      - dagger call -m ./{{ .MODULE }} binary --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
       # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
       #- dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --progress plain --build-arg "--tarball={{ .TEST_IMG_TAR }}" --push false export --path={{ .OUTPUT_GO_DIR }}
       - dagger call -m ./{{ .MODULE }} security-scan --src {{ .TEST_GO_CODE }} --progress plain

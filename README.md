@@ -18,8 +18,8 @@ lint --src "." --timeout 300s --progress plain
 
 ```bash
 dagger call -m \
-"github.com/stuttgart-things/dagger/go@v0.2.4" \
-build --src "." --os linux --arch amd64 --goMainFile main.go --binName calc \
+"github.com/stuttgart-things/dagger/go@v0.4.4" \
+binary --src "." --os linux --arch amd64 --goMainFile main.go --binName calc \
 export --path=/tmp/go/build/ --progress plain
 ```
 
