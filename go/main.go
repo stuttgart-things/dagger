@@ -2,8 +2,6 @@
 Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
 */
 
-// https://github.com/dagger/dagger/pull/5833/files#diff-42807a87b4d8f4c8adb3861609de1a2a6a6158cf11b00b9b1b342c0a23f1bc03
-
 package main
 
 import (
@@ -25,11 +23,12 @@ type Go struct {
 }
 
 type GoBuildOpts struct {
-	GoVersion  string // +optional +default="1.23.6"
-	OS         string // +optional +default="linux"
-	Arch       string // +optional +default="amd64"
-	GoMainFile string // +optional +default="main.go"
-	BinName    string // +optional +default="main"
+	GoVersion  string
+	Os         string
+	Arch       string
+	GoMainFile string
+	BinName    string
+	Ldflags    string // Add this field for linker flags
 }
 
 // GetGoLangContainer returns the default image for golang
@@ -102,6 +101,8 @@ func (m *Go) RunWorkflowEntryStage(
 	// +default="main"
 	binName string,
 	// +optional
+	ldflags string,
+	// +optional
 	// +default="2.22.1"
 	secureGoVersion string,
 	// +optional
@@ -154,7 +155,7 @@ func (m *Go) RunWorkflowEntryStage(
 	go func() {
 		buildStart := time.Now()
 
-		buildOutput := m.Binary(ctx, src, goVersion, os, arch, goMainFile, binName)
+		buildOutput := m.Binary(ctx, src, goVersion, os, arch, goMainFile, binName, ldflags)
 		stats.Build.Duration = time.Since(buildStart).String()
 
 		// Calculate binary size
@@ -372,25 +373,35 @@ func (m *Go) build(
 		WithWorkdir("/src")
 
 	fmt.Println("DIR", src)
+
 	// DEFINE THE APPLICATION BUILD COMMAND
 	path := "build/"
-	golang = golang.WithExec([]string{
+	buildCmd := []string{
 		"env",
-		"GOOS=" + opts.OS,
+		"GOOS=" + opts.Os,
 		"GOARCH=" + opts.Arch,
 		"go",
 		"build",
 		"-o",
 		path + "/" + opts.BinName,
-		opts.GoMainFile,
-	})
+	}
+
+	// Add ldflags if provided
+	if opts.Ldflags != "" {
+		buildCmd = append(buildCmd, "-ldflags", opts.Ldflags)
+	}
+
+	// Add the main Go file to the build command
+	buildCmd = append(buildCmd, opts.GoMainFile)
+
+	// Execute the build command
+	golang = golang.WithExec(buildCmd)
 
 	// GET REFERENCE TO BUILD OUTPUT DIRECTORY IN CONTAINER
 	outputDir := golang.Directory(path)
 
 	return outputDir
 }
-
 func (m *Go) Binary(
 	ctx context.Context,
 	src *dagger.Directory,
@@ -409,14 +420,17 @@ func (m *Go) Binary(
 	// +optional
 	// +default="main"
 	binName string,
+	// +optional
+	ldflags string, // Add ldflags as an optional parameter
 ) *dagger.Directory {
 	// Call the core build function with the struct
 	return m.build(ctx, src, GoBuildOpts{
 		GoVersion:  goVersion,
-		OS:         os,
+		Os:         os,
 		Arch:       arch,
 		GoMainFile: goMainFile,
 		BinName:    binName,
+		Ldflags:    ldflags, // Pass ldflags to the build function
 	})
 }
 
