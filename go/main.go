@@ -305,25 +305,25 @@ func (m *Go) KoBuildAndScan(
 	// +default="HIGH,CRITICAL"
 	severityFilter string, // Comma-separated list of severities to filter (e.g., "HIGH,CRITICAL")
 ) (string, error) {
-	// Step 1: Build the image using KoBuild
-	buildOutput := m.KoBuild(ctx, src, tokenName, token, repo, buildArg, koVersion, push)
-
-	// Step 2: Get the tarball from the build output
-	tarball := buildOutput.File("test.tar") // Adjust the path if necessary
-
-	// Step 3: Scan the tarball using Trivy
-	scanResult, err := m.ScanTarBallImage(ctx, tarball)
+	// Step 1: Build the image using KoBuild and push it to the remote registry
+	imageAddress, err := m.KoBuild(ctx, src, tokenName, token, repo, buildArg, koVersion, push)
 	if err != nil {
-		return "", fmt.Errorf("error scanning image: %w", err)
+		return "", fmt.Errorf("error building and pushing image: %w", err)
 	}
 
-	// Step 4: Parse the Trivy scan report and search for vulnerabilities
+	// Step 2: Scan the remote image using Trivy
+	scanResult, err := m.ScanRemoteImage(ctx, imageAddress, severityFilter)
+	if err != nil {
+		return "", fmt.Errorf("error scanning remote image: %w", err)
+	}
+
+	// Step 3: Parse the Trivy scan report and search for vulnerabilities
 	vulnerabilities, err := m.SearchVulnerabilities(ctx, scanResult, severityFilter)
 	if err != nil {
 		return "", fmt.Errorf("error searching vulnerabilities: %w", err)
 	}
 
-	// Step 5: Return the vulnerabilities found
+	// Step 4: Return the vulnerabilities found
 	if len(vulnerabilities) > 0 {
 		return fmt.Sprintf("Found vulnerabilities: %v", vulnerabilities), nil
 	}
@@ -334,32 +334,17 @@ func (m *Go) KoBuildAndScan(
 // SearchVulnerabilities parses the Trivy scan report and filters vulnerabilities by severity
 func (m *Go) SearchVulnerabilities(
 	ctx context.Context,
-	scanResult *dagger.File,
-	severityFilter string, // Comma-separated list of severities (e.g., "HIGH,CRITICAL")
+	scanOutput string, // The scan output as a string
+	severityFilter string, // Comma-separated list of severities to filter (e.g., "HIGH,CRITICAL")
 ) ([]string, error) {
-	// Step 1: Read the scan result file
-	scanJSON, err := scanResult.Contents(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error reading scan result: %w", err)
-	}
-
-	// Step 2: Parse the JSON report
-	var report security.TrivyReport
-	if err := json.Unmarshal([]byte(scanJSON), &report); err != nil {
-		return nil, fmt.Errorf("error parsing scan report: %w", err)
-	}
-
-	// Step 3: Filter vulnerabilities by severity
-	severities := strings.Split(severityFilter, ",")
+	// Parse the scan output and filter vulnerabilities by severity
 	var vulnerabilities []string
 
-	for _, result := range report.Results {
-		for _, vulnerability := range result.Vulnerabilities {
-			for _, severity := range severities {
-				if strings.EqualFold(vulnerability.Severity, severity) {
-					vulnerabilities = append(vulnerabilities, vulnerability.VulnerabilityID)
-				}
-			}
+	// Example: Split the scan output into lines and filter by severity
+	lines := strings.Split(scanOutput, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, severityFilter) {
+			vulnerabilities = append(vulnerabilities, line)
 		}
 	}
 
@@ -412,7 +397,6 @@ func (m *Go) Build(
 	return outputDir
 }
 
-// Returns lines that match a pattern in the files of the provided Directory
 func (m *Go) KoBuild(
 	ctx context.Context,
 	src *dagger.Directory,
@@ -432,8 +416,7 @@ func (m *Go) KoBuild(
 	// +optional
 	// +default="true"
 	push string,
-) *dagger.Directory {
-
+) (string, error) {
 	srcDir := "/src"
 
 	ko := m.
@@ -442,16 +425,20 @@ func (m *Go) KoBuild(
 		WithWorkdir(srcDir)
 
 	// DEFINE THE APPLICATION BUILD COMMAND W/ KO
-	ko = ko.
+	output, err := ko.
 		WithEnvVariable("KO_DOCKER_REPO", repo).
 		WithSecretVariable(tokenName, token).
 		WithExec(
 			[]string{"ko", "build", "--push=" + push, buildArg},
-		)
+		).
+		Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error running ko build: %w", err)
+	}
 
-	outputDir := ko.Directory(srcDir)
-
-	return outputDir
+	// Extract the image address from the output
+	imageAddress := strings.TrimSpace(output)
+	return imageAddress, nil
 }
 
 func (m *Go) Test(
@@ -530,4 +517,67 @@ func (m *Go) SecurityScan(
 
 	// Return the security report file
 	return reportFile, nil
+}
+
+func (m *Go) RunWorkflowContainerStage(
+	ctx context.Context,
+	src *dagger.Directory,
+	// +optional
+	// +default="GITHUB_TOKEN"
+	tokenName string,
+	token *dagger.Secret,
+	// +optional
+	// +default="ko.local"
+	repo string,
+	// +optional
+	// +default="."
+	buildArg string,
+	// +optional
+	// +default="v0.17.1"
+	koVersion string,
+	// +optional
+	// +default="true"
+	push string,
+	// +optional
+	// +default="HIGH,CRITICAL"
+	severityFilter string, // Comma-separated list of severities to filter (e.g., "HIGH,CRITICAL")
+) (string, error) {
+	// Step 1: Build the image with ko and scan it for vulnerabilities
+	scanResult, err := m.KoBuildAndScan(ctx, src, tokenName, token, repo, buildArg, koVersion, push, severityFilter)
+	if err != nil {
+		return "", fmt.Errorf("error during KoBuildAndScan: %w", err)
+	}
+
+	// Step 2: Check if vulnerabilities were found
+	if strings.Contains(scanResult, "Found vulnerabilities:") {
+		return scanResult, nil // Return the vulnerabilities found
+	}
+
+	// Step 3: If no vulnerabilities were found, build and push the image to the remote registry
+	imageAddress, err := m.KoBuild(ctx, src, tokenName, token, repo, buildArg, koVersion, push)
+	if err != nil {
+		return "", fmt.Errorf("error building and pushing image: %w", err)
+	}
+
+	// Step 4: Return the image address
+	return fmt.Sprintf("Image built and pushed successfully: %s", imageAddress), nil
+}
+
+func (m *Go) ScanRemoteImage(
+	ctx context.Context,
+	imageAddress string, // Remote image address (e.g., "ko.local/my-image:latest")
+	severityFilter string, // Comma-separated list of severities to filter (e.g., "HIGH,CRITICAL")
+) (string, error) {
+	// Create a container with Trivy installed
+	container := dag.Container().
+		From("aquasec/trivy:latest"). // Use the official Trivy image
+		WithExec([]string{"trivy", "image", "--severity", severityFilter, imageAddress})
+
+	// Capture the scan output
+	output, err := container.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error running Trivy scan: %w", err)
+	}
+
+	return output, nil
 }
