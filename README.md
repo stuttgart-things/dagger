@@ -23,6 +23,18 @@ build --src "." --os linux --arch amd64 --goMainFile main.go --binName calc \
 export --path=/tmp/go/build/ --progress plain
 ```
 
+### RUN-WORKFLOW-CONTAINER-STAGE
+
+```bash
+dagger call -m \
+github.com/stuttgart-things/dagger/go@v0.4.2 \
+run-workflow-container-stage --src tests/calculator/ \
+--token=env:GITHUB_TOKEN --token-name GITHUB_TOKEN \
+--repo ghcr.io/stuttgart-things/dagger \
+--ko-version 3979dd70544adde24d336d5b605f4cf6f0ea9479 \
+--output /tmp/calc-image.report.json --progress plain
+```
+
 </details>
 
 <details><summary><b>ANSIBLE</b></summary>
