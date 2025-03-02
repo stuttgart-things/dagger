@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/stuttgart-things/dagger/compare/v0.4.0...v0.4.1) (2025-03-02)
+
+
+### Bug Fixes
+
+* fix/update-sec-scan ([9a35e6d](https://github.com/stuttgart-things/dagger/commit/9a35e6d634c640f1d4e8ba1b6f76ea3a1a97cf6e))
+
 # [0.4.0](https://github.com/stuttgart-things/dagger/compare/v0.3.0...v0.4.0) (2025-03-01)
 
 
