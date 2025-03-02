@@ -24,6 +24,14 @@ type Go struct {
 	KoContainer     *dagger.Container
 }
 
+type GoBuildOpts struct {
+	GoVersion  string // +optional +default="1.23.6"
+	OS         string // +optional +default="linux"
+	Arch       string // +optional +default="amd64"
+	GoMainFile string // +optional +default="main.go"
+	BinName    string // +optional +default="main"
+}
+
 // GetGoLangContainer returns the default image for golang
 func (m *Go) GetGoLangContainer(goVersion string) *dagger.Container {
 	return dag.Container().
@@ -145,7 +153,15 @@ func (m *Go) RunWorkflowEntryStage(
 	// Run Build step in a goroutine
 	go func() {
 		buildStart := time.Now()
-		buildOutput := m.Build(ctx, goVersion, os, arch, goMainFile, binName, src)
+		buildOpts := GoBuildOpts{
+			GoVersion:  goVersion,  // Go version
+			OS:         os,         // OS
+			Arch:       arch,       // Architecture
+			GoMainFile: goMainFile, // Main Go file
+			BinName:    binName,    // Binary name
+		}
+
+		buildOutput := m.Build(ctx, src, buildOpts)
 		stats.Build.Duration = time.Since(buildStart).String()
 
 		// Calculate binary size
@@ -351,29 +367,14 @@ func (m *Go) SearchVulnerabilities(
 	return vulnerabilities, nil
 }
 
-// Returns lines that match a pattern in the files of the provided Directory
 func (m *Go) Build(
 	ctx context.Context,
-	// +optional
-	// +default="1.23.6"
-	goVersion string,
-	// +optional
-	// +default="linux"
-	os string,
-	// +optional
-	// +default="amd64"
-	arch string,
-	// +optional
-	// +default="main.go"
-	goMainFile string,
-	// +optional
-	// +default="main"
-	binName string,
-	src *dagger.Directory) *dagger.Directory {
-
+	src *dagger.Directory,
+	opts GoBuildOpts, // Use a struct for parameters
+) *dagger.Directory {
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
 	golang := m.
-		GetGoLangContainer(goVersion).
+		GetGoLangContainer(opts.GoVersion).
 		WithDirectory("/src", src).
 		WithWorkdir("/src")
 
@@ -382,13 +383,13 @@ func (m *Go) Build(
 	path := "build/"
 	golang = golang.WithExec([]string{
 		"env",
-		"GOOS=" + os,
-		"GOARCH=" + arch,
+		"GOOS=" + opts.OS,
+		"GOARCH=" + opts.Arch,
 		"go",
 		"build",
 		"-o",
-		path + "/" + binName,
-		goMainFile,
+		path + "/" + opts.BinName,
+		opts.GoMainFile,
 	})
 
 	// GET REFERENCE TO BUILD OUTPUT DIRECTORY IN CONTAINER
