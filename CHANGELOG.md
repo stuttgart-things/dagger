@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/stuttgart-things/dagger/compare/v0.4.4...v0.5.0) (2025-03-02)
+
+
+### Features
+
+* fix/add-ldflg-for-build ([6686520](https://github.com/stuttgart-things/dagger/commit/668652097b1ba889ace0bc726987f27cdd9dba61))
+
 ## [0.4.4](https://github.com/stuttgart-things/dagger/compare/v0.4.3...v0.4.4) (2025-03-02)
 
 
