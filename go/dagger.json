@@ -6,6 +6,11 @@
   },
   "dependencies": [
     {
+      "name": "docker",
+      "source": "github.com/purpleclay/daggerverse/docker@docker/v0.6.0",
+      "pin": "2a439e2b327ff561bea05a4edddd5276ac42407f"
+    },
+    {
       "name": "golangci-lint",
       "source": "github.com/sagikazarmark/daggerverse/golangci-lint@b45dbd7448bb967aca4a538af9ce7f042abf0316",
       "pin": "b45dbd7448bb967aca4a538af9ce7f042abf0316"
