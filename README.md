@@ -10,17 +10,18 @@ collection of dagger modules.
 
 ```bash
 dagger call -m \
-./docker trivy-scan \
+github.com/stuttgart-things/dagger/docker@v0.6.0 \
+trivy-scan \
 --image-ref nginx:latest \
 --progress plain
 ```
-
 
 ### BUILD + PUSH TEMPORARY IMAGE w/o AUTH
 
 ```bash
 dagger call -m \
-./docker build-and-push \
+github.com/stuttgart-things/dagger/docker@v0.6.0 \
+build-and-push \
 --source images/sthings-alpine \
 --repository-name stuttgart-things/alpine \
 --registry-url ttl.sh \

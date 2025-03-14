@@ -76,6 +76,7 @@ func (m *Docker) GetTrivyContainer() *dagger.Container {
 	return dag.Container().
 		From("aquasec/trivy:0.60.0")
 }
+
 func (m *Docker) BuildAndPush(
 	ctx context.Context,
 	// The source directory
@@ -167,8 +168,8 @@ func (m *Docker) BuildAndPush(
 		// Construct the fully qualified image reference
 		imageRef := fmt.Sprintf("%s/%s:%s", registryUrl, repositoryName, version)
 
-		// Run Trivy scan on the image reference
-		trivyOutput, err := m.TrivyScan(ctx, imageRef)
+		// Run Trivy scan on the image reference with registry authentication
+		trivyOutput, err := m.TrivyScan(ctx, imageRef, withRegistryUsername, withRegistryPassword)
 		if err != nil {
 			errChan <- fmt.Errorf("Trivy scan failed: %w", err)
 			trivyResultChan <- trivyOutput // Send Trivy output even if there's an error
