@@ -1,3 +1,12 @@
+# [0.6.0](https://github.com/stuttgart-things/dagger/compare/v0.5.0...v0.6.0) (2025-03-14)
+
+
+### Features
+
+* feature/add-image-build ([8f735ea](https://github.com/stuttgart-things/dagger/commit/8f735ea8122db1d3b3f63d12c5c6d9be17a4c8a2))
+* feature/add-image-build ([7b71c98](https://github.com/stuttgart-things/dagger/commit/7b71c98c59e01df9383db96e0fe0d5cd23d5abe3))
+* feature/add-image-build ([286b7c2](https://github.com/stuttgart-things/dagger/commit/286b7c23bb0caa96a627a145b653105bc88d69e1))
+
 # [0.5.0](https://github.com/stuttgart-things/dagger/compare/v0.4.4...v0.5.0) (2025-03-02)
 
 
