@@ -4,6 +4,35 @@ collection of dagger modules.
 
 ## MODULES
 
+<details><summary><b>DOCKER</b></summary>
+
+### BUILD + PUSH TEMPORARY IMAGE w/o AUTH
+
+```bash
+dagger call -m \
+./docker build-and-push \
+--source images/sthings-alpine \
+--repository-name stuttgart-things/alpine \
+--registry-url ttl.sh \
+--version 1h
+```
+
+### BUILD + PUSH IMAGE w/ AUTH
+
+```bash
+dagger call -m \
+./docker build-and-push \
+--source tests/docker \
+--registry-url ghcr.io \
+--repository-name stuttgart-things/sthings-alpine \
+--version 1.10 \
+--with-registry-username=env:USER \
+--with-registry-password=env:PASSWORD
+```
+
+</details>
+
+
 <details><summary><b>GOLANG</b></summary>
 
 ### LINT PROJECT
@@ -195,6 +224,8 @@ limitations under the License.
 
 </details>
 
+```yaml
 Author Information
 ------------------
 Patrick Hermann, stuttgart-things 11/2024
+```
