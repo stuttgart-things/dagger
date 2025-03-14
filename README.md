@@ -6,6 +6,16 @@ collection of dagger modules.
 
 <details><summary><b>DOCKER</b></summary>
 
+### SCAN IMAGE
+
+```bash
+dagger call -m \
+./docker trivy-scan \
+--image-ref nginx:latest \
+--progress plain
+```
+
+
 ### BUILD + PUSH TEMPORARY IMAGE w/o AUTH
 
 ```bash
@@ -14,7 +24,8 @@ dagger call -m \
 --source images/sthings-alpine \
 --repository-name stuttgart-things/alpine \
 --registry-url ttl.sh \
---version 1h
+--version 1h \
+--progress plain
 ```
 
 ### BUILD + PUSH IMAGE w/ AUTH
@@ -27,11 +38,11 @@ dagger call -m \
 --repository-name stuttgart-things/sthings-alpine \
 --version 1.10 \
 --with-registry-username=env:USER \
---with-registry-password=env:PASSWORD
+--with-registry-password=env:PASSWORD \
+--progress plain
 ```
 
 </details>
-
 
 <details><summary><b>GOLANG</b></summary>
 

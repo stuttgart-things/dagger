@@ -7,7 +7,7 @@ vars:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
 
 tasks:
-  tasks:
+  do:
     desc: Select a task to run
     cmds:
       - |
@@ -46,6 +46,7 @@ tasks:
       - task: test-go
       #- task: test-helm
       - task: test-ansible
+      - task: test-docker
       - task: pr
       - npx semantic-release --dry-run
       - npx semantic-release --debug --no-ci
@@ -99,7 +100,7 @@ tasks:
       # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
       #- dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --progress plain --build-arg "--tarball={{ .TEST_IMG_TAR }}" --push false export --path={{ .OUTPUT_GO_DIR }}
       - dagger call -m ./{{ .MODULE }} security-scan --src {{ .TEST_GO_CODE }} --progress plain
-      - dagger call -m ./{{ .MODULE }} scan-tar-ball-image --file {{ .OUTPUT_GO_DIR }}/{{ .TEST_IMG_TAR }} --output {{ .OUTPUT_GO_DIR }}/report.json
+      #- dagger call -m ./{{ .MODULE }} scan-tar-ball-image --file {{ .OUTPUT_GO_DIR }}/{{ .TEST_IMG_TAR }} --output {{ .OUTPUT_GO_DIR }}/report.json
       - dagger call -m ./go/ ko-build-and-scan --src tests/calculator/ --token=env:GITHUB_TOKEN --token-name GITHUB_TOKEN --repo ghcr.io/stuttgart-things/dagger --build-arg "--tarball=test.tar" --ko-version 3979dd70544adde24d336d5b605f4cf6f0ea9479 --push false --output /tmp/report2.json
       - dagger call -m ./{{ .MODULE }} run-workflow-entry-stage --src {{ .TEST_GO_CODE }} --lint-can-fail=true --security-scan-can-fail=true --trivy-scan-can-fail=true export --path {{ .WORKFLOW_REPORT }} --progress plain
     vars:
@@ -127,6 +128,24 @@ tasks:
       TEST_VALUES: tests/test-values.yaml
       PACKAGE_REGISTRY: ghcr.io
       USERNAME: stuttgart-things
+
+  test-docker:
+    desc: Test docker module
+    cmds:
+      - |
+        dagger call -m {{ .MODULE }} \
+        build-and-push \
+        --source {{ .SOURCE }} \
+        --repository-name {{ .REPOSITORY_NAME }} \
+        --registry-url {{ .REGISTRY_URL }} \
+        --version {{ .VERSION }} \
+        --progress plain
+    vars:
+      MODULE: docker
+      SOURCE: tests/docker/
+      REPOSITORY_NAME: stuttgart-things/nginx-dagger
+      REGISTRY_URL: ttl.sh
+      VERSION: 1h
 
   branch:
     desc: Create branch from main
