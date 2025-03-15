@@ -1,3 +1,10 @@
+## [0.6.2](https://github.com/stuttgart-things/dagger/compare/v0.6.1...v0.6.2) (2025-03-15)
+
+
+### Bug Fixes
+
+* fix/trivy-reg-login ([38e2fab](https://github.com/stuttgart-things/dagger/commit/38e2fabe00711080ce54035cf1c6383a00d89079))
+
 ## [0.6.1](https://github.com/stuttgart-things/dagger/compare/v0.6.0...v0.6.1) (2025-03-14)
 
 
