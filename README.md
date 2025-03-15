@@ -10,7 +10,7 @@ collection of dagger modules.
 
 ```bash
 dagger call -m \
-github.com/stuttgart-things/dagger/docker@v0.6.0 \
+github.com/stuttgart-things/dagger/docker@v0.6.2 \
 trivy-scan \
 --image-ref nginx:latest \
 --progress plain
@@ -20,7 +20,7 @@ trivy-scan \
 
 ```bash
 dagger call -m \
-github.com/stuttgart-things/dagger/docker@v0.6.0 \
+github.com/stuttgart-things/dagger/docker@v0.6.2 \
 build-and-push \
 --source images/sthings-alpine \
 --repository-name stuttgart-things/alpine \
@@ -33,7 +33,8 @@ build-and-push \
 
 ```bash
 dagger call -m \
-./docker build-and-push \
+github.com/stuttgart-things/dagger/docker@v0.6.2 \
+build-and-push \
 --source tests/docker \
 --registry-url ghcr.io \
 --repository-name stuttgart-things/sthings-alpine \
