@@ -10,8 +10,6 @@ import (
 	reg "dagger/crossplane/registry"
 	"dagger/crossplane/templates"
 	"fmt"
-
-	"dagger.io/dagger/dag"
 )
 
 type Crossplane struct {
