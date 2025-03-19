@@ -1,3 +1,10 @@
+## [0.6.3](https://github.com/stuttgart-things/dagger/compare/v0.6.2...v0.6.3) (2025-03-19)
+
+
+### Bug Fixes
+
+* fix/crossplane-push ([b4f8236](https://github.com/stuttgart-things/dagger/commit/b4f823676f227bc22fc1073181c1d5de97ad8ff5))
+
 ## [0.6.2](https://github.com/stuttgart-things/dagger/compare/v0.6.1...v0.6.2) (2025-03-15)
 
 
