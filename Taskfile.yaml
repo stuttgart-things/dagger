@@ -95,23 +95,23 @@ tasks:
   test-go:
     desc: Test go modules
     cmds:
-      #- dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --timeout 300s --progress plain || true
+      - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --timeout 300s --progress plain || true
       - dagger call -m ./{{ .MODULE }} binary --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
-      # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
-      #- dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --progress plain --build-arg "--tarball={{ .TEST_IMG_TAR }}" --push false export --path={{ .OUTPUT_GO_DIR }}
+      - dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --push true --progress plain
       - dagger call -m ./{{ .MODULE }} security-scan --src {{ .TEST_GO_CODE }} --progress plain
-      #- dagger call -m ./{{ .MODULE }} scan-tar-ball-image --file {{ .OUTPUT_GO_DIR }}/{{ .TEST_IMG_TAR }} --output {{ .OUTPUT_GO_DIR }}/report.json
-      - dagger call -m ./go/ ko-build-and-scan --src tests/calculator/ --token=env:GITHUB_TOKEN --token-name GITHUB_TOKEN --repo ghcr.io/stuttgart-things/dagger --build-arg "--tarball=test.tar" --ko-version 3979dd70544adde24d336d5b605f4cf6f0ea9479 --push false --output /tmp/report2.json
-      - dagger call -m ./{{ .MODULE }} run-workflow-entry-stage --src {{ .TEST_GO_CODE }} --lint-can-fail=true --security-scan-can-fail=true --trivy-scan-can-fail=true export --path {{ .WORKFLOW_REPORT }} --progress plain
+      - dagger call -m ./go/ ko-build-and-scan --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --token-name GITHUB_TOKEN --repo {{ .KO_REPO }} --ko-version {{ .KO_VERSION }} --push true --output /tmp/report2.json
+      # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
+      #- dagger call -m ./{{ .MODULE }} run-workflow-entry-stage --src {{ .TEST_GO_CODE }} --lint-can-fail=true --security-scan-can-fail=true --trivy-scan-can-fail=true export --path {{ .WORKFLOW_REPORT }} --progress plain
     vars:
       MODULE: go
       TEST_GO_CODE: tests/calculator/
       OUTPUT_DIR: /tmp/calc
-      KO_REPO: ghcr.io/stuttgart-things/dagger
+      KO_REPO: ttl.sh #ghcr.io/stuttgart-things/dagger
       KO_VERSION: 3979dd70544adde24d336d5b605f4cf6f0ea9479
       OUTPUT_GO_DIR: /tmp/go
-      TEST_IMG_TAR: test.tar
+      #TEST_IMG_TAR: test.tar
       WORKFLOW_REPORT: /tmp/workflow.json
+
 
   test-helm:
     desc: Test helm modules
