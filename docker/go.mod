@@ -1,6 +1,6 @@
 module dagger/docker
 
-go 1.24.0
+go 1.23.6
 
 require (
 	emperror.dev/errors v0.8.1
