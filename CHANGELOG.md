@@ -1,3 +1,11 @@
+## [0.6.4](https://github.com/stuttgart-things/dagger/compare/v0.6.3...v0.6.4) (2025-03-23)
+
+
+### Bug Fixes
+
+* fix/docker-push-build ([6224a48](https://github.com/stuttgart-things/dagger/commit/6224a4867d9297fba0d3d0594c60e2fc2c3ce4f3))
+* fix/go-trivy-build ([7be1d79](https://github.com/stuttgart-things/dagger/commit/7be1d79de1288c8305a0f5a17039ac0de73b54fe))
+
 ## [0.6.3](https://github.com/stuttgart-things/dagger/compare/v0.6.2...v0.6.3) (2025-03-19)
 
 
