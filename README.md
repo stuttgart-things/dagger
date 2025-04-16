@@ -4,6 +4,22 @@ collection of dagger modules.
 
 ## MODULES
 
+<details><summary><b>CRANE</b></summary>
+
+```bash
+# WILL BE CHANGED BUT OK FOR NOW
+dagger call -m crane copy \
+--username admin \
+--password env:PASSWORD \
+--progress plain \
+--platform linux/amd64 \
+--source redis:latest \
+--target harbor.example.com/test/redis \
+--registry harbor.example.com
+```
+
+</details>
+
 <details><summary><b>DOCKER</b></summary>
 
 ### SCAN IMAGE
