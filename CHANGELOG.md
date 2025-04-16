@@ -1,3 +1,11 @@
+# [0.7.0](https://github.com/stuttgart-things/dagger/compare/v0.6.4...v0.7.0) (2025-04-16)
+
+
+### Features
+
+* feat/add-crane ([adec8c9](https://github.com/stuttgart-things/dagger/commit/adec8c9ea73ab76576b5bbb77406c47e1891554f))
+* feat/add-crane ([74198e8](https://github.com/stuttgart-things/dagger/commit/74198e8e26031d8271935347b9933da4de82f295))
+
 ## [0.6.4](https://github.com/stuttgart-things/dagger/compare/v0.6.3...v0.6.4) (2025-03-23)
 
 
