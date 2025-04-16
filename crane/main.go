@@ -1,17 +1,3 @@
-// A generated module for Crane functions
-//
-// This module has been generated via dagger init and serves as a reference to
-// basic module structure as you get started with Dagger.
-//
-// Two functions have been pre-created. You can modify, delete, or add to them,
-// as needed. They demonstrate usage of arguments and return types using simple
-// echo and grep commands. The functions can be called from the dagger CLI or
-// from one of the SDKs.
-//
-// The first line in this comment block is a short description line and the
-// rest is a long description with more detail on the module's purpose or usage,
-// if appropriate. All modules should have a short description.
-
 package main
 
 import (
@@ -42,6 +28,10 @@ type Crane struct {
 	// +optional
 	Registry string
 
+	// Image platform
+	// +optional
+	Platform string
+
 	// Username for registry authentication
 	// +optional
 	Username string
@@ -58,6 +48,8 @@ func New(
 	version string,
 	// +optional
 	insecure bool,
+	// +default="linux/amd64"
+	platform string,
 	// +optional
 	registry string,
 	// +optional
@@ -69,18 +61,35 @@ func New(
 		BaseImage: baseImage,
 		Version:   version,
 		Insecure:  insecure,
+		Platform:  platform,
 		Registry:  registry,
 		Username:  username,
 		Password:  password,
 	}
 }
 
-func (m *Crane) Test(
+func (m *Crane) Copy(
 	ctx context.Context,
 	password *dagger.Secret,
+	// +optional
+	// +default="cgr.dev/chainguard/wolfi-base"
+	craneBaseImagePath string,
+	// +optional
+	// +default="latest"
+	craneBaseImageTag string,
+	// +optional
+	// +default=true
+	insecure bool,
+	source string,
+	target string,
+	registry string,
+	username string,
+	// +optional
+	// +default="linux/amd64"
+	platform string,
 ) {
-	crane := New("cgr.dev/chainguard/wolfi-base:latest", "latest", true, "harbor.fluxdev-3.sthings-vsphere.labul.sva.de", "admin", password)
-	output, err := crane.CopyImage(ctx, "redis:latest", "harbor.fluxdev-3.sthings-vsphere.labul.sva.de/test/redis")
+	crane := New(craneBaseImagePath, craneBaseImageTag, insecure, platform, registry, username, password)
+	output, err := crane.CopyImage(ctx, source, target)
 	fmt.Println("Output:", output)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -143,7 +152,7 @@ func (m *Crane) CopyImage(
 	}
 
 	// Debug command that will be executed
-	cmd := []string{"crane", "copy"}
+	cmd := []string{"crane", "copy", "--platform", m.Platform}
 	if m.Insecure {
 		cmd = append(cmd, "--insecure")
 	}
