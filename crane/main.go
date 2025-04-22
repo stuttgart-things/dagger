@@ -19,180 +19,180 @@ type Crane struct {
 	// +optional
 	// +default="latest"
 	Version string
+}
 
-	// Allow insecure registry connections
-	// +optional
-	Insecure bool
-
-	// Registry to authenticate to
-	// +optional
-	Registry string
-
-	// Image platform
-	// +optional
-	Platform string
-
-	// Username for registry authentication
-	// +optional
+// RegistryAuth contains authentication details for a registry
+type RegistryAuth struct {
+	URL      string
 	Username string
-
-	// Password for registry authentication
-	// +optional
 	Password *dagger.Secret
 }
 
-func New(
-	// +optional
-	baseImage string,
-	// +optional
-	version string,
-	// +optional
-	insecure bool,
-	// +default="linux/amd64"
-	platform string,
-	// +optional
-	registry string,
-	// +optional
-	username string,
-	// +optional
-	password *dagger.Secret,
-) *Crane {
-	return &Crane{
-		BaseImage: baseImage,
-		Version:   version,
-		Insecure:  insecure,
-		Platform:  platform,
-		Registry:  registry,
-		Username:  username,
-		Password:  password,
-	}
-}
-
+// Copy copies an image between registries with authentication
+// This is the primary function that will be called from the CLI
+// +call
 func (m *Crane) Copy(
 	ctx context.Context,
-	password *dagger.Secret,
-	// +optional
-	// +default="cgr.dev/chainguard/wolfi-base"
-	craneBaseImagePath string,
-	// +optional
-	// +default="latest"
-	craneBaseImageTag string,
-	// +optional
-	// +default=true
-	insecure bool,
+	// Source image reference (e.g., "harbor.example.com/test/redis:latest")
 	source string,
+	// Target image reference (e.g., "ghcr.io/test/redis")
 	target string,
-	registry string,
-	username string,
+	// Source registry URL (extracted from source if empty)
 	// +optional
+	sourceRegistry string,
+	// Username for source registry
+	// +optional
+	sourceUsername string,
+	// Password for source registry
+	// +optional
+	sourcePassword *dagger.Secret,
+	// Target registry URL (extracted from target if empty)
+	// +optional
+	targetRegistry string,
+	// Username for target registry
+	// +optional
+	targetUsername string,
+	// Password for target registry
+	// +optional
+	targetPassword *dagger.Secret,
+	// Allow insecure registry connections
+	// +optional
+	// +flag
+	// +default=false
+	insecure bool,
+	// Image platform
+	// +optional
+	// +flag
 	// +default="linux/amd64"
 	platform string,
-) {
-	crane := New(craneBaseImagePath, craneBaseImageTag, insecure, platform, registry, username, password)
-	output, err := crane.CopyImage(ctx, source, target)
-	fmt.Println("Output:", output)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
+) (string, error) {
+	if platform == "" {
+		platform = "linux/amd64"
 	}
-	fmt.Println("Copy successful")
+
+	// If registry URLs weren't provided explicitly, extract them from image references
+	if sourceRegistry == "" {
+		sourceRegistry = extractRegistry(source)
+	}
+	if targetRegistry == "" {
+		targetRegistry = extractRegistry(target)
+	}
+
+	// Set up auth configurations
+	var sourceAuth, targetAuth *RegistryAuth
+
+	if sourceRegistry != "" && sourceUsername != "" && sourcePassword != nil {
+		sourceAuth = &RegistryAuth{
+			URL:      sourceRegistry,
+			Username: sourceUsername,
+			Password: sourcePassword,
+		}
+	}
+
+	if targetRegistry != "" && targetUsername != "" && targetPassword != nil {
+		targetAuth = &RegistryAuth{
+			URL:      targetRegistry,
+			Username: targetUsername,
+			Password: targetPassword,
+		}
+	}
+
+	return m.copyImage(ctx, source, target, sourceAuth, targetAuth, insecure, platform)
 }
 
-// Container returns a Wolfi-based container with Crane CLI installed
-func (w *Crane) Container() *dagger.Container {
-	// Start from Wolfi base image
-	ctr := dag.Container().From(w.BaseImage)
+// Helper function to extract registry from image reference
+func extractRegistry(imageRef string) string {
+	parts := strings.Split(imageRef, "/")
+	if len(parts) > 1 && (strings.Contains(parts[0], ".") || strings.Contains(parts[0], ":")) {
+		return parts[0]
+	}
+	return ""
+}
 
-	// Determine package to install
-	pkg := "crane"
-	if w.Version != "latest" {
-		pkg = fmt.Sprintf("crane-%s", w.Version)
+// Internal function that performs the actual copy operation
+func (m *Crane) copyImage(
+	ctx context.Context,
+	source string,
+	target string,
+	sourceAuth *RegistryAuth,
+	targetAuth *RegistryAuth,
+	insecure bool,
+	platform string,
+) (string, error) {
+	ctr := m.container(insecure)
+
+	// Authenticate with source registry if needed
+	if sourceAuth != nil {
+		ctr = authenticate(ctr, sourceAuth, insecure)
 	}
 
-	// Install crane using apk (Wolfi's package manager)
-	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache", pkg})
+	// Authenticate with target registry if needed
+	if targetAuth != nil {
+		ctr = authenticate(ctr, targetAuth, insecure)
+	}
 
-	// Set crane as entrypoint
+	// Build copy command
+	cmd := []string{"crane", "copy", "--platform", platform}
+	if insecure {
+		cmd = append(cmd, "--insecure")
+	}
+	cmd = append(cmd, source, target)
+
+	fmt.Println("Executing command:", strings.Join(cmd, " "))
+
+	// Execute the copy
+	result := ctr.WithExec(cmd)
+
+	out, err := result.Stdout(ctx)
+	if err != nil {
+		stderr, _ := result.Stderr(ctx)
+		return "", fmt.Errorf("copy failed: %w\nStdout: %s\nStderr: %s", err, out, stderr)
+	}
+
+	return out, nil
+}
+
+// authenticate adds registry authentication to the container
+func authenticate(ctr *dagger.Container, registry *RegistryAuth, insecure bool) *dagger.Container {
+	loginCmd := []string{
+		"sh", "-c",
+		fmt.Sprintf(`echo "$CRANE_PASSWORD" | crane auth login %s --username %s --password-stdin %s`,
+			registry.URL,
+			registry.Username,
+			ifThenElse(insecure, "--insecure", ""),
+		),
+	}
+
+	fmt.Printf("Authenticating with registry: %s as user: %s\n", registry.URL, registry.Username)
+
+	return ctr.
+		WithSecretVariable("CRANE_PASSWORD", registry.Password).
+		WithExec(loginCmd)
+}
+
+// container returns a Wolfi-based container with Crane CLI installed
+func (m *Crane) container(insecure bool) *dagger.Container {
+	if m.BaseImage == "" {
+		m.BaseImage = "cgr.dev/chainguard/wolfi-base:latest"
+	}
+
+	ctr := dag.Container().From(m.BaseImage)
+
+	pkg := "crane"
+	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache", pkg})
 	ctr = ctr.WithEntrypoint([]string{"crane"})
 
-	// Optional: Configure for insecure registries
-	if w.Insecure {
+	if insecure {
 		ctr = ctr.WithEnvVariable("SSL_CERT_DIR", "/nonexistent")
 	}
 
 	return ctr
 }
 
-func (m *Crane) CopyImage(
-	ctx context.Context,
-	source string,
-	target string,
-) (string, error) {
-	ctr := m.Container()
-
-	// Debug: Print current auth configuration
-	fmt.Printf("Attempting auth with registry: %s, user: %s\n", m.Registry, m.Username)
-
-	if m.Registry != "" && m.Username != "" && m.Password != nil {
-		// Better approach using password-stdin
-		loginCmd := []string{
-			"sh", "-c",
-			fmt.Sprintf(`echo "$CRANE_PASSWORD" | crane auth login %s --username %s --password-stdin %s`,
-				m.Registry,
-				m.Username,
-				"--insecure",
-			),
-		}
-
-		fmt.Println("Login command:", strings.Join(loginCmd, " "))
-
-		ctr = ctr.
-			WithSecretVariable("CRANE_PASSWORD", m.Password).
-			WithExec(loginCmd)
+// Helper function for conditional string selection
+func ifThenElse(condition bool, a string, b string) string {
+	if condition {
+		return a
 	}
-
-	// Debug command that will be executed
-	cmd := []string{"crane", "copy", "--platform", m.Platform}
-	if m.Insecure {
-		cmd = append(cmd, "--insecure")
-	}
-	cmd = append(cmd, source, target)
-	fmt.Println("Copy command:", strings.Join(cmd, " "))
-
-	// Execute with debug output
-	result := ctr.
-		WithExec(cmd).
-		WithExec([]string{"sh", "-c", "ls -la ~/.docker/config.json"}) // Debug: Check config file
-
-	out, err := result.Stdout(ctx)
-	if err != nil {
-		// Get stderr for more detailed error
-		stderr, _ := result.Stderr(ctx)
-		fmt.Printf("Error details:\nStdout: %s\nStderr: %s\n", out, stderr)
-		return "", fmt.Errorf("copy failed: %w", err)
-	}
-
-	return out, nil
-}
-
-func (m *Crane) TestAuth(
-	ctx context.Context,
-) (string, error) {
-	// Test authentication independently
-	if m.Registry == "" || m.Username == "" || m.Password == nil {
-		return "", fmt.Errorf("registry credentials not provided")
-	}
-
-	ctr := m.Container().
-		WithSecretVariable("CRANE_PASSWORD", m.Password).
-		WithExec([]string{
-			"sh", "-c",
-			fmt.Sprintf(`echo "$CRANE_PASSWORD" | crane auth login %s --username %s --password-stdin %s`,
-				m.Registry,
-				m.Username,
-				"--insecure",
-			),
-		})
-
-	return ctr.Stdout(ctx)
+	return b
 }

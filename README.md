@@ -7,15 +7,32 @@ collection of dagger modules.
 <details><summary><b>CRANE</b></summary>
 
 ```bash
-# WILL BE CHANGED BUT OK FOR NOW
+# REG AUTH FOR SOURCE AND TARGET REG
 dagger call -m crane copy \
---username admin \
---password env:PASSWORD \
---progress plain \
+--sourceRegistry ghcr.io \
+--sourceUsername patrick-hermann-sva \
+--sourcePassword env:GITHUB_TOKEN \
+--targetRegistry harbor.example.com \
+--targetUsername admin \
+--targetPassword env:HARBOR \
 --platform linux/amd64 \
+--insecure=true \
+--source ghcr.io/stuttgart-things/backstage:2025-04-22 \
+--target harbor.example.com/test/backstage:2025-04-22 \
+--progress plain
+```
+
+```bash
+# REG AUTH FOR TARGET REG ONLY
+dagger call -m crane copy \
+--targetUsername admin \
+--targetPassword env:HARBOR \
 --source redis:latest \
---target harbor.example.com/test/redis \
---registry harbor.example.com
+--target harbor.example.com/test/redis:2025-04-22 \
+--targetRegistry harbor.example.com \
+--insecure=true \
+--platform linux/amd64 \
+--progress plain
 ```
 
 </details>
