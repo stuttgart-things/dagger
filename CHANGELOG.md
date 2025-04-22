@@ -1,3 +1,10 @@
+## [0.7.1](https://github.com/stuttgart-things/dagger/compare/v0.7.0...v0.7.1) (2025-04-22)
+
+
+### Bug Fixes
+
+* feature/add-crane-multi-reg ([33687b6](https://github.com/stuttgart-things/dagger/commit/33687b6028f58fea49f30035fafda32c660548a3))
+
 # [0.7.0](https://github.com/stuttgart-things/dagger/compare/v0.6.4...v0.7.0) (2025-04-16)
 
 
