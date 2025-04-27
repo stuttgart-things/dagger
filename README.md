@@ -4,6 +4,39 @@ collection of dagger modules.
 
 ## MODULES
 
+<details><summary><b>GITLAB</b></summary>
+
+```bash
+# GET MERGE REQUEST ID BY PROJECT ID
+dagger call -m gitlab list-merge-requests \
+--token env:GITLAB_TOKEN \
+--server gitlab.com \
+--project-id 14466 \
+--progress plain
+```
+
+```bash
+# GET MERGE REQUEST ID BY PROJECT ID
+dagger call -m gitlab get-merge-request-id \
+--token env:GITLAB_TOKEN \
+--server gitlab.com \
+--project-id 14466 \
+--merge-request-title "RFC- -" \
+--progress plain
+```
+
+```bash
+dagger call -m gitlab list-merge-request-changes \ --token env:GITLAB_TOKEN \
+--server gitlab.com \
+--project-id="14466" \
+--merge-request-id="1" \
+--progress plain
+```
+
+</details>
+
+
+
 <details><summary><b>CRANE</b></summary>
 
 ```bash
