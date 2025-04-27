@@ -26,10 +26,31 @@ dagger call -m gitlab get-merge-request-id \
 ```
 
 ```bash
+# LIST ALL CHANGES FROM MR INTO (USUALY) MAIN
 dagger call -m gitlab list-merge-request-changes \ --token env:GITLAB_TOKEN \
 --server gitlab.com \
 --project-id="14466" \
 --merge-request-id="1" \
+--progress plain
+```
+
+```bash
+# LIST ALL CHANGES FROM MR INTO (USUALY) MAIN
+dagger call -m gitlab clone \
+--repo-url https://gitlab.com/Lab/stuttgart-things/idp/resource-engines.git
+--token env:GITLAB_TOKEN \
+--branch=main \
+#export --path /tmp/repo \ # IF YOU WANT TO EXPORT TO LOCAL FS
+--progress plain
+
+# PRINT ALL FILES CHANGED BY A MR
+dagger call -m gitlab print-merge-request-file-changes \
+--repo-url https://gitlab.com/Lab/stuttgart-things/idp/resource-engines.git \
+--server codehub.sva.de \
+--token env:GITLAB_TOKEN \
+--merge-request-id="1" \
+--project-id="14466" \
+--branch "RFC-_" \
 --progress plain
 ```
 

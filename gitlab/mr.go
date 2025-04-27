@@ -144,3 +144,40 @@ func (g *Gitlab) ListMergeRequests(
 
 	return string(body), nil
 }
+
+func (g *Gitlab) PrintMergeRequestFileChanges(
+	ctx context.Context,
+	repoURL string,
+	server string,
+	token dagger.Secret,
+	projectID string,
+	mergeRequestID string,
+	branch string,
+) error {
+
+	// 1. Clone the repo
+	repoDir, err := g.Clone(ctx, repoURL, token, branch)
+	if err != nil {
+		return fmt.Errorf("failed to clone repo: %w", err)
+	}
+
+	// 2. Get list of changed files from MR
+	changedFiles, err := g.ListMergeRequestChanges(ctx, server, token, projectID, mergeRequestID)
+	if err != nil {
+		return fmt.Errorf("failed to list changed files: %w", err)
+	}
+
+	// 3. For each changed file, read and print its content
+	for _, filePath := range changedFiles {
+		file := repoDir.File(filePath)
+
+		content, err := file.Contents(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %w", filePath, err)
+		}
+
+		fmt.Printf("=== File: %s ===\n%s\n\n", filePath, content)
+	}
+
+	return nil
+}
