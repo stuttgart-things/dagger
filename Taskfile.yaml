@@ -6,6 +6,8 @@ vars:
   BRANCH:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
 
+dotenv: ['.env', '{{.HOME}}/.env']
+
 tasks:
   do:
     desc: Select a task to run
@@ -132,6 +134,14 @@ tasks:
       TEST_VALUES: tests/test-values.yaml
       PACKAGE_REGISTRY: ghcr.io
       USERNAME: stuttgart-things
+
+  test-gitlab:
+    desc: Test gitlab modules
+    cmds:
+      - dagger call -m {{ .MODULE }} list-projects --server {{ .gitlab_server }} --token env:GITLAB_TOKEN --progress plain
+      - dagger call -m {{ .MODULE }} get-project-id --token env:GITLAB_TOKEN --server {{ .gitlab_server }} --project-name "{{ .gitlab_project }}" --progress plain
+    vars:
+      MODULE: gitlab
 
   test-docker:
     desc: Test docker module
