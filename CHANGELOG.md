@@ -1,3 +1,10 @@
+# [0.9.0](https://github.com/stuttgart-things/dagger/compare/v0.8.0...v0.9.0) (2025-04-28)
+
+
+### Features
+
+* feat/add-kyverno ([a5dc8e0](https://github.com/stuttgart-things/dagger/commit/a5dc8e08dd2ea7d47d87961d9d057f005dd6696b))
+
 # [0.8.0](https://github.com/stuttgart-things/dagger/compare/v0.7.1...v0.8.0) (2025-04-28)
 
 
