@@ -1,3 +1,13 @@
+# [0.8.0](https://github.com/stuttgart-things/dagger/compare/v0.7.1...v0.8.0) (2025-04-28)
+
+
+### Features
+
+* feat/add-gitlab-close-mr ([854154c](https://github.com/stuttgart-things/dagger/commit/854154c523e880acbc2bbf9d644a8160074b5791))
+* feat/add-gitlab-module ([3f9f326](https://github.com/stuttgart-things/dagger/commit/3f9f326f88333e494ac607ae24d0d926d86f5d1c))
+* main ([3ce7e71](https://github.com/stuttgart-things/dagger/commit/3ce7e71cc76fb1b71b639567c1b183dcc12faa58))
+* main ([68793b1](https://github.com/stuttgart-things/dagger/commit/68793b152eb8047c811dd5180f24507705eea67c))
+
 ## [0.7.1](https://github.com/stuttgart-things/dagger/compare/v0.7.0...v0.7.1) (2025-04-22)
 
 
