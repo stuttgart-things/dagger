@@ -42,15 +42,28 @@ dagger call -m gitlab clone \
 --branch=main \
 #export --path /tmp/repo \ # IF YOU WANT TO EXPORT TO LOCAL FS
 --progress plain
+```
 
+```bash
 # PRINT ALL FILES CHANGED BY A MR
 dagger call -m gitlab print-merge-request-file-changes \
 --repo-url https://gitlab.com/Lab/stuttgart-things/idp/resource-engines.git \
---server codehub.sva.de \
+--server gitlab.com \
 --token env:GITLAB_TOKEN \
 --merge-request-id="1" \
 --project-id="14466" \
 --branch "RFC-_" \
+--progress plain
+```
+
+```bash
+# PRINT ALL FILES CHANGED BY A MR
+dagger call -m gitlab update-merge-request-state \
+--server gitlab.com \
+--token env:GITLAB_TOKEN \
+--merge-request-id="1" \
+--project-id="14466" \
+--action merge \ # or 'close'
 --progress plain
 ```
 
