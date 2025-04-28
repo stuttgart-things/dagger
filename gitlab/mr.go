@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"dagger/gitlab/internal/dagger"
 	"encoding/json"
@@ -177,6 +178,67 @@ func (g *Gitlab) PrintMergeRequestFileChanges(
 		}
 
 		fmt.Printf("=== File: %s ===\n%s\n\n", filePath, content)
+	}
+
+	return nil
+}
+
+// UpdateMergeRequestState updates the state of a Merge Request (e.g., merge, close)
+func (g *Gitlab) UpdateMergeRequestState(
+	ctx context.Context,
+	server string,
+	token dagger.Secret,
+	projectID string,
+	mergeRequestID string,
+	action string, // "merge" or "close"
+) error {
+	tok, err := token.Plaintext(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to read secret: %w", err)
+	}
+
+	var method, url string
+	switch action {
+	case "merge":
+		url = fmt.Sprintf("https://%s/api/v4/projects/%s/merge_requests/%s/merge", server, projectID, mergeRequestID)
+		method = http.MethodPut
+	case "close":
+		url = fmt.Sprintf("https://%s/api/v4/projects/%s/merge_requests/%s", server, projectID, mergeRequestID)
+		method = http.MethodPut
+	default:
+		return fmt.Errorf("unsupported action: %s", action)
+	}
+
+	payload := map[string]string{}
+	if action == "close" {
+		payload["state_event"] = "close"
+	}
+
+	var body io.Reader
+	if len(payload) > 0 {
+		jsonPayload, err := json.Marshal(payload)
+		if err != nil {
+			return fmt.Errorf("failed to marshal payload: %w", err)
+		}
+		body = io.NopCloser(bytes.NewReader(jsonPayload))
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("PRIVATE-TOKEN", tok)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to %s merge request: %d - %s", action, resp.StatusCode, string(respBody))
 	}
 
 	return nil
