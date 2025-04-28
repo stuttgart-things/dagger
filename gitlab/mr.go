@@ -157,7 +157,7 @@ func (g *Gitlab) PrintMergeRequestFileChanges(
 ) error {
 
 	// 1. Clone the repo
-	repoDir, err := g.Clone(ctx, repoURL, token, branch)
+	repoDir, err := g.CloneWithToken(ctx, repoURL, token, branch)
 	if err != nil {
 		return fmt.Errorf("failed to clone repo: %w", err)
 	}

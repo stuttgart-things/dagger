@@ -4,7 +4,34 @@ collection of dagger modules.
 
 ## MODULES
 
+<details><summary><b>KYVERNO</b></summary>
+
+```bash
+# VALIDATE RESOURCES AGAINST POLICIES
+dagger call -m kyverno validate \
+--policy tests/kyverno/policies/ \
+--resource tests/kyverno/resource-good/ \
+--progress plain
+```
+
+```bash
+# OUTPUT KYVERNO VERSION
+dagger call -m kyverno version \
+--progress plain
+```
+
+</details>
+
 <details><summary><b>GITLAB</b></summary>
+
+```bash
+# GET PROJECT ID BY PROJECT NAME
+dagger call -m gitlab get-project-id \
+--token env:GITLAB_TOKEN \
+--server gitlab.com \
+--project-name "Lab/stuttgart-things/idp/resource-engines" \
+--progress plain
+```
 
 ```bash
 # GET MERGE REQUEST ID BY PROJECT ID
@@ -68,8 +95,6 @@ dagger call -m gitlab update-merge-request-state \
 ```
 
 </details>
-
-
 
 <details><summary><b>CRANE</b></summary>
 

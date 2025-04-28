@@ -10,7 +10,7 @@ import (
 // ClonePrivateRepo clones a private repository and returns a Dagger Directory
 
 // Clone clones a git repo using a container and returns the Directory
-func (g *Gitlab) Clone(
+func (g *Gitlab) CloneWithToken(
 	ctx context.Context,
 	repoURL string,
 	token dagger.Secret,
