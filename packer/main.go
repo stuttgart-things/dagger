@@ -1,5 +1,7 @@
 package main
 
+// dagger call -m packer build --repo-url https://github.com/stuttgart-things/stuttgart-things.git --branch main --token env:GITHUB_TOKEN  --progress plain
+
 import (
 	"context"
 	"dagger/packer/internal/dagger"
@@ -13,7 +15,7 @@ type Packer struct {
 	BaseImage string
 }
 
-func (m *Packer) Init(
+func (m *Packer) Build(
 	ctx context.Context,
 	// The Packer version to use
 	// +optional
@@ -22,8 +24,30 @@ func (m *Packer) Init(
 	// The Packer arch
 	// +optional
 	// +default="linux_amd64"
-	arch string,
+	arch,
+	repoURL,
+	// The Branch name
+	// +optional
+	// +default="main"
+	branch string,
+	// If true, only init packer w/out build
+	// +optional
+	// +default=false
+	initOnly bool,
+	token *dagger.Secret, // injected securely
 ) {
+
+	repoContent, err := m.ClonePrivateRepo(ctx, repoURL, branch, token)
+	if err != nil {
+		fmt.Errorf("failed to clone repo: %w", err)
+	}
+
+	entries, err := repoContent.Entries(ctx)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Top-level entries:", entries)
+
 	packer, err := m.container(packerVersion, arch).
 		WithExec([]string{"packer", "version"}).Stdout(ctx)
 
@@ -77,12 +101,6 @@ func (m *Packer) ClonePrivateRepo(
 	src := dag.Git(repoURL).
 		WithAuthToken(token).
 		Branch(branch).Tree()
-
-	entries, err := src.Entries(ctx)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Top-level entries:", entries)
 
 	return src, nil
 }
