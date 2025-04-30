@@ -1,0 +1,8 @@
+{
+  "name": "packer",
+  "engineVersion": "v0.18.5",
+  "sdk": {
+    "source": "go"
+  },
+  "source": "."
+}
