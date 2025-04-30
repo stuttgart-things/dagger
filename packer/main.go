@@ -32,6 +32,7 @@ func (m *Packer) Init(
 	}
 
 	fmt.Println("Packer version: ", packer)
+
 }
 
 func (m *Packer) container(
@@ -64,4 +65,24 @@ func (m *Packer) container(
 	ctr = ctr.WithExec([]string{"chmod", "+x", destBinPath})
 
 	return ctr
+}
+
+// ClonePrivateRepo clones a private GitHub repo using HTTPS and a personal access token
+func (m *Packer) ClonePrivateRepo(
+	ctx context.Context,
+	repoURL, // e.g. "https://github.com/your-org/your-private-repo.git"
+	branch string, // e.g. "main"
+	token *dagger.Secret, // injected securely
+) (*dagger.Directory, error) {
+	src := dag.Git(repoURL).
+		WithAuthToken(token).
+		Branch(branch).Tree()
+
+	entries, err := src.Entries(ctx)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Top-level entries:", entries)
+
+	return src, nil
 }
