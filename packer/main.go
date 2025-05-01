@@ -6,6 +6,7 @@ import (
 	"context"
 	"dagger/packer/internal/dagger"
 	"fmt"
+	"path/filepath"
 )
 
 type Packer struct {
@@ -38,18 +39,15 @@ func (m *Packer) Build(
 	token *dagger.Secret, // injected securely
 ) {
 
+	workingDir := filepath.Dir(buildPath)
+	packerFile := filepath.Base(buildPath)
+
 	repoContent, err := m.ClonePrivateRepo(ctx, repoURL, branch, token)
 	if err != nil {
 		fmt.Errorf("failed to clone repo: %w", err)
 	}
 
-	// entries, err := repoContent.Entries(ctx)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println("Top-level entries:", entries)
-
-	buildDir := repoContent.Directory(buildPath)
+	buildDir := repoContent.Directory(workingDir)
 
 	entries1, err := buildDir.Entries(ctx)
 	if err != nil {
@@ -63,19 +61,12 @@ func (m *Packer) Build(
 		WithWorkdir("/src")
 
 	// Run packer init and persist container state
-	initContainer := base.WithExec([]string{"packer", "init", "hello.pkr.hcl"})
-
-	// Optionally get init output (from a separate execution)
-	initOut, err := initContainer.WithExec([]string{"packer", "version"}).Stdout(ctx)
-	if err != nil {
-		panic(fmt.Errorf("failed to verify init: %w", err))
-	}
-	fmt.Println("Init complete - Packer version:", initOut)
+	initContainer := base.WithExec([]string{"packer", "init", packerFile})
 
 	// Now run build on the result of init
 	if !initOnly {
 		buildOut, err := initContainer.
-			WithExec([]string{"packer", "build", "hello.pkr.hcl"}).
+			WithExec([]string{"packer", "build", packerFile}).
 			Stdout(ctx)
 		if err != nil {
 			panic(fmt.Errorf("failed to build: %w", err))
