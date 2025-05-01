@@ -1,6 +1,6 @@
 package main
 
-// dagger call -m packer build --repo-url https://github.com/stuttgart-things/stuttgart-things.git --branch main --token env:GITHUB_TOKEN  --progress plain
+// dagger call -m packer build --repo-url https://github.com/stuttgart-things/stuttgart-things.git --branch "feat/packer-hello" --token env:GITHUB_TOKEN --build-path packer/builds/hello  --progress plain -vv
 
 import (
 	"context"
@@ -34,6 +34,7 @@ func (m *Packer) Build(
 	// +optional
 	// +default=false
 	initOnly bool,
+	buildPath string,
 	token *dagger.Secret, // injected securely
 ) {
 
@@ -42,20 +43,49 @@ func (m *Packer) Build(
 		fmt.Errorf("failed to clone repo: %w", err)
 	}
 
-	entries, err := repoContent.Entries(ctx)
+	// entries, err := repoContent.Entries(ctx)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println("Top-level entries:", entries)
+
+	buildDir := repoContent.Directory(buildPath)
+
+	entries1, err := buildDir.Entries(ctx)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Top-level entries:", entries)
+	fmt.Println("Files in buildPath:", entries1)
 
-	packer, err := m.container(packerVersion, arch).
-		WithExec([]string{"packer", "version"}).Stdout(ctx)
+	// Mount buildDir and set working directory
+	base := m.container(packerVersion, arch).
+		WithMountedDirectory("/src", buildDir).
+		WithWorkdir("/src")
+
+	// Run packer init and persist container state
+	initContainer := base.WithExec([]string{"packer", "init", "hello.pkr.hcl"})
+
+	// Optionally get init output (from a separate execution)
+	initOut, err := initContainer.WithExec([]string{"packer", "version"}).Stdout(ctx)
+	if err != nil {
+		panic(fmt.Errorf("failed to verify init: %w", err))
+	}
+	fmt.Println("Init complete - Packer version:", initOut)
+
+	// Now run build on the result of init
+	if !initOnly {
+		buildOut, err := initContainer.
+			WithExec([]string{"packer", "build", "hello.pkr.hcl"}).
+			Stdout(ctx)
+		if err != nil {
+			panic(fmt.Errorf("failed to build: %w", err))
+		}
+		fmt.Println(buildOut)
+	}
 
 	if err != nil {
 		fmt.Errorf("failed to initialize: %w", err)
 	}
-
-	fmt.Println("Packer version: ", packer)
 
 }
 
@@ -82,7 +112,7 @@ func (m *Packer) container(
 
 	ctr := dag.Container().From(m.BaseImage)
 
-	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache", "wget", "unzip"})
+	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache", "wget", "unzip", "bash", "coreutils"})
 	ctr = ctr.WithExec([]string{"wget", packerURL})
 	ctr = ctr.WithExec([]string{"unzip", packerZip})
 	ctr = ctr.WithExec([]string{"mv", packerBin, destBinPath})
