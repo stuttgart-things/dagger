@@ -1,6 +1,14 @@
 package main
 
+// GIT
 // dagger call -m packer build --repo-url https://github.com/stuttgart-things/stuttgart-things.git --branch "feat/packer-hello" --token env:GITHUB_TOKEN --build-path packer/builds/hello  --progress plain -vv
+
+// LOCAL
+// dagger call -m packer build --branch "main" --token env:GITHUB_TOKEN --local-dir "." --build-path tests/packer/hello.pkr.hcl --progress plain -vv
+
+// dagger call -m packer build --local-dir "." --build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl --progress plain -vv
+
+// dagger call -m packer build --local-dir "." --build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl --vault-addr https://vault-vsphere.labul.sva.de:8200 --vault-role-id=1d42d7e7-8c14-e5f9-801d-b3ecef416616 --vault-token env:VAULT_TOKEN --vault-secret-id env:VAULT_SECRET_ID  --progress plain -vv 2>&1 |tee log.txt
 
 import (
 	"context"
@@ -26,6 +34,7 @@ func (m *Packer) Build(
 	// +optional
 	// +default="linux_amd64"
 	arch,
+	// +optional
 	repoURL,
 	// The Branch name
 	// +optional
@@ -35,18 +44,39 @@ func (m *Packer) Build(
 	// +optional
 	// +default=false
 	initOnly bool,
+	// vaultAddr
+	// +optional
+	vaultAddr string,
+	// vaultRoleID
+	// +optional
+	vaultRoleID string,
+	// vaultSecretID
+	// +optional
+	vaultSecretID *dagger.Secret,
+	// vaultToken
+	// +optional
+	vaultToken *dagger.Secret,
 	buildPath string,
+	// +optional
 	token *dagger.Secret, // injected securely
+	// +optional
+	localDir *dagger.Directory, // NEW: optional local directory
 ) {
 
 	workingDir := filepath.Dir(buildPath)
 	packerFile := filepath.Base(buildPath)
 
-	repoContent, err := m.ClonePrivateRepo(ctx, repoURL, branch, token)
-	if err != nil {
-		fmt.Errorf("failed to clone repo: %w", err)
-	}
+	var repoContent *dagger.Directory
+	var err error
 
+	if localDir != nil {
+		repoContent = localDir
+	} else {
+		repoContent, err = m.ClonePrivateRepo(ctx, repoURL, branch, token)
+		if err != nil {
+			panic(fmt.Errorf("failed to clone repo: %w", err))
+		}
+	}
 	buildDir := repoContent.Directory(workingDir)
 
 	entries1, err := buildDir.Entries(ctx)
@@ -55,17 +85,22 @@ func (m *Packer) Build(
 	}
 	fmt.Println("Files in buildPath:", entries1)
 
-	// Mount buildDir and set working directory
+	// MOUNT BUILDDIR AND SET WORKING DIRECTORY
 	base := m.container(packerVersion, arch).
 		WithMountedDirectory("/src", buildDir).
+		WithEnvVariable("VAULT_ADDR", vaultAddr).
+		WithEnvVariable("VAULT_ROLE_ID", vaultRoleID).
+		WithEnvVariable("VAULT_SKIP_VERIFY", "TRUE").
+		WithSecretVariable("VAULT_TOKEN", vaultToken).
+		WithSecretVariable("VAULT_SECRET_ID", vaultSecretID).
 		WithWorkdir("/src")
 
-	// Run packer init and persist container state
-	initContainer := base.WithExec([]string{"packer", "init", packerFile})
+	// RUN PACKER INIT AND PERSIST CONTAINER STATE
+	packerContainer := base.WithExec([]string{"packer", "init", packerFile})
 
-	// Now run build on the result of init
+	// NOW RUN BUILD ON THE RESULT OF INIT
 	if !initOnly {
-		buildOut, err := initContainer.
+		buildOut, err := packerContainer.
 			WithExec([]string{"packer", "build", packerFile}).
 			Stdout(ctx)
 		if err != nil {
@@ -103,7 +138,25 @@ func (m *Packer) container(
 
 	ctr := dag.Container().From(m.BaseImage)
 
-	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache", "wget", "unzip", "bash", "coreutils"})
+	// Install base packages + Ansible dependencies
+	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache",
+		"wget",
+		"unzip",
+		"bash",
+		"coreutils",
+		"python3",
+		"py3-pip",
+		"openssh-client",
+		"ca-certificates-bundle",
+		"cdrkit",
+		"git",
+		"sshpass",
+	})
+
+	// Install Ansible via pip
+	ctr = ctr.WithExec([]string{"pip3", "install", "--no-cache-dir", "ansible", "hvac", "passlib"})
+
+	// Install Packer
 	ctr = ctr.WithExec([]string{"wget", packerURL})
 	ctr = ctr.WithExec([]string{"unzip", packerZip})
 	ctr = ctr.WithExec([]string{"mv", packerBin, destBinPath})
