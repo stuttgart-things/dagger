@@ -4,6 +4,38 @@ collection of dagger modules.
 
 ## MODULES
 
+<details><summary><b>PACKER</b></summary>
+
+```bash
+# GIT
+dagger call -m packer build \
+--repo-url https://github.com/stuttgart-things/stuttgart-things.git \
+--branch "feat/packer-hello" \
+--token env:GITHUB_TOKEN \
+--build-path packer/builds/hello \
+--progress plain -vv
+```
+
+```bash
+# LOCAL
+dagger call -m packer build \
+--local-dir "." \
+--build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl \
+--progress plain -vv
+
+# LOCAL - w/ VAULT AUTH
+dagger call -m packer build \
+--local-dir "." \
+--build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl \
+--vault-addr https://vault-vsphere.example.com:8200 \
+--vault-role-id 1d42d7e7-8c14-e5f9-801d-b3ecef416616 \
+--vault-token env:VAULT_TOKEN \
+--vault-secret-id env:VAULT_SECRET_ID \
+--progress plain -vv
+```
+
+</details>
+
 <details><summary><b>KYVERNO</b></summary>
 
 ```bash

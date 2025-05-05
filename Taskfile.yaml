@@ -9,6 +9,18 @@ vars:
 dotenv: ['.env', '{{.HOME}}/.env']
 
 tasks:
+  create:
+    desc: Create new dagger module
+    cmds:
+      - dagger init --sdk={{ .SDK }} --source=./{{ .MODULE_NAME }} --name={{ .MODULE_NAME }}
+      - jq '.source = "."' dagger.json > tmp.json && mv tmp.json dagger.json
+      - mv dagger.json ./{{ .MODULE_NAME }}/dagger.json
+    vars:
+      MODULE_NAME:
+        sh: gum input --placeholder "Module name"
+      SDK:
+        sh: gum choose "go" "python"
+
   do:
     desc: Select a task to run
     cmds:
@@ -58,18 +70,6 @@ tasks:
     desc: "Run pre-commit hooks"
     cmds:
       - pre-commit run -a
-
-  create:
-    desc: Create new dagger module
-    cmds:
-      - dagger init --sdk={{ .SDK }} --source=./{{ .MODULE_NAME }} --name={{ .MODULE_NAME }}
-      - jq '.source = "."' dagger.json > tmp.json && mv tmp.json dagger.json
-      - mv dagger.json ./{{ .MODULE_NAME }}/dagger.json
-    vars:
-      MODULE_NAME:
-        sh: gum input --placeholder "Module name"
-      SDK:
-        sh: gum choose "go" "python"
 
   test-ansible:
     desc: Test ansible modules
