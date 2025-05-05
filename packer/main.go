@@ -1,15 +1,5 @@
 package main
 
-// GIT
-// dagger call -m packer build --repo-url https://github.com/stuttgart-things/stuttgart-things.git --branch "feat/packer-hello" --token env:GITHUB_TOKEN --build-path packer/builds/hello  --progress plain -vv
-
-// LOCAL
-// dagger call -m packer build --branch "main" --token env:GITHUB_TOKEN --local-dir "." --build-path tests/packer/hello.pkr.hcl --progress plain -vv
-
-// dagger call -m packer build --local-dir "." --build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl --progress plain -vv
-
-// dagger call -m packer build --local-dir "." --build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl --vault-addr https://vault-vsphere.labul.sva.de:8200 --vault-role-id=1d42d7e7-8c14-e5f9-801d-b3ecef416616 --vault-token env:VAULT_TOKEN --vault-secret-id env:VAULT_SECRET_ID  --progress plain -vv 2>&1 |tee log.txt
-
 import (
 	"context"
 	"dagger/packer/internal/dagger"
