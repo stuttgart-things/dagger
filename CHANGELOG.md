@@ -1,3 +1,13 @@
+# [0.10.0](https://github.com/stuttgart-things/dagger/compare/v0.9.0...v0.10.0) (2025-05-06)
+
+
+### Features
+
+* feat/add-hugo-serve ([c283468](https://github.com/stuttgart-things/dagger/commit/c28346885d015f34bc0d0f0258416af8dd472172))
+* main ([97817fe](https://github.com/stuttgart-things/dagger/commit/97817fef09b3f812584d2439889903dad6d981bd))
+* main ([5dfd93a](https://github.com/stuttgart-things/dagger/commit/5dfd93a016f3a7b6205aab6c78f5eb07da32504c))
+* main ([1e1be33](https://github.com/stuttgart-things/dagger/commit/1e1be3399eb1c82c3d39cfee0dfc8fe93103e6ef))
+
 # [0.9.0](https://github.com/stuttgart-things/dagger/compare/v0.8.0...v0.9.0) (2025-04-28)
 
 
