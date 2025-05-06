@@ -28,6 +28,7 @@ tasks:
         task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose)
         task ${task}
 
+
   switch-remote:
     desc: Switch to remote branch
     cmds:
@@ -61,6 +62,7 @@ tasks:
       #- task: test-helm
       - task: test-ansible
       - task: test-docker
+      - task: test-hugo
       - task: pr
       - npx semantic-release --dry-run
       - npx semantic-release --debug --no-ci
@@ -80,6 +82,15 @@ tasks:
       TEST_ANSIBLE_CODE: tests/ansible/collection # tests/ansible/collection #tests
       MODULE: ansible
       OUTPUT_COLLECTION_FOLDER: /tmp/dagger/ansible
+
+  test-hugo:
+    desc: Test hugo
+    cmds:
+      - dagger call -m hugo init-site --name blog --config {{ .TEST_HUGO_CONFIG }} --content {{ .TEST_HUGO_CONTENT }} export --path {{ .OUTPUT_HUGO_FOLDER }}
+    vars:
+      TEST_HUGO_CONFIG: tests/hugo/hugo.toml
+      TEST_HUGO_CONTENT: tests/hugo/content
+      OUTPUT_HUGO_FOLDER: /tmp/dagger/hugo
 
   test-crossplane:
     desc: Test crossplame modules

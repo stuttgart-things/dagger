@@ -4,6 +4,26 @@ collection of dagger modules.
 
 ## MODULES
 
+<details><summary><b>HUGO</b></summary>
+
+```bash
+# BUILD
+dagger call -m hugo \
+init-site \
+--name blog \
+--config tests/hugo/hugo.toml \
+--content tests/hugo/content \
+export --path /tmp/blog
+
+# BUILD AND SERVE
+dagger call -m hugo serve \
+--config tests/hugo/hugo.toml \
+--content tests/hugo/content \
+up --progress plain
+```
+
+</details>
+
 <details><summary><b>PACKER</b></summary>
 
 ```bash
