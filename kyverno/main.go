@@ -4,10 +4,11 @@ import (
 	"context"
 	"dagger/kyverno/internal/dagger"
 	"fmt"
+
+	"dagger.io/dagger/dag"
 )
 
 type Kyverno struct {
-	// Base Wolfi image to use
 	// +optional
 	// +default="cgr.dev/chainguard/wolfi-base:latest"
 	BaseImage string

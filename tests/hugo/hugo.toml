@@ -1,0 +1,15 @@
+baseURL = '10.31.103.28'
+languageCode = 'en-us'
+title = 'My New Hugo Site'
+theme = ["github.com/joshed-io/reveal-hugo"]
+[module]
+  proxy = "direct"
+  vendored = true
+
+[markup.goldmark.renderer]
+unsafe = true
+
+[outputFormats.Reveal]
+baseName = "index"
+mediaType = "text/html"
+isHTML = true
