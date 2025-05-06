@@ -7,7 +7,7 @@ collection of dagger modules.
 <details><summary><b>HUGO</b></summary>
 
 ```bash
-# BUILD
+# BUILD + EXPORT STATIC CONTENT
 dagger call -m hugo \
 init-site \
 --name blog \
