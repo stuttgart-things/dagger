@@ -85,11 +85,36 @@ tasks:
   test-hugo:
     desc: Test hugo
     cmds:
-      - dagger call -m hugo init-site --name blog --config {{ .TEST_HUGO_CONFIG }} --content {{ .TEST_HUGO_CONTENT }} export --path {{ .OUTPUT_HUGO_FOLDER }}
+      - |
+        # CLEANUP OUTPUT FOLDER
+        rm -rf {{ .OUTPUT_HUGO_FOLDER }} || true
+
+        # INIT SITE
+        dagger call -m {{ .MODULE }} \
+        init-site --name {{ .NAME }} \
+        --config {{ .TEST_HUGO_CONFIG }} \
+        --content {{ .TEST_HUGO_CONTENT }} \
+        export \
+        --path {{ .OUTPUT_HUGO_FOLDER }}
+      - |
+        # CLEANUP STATIC CONTENT
+        rm -rf {{ .OUTPUT_HUGO_STATIC_CONTENT }} || true
+
+        # INIT SITE & EXPORT STAIC CONTENT
+        dagger call -m {{ .MODULE }} \
+        build-and-export \
+        --name {{ .NAME }} \
+        --config {{ .TEST_HUGO_CONFIG }} \
+        --content {{ .TEST_HUGO_CONTENT }} \
+        export \
+        --path {{ .OUTPUT_HUGO_STATIC_CONTENT }}
     vars:
+      NAME: presentation
+      MODULE: hugo
       TEST_HUGO_CONFIG: tests/hugo/hugo.toml
       TEST_HUGO_CONTENT: tests/hugo/content
       OUTPUT_HUGO_FOLDER: /tmp/dagger/hugo
+      OUTPUT_HUGO_STATIC_CONTENT: /tmp/dagger/hugo/{{ .NAME }}/static
 
   test-crossplane:
     desc: Test crossplame modules
