@@ -28,7 +28,6 @@ tasks:
         task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose)
         task ${task}
 
-
   switch-remote:
     desc: Switch to remote branch
     cmds:
@@ -149,8 +148,19 @@ tasks:
   test-gitlab:
     desc: Test gitlab modules
     cmds:
-      - dagger call -m {{ .MODULE }} list-projects --server {{ .gitlab_server }} --token env:GITLAB_TOKEN --progress plain
-      - dagger call -m {{ .MODULE }} get-project-id --token env:GITLAB_TOKEN --server {{ .gitlab_server }} --project-name "{{ .gitlab_project }}" --progress plain
+      - |
+        dagger call -m {{ .MODULE }} list-projects \
+        --server {{ .gitlab_server }} \
+        --group-path {{ .gitlab_group_escaped }} \
+        --token env:GITLAB_TOKEN \
+        --progress plain
+      - |
+        dagger call -m {{ .MODULE }} get-project-id \
+        --token env:GITLAB_TOKEN \
+        --server {{ .gitlab_server }} \
+        --project-name "{{ .gitlab_project }}" \
+        --group-path "{{ .gitlab_group}}" \
+        --progress plain
     vars:
       MODULE: gitlab
 
