@@ -1,3 +1,10 @@
+## [0.10.1](https://github.com/stuttgart-things/dagger/compare/v0.10.0...v0.10.1) (2025-05-13)
+
+
+### Bug Fixes
+
+* fix/update-gitlab-project-search ([f91f492](https://github.com/stuttgart-things/dagger/commit/f91f492611441bd422606464dad0e7b74bd0a655))
+
 # [0.10.0](https://github.com/stuttgart-things/dagger/compare/v0.9.0...v0.10.0) (2025-05-06)
 
 
