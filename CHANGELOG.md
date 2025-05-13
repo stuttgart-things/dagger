@@ -1,3 +1,10 @@
+## [0.10.2](https://github.com/stuttgart-things/dagger/compare/v0.10.1...v0.10.2) (2025-05-13)
+
+
+### Bug Fixes
+
+* feat/add-hugo-extract ([e264a56](https://github.com/stuttgart-things/dagger/commit/e264a5633e0a05a619954c90e94bf5fadc726af8))
+
 ## [0.10.1](https://github.com/stuttgart-things/dagger/compare/v0.10.0...v0.10.1) (2025-05-13)
 
 
