@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"dagger/hugo/internal/dagger"
+	"strconv"
 )
 
 type Hugo struct {
@@ -60,6 +61,14 @@ func (m *Hugo) Serve(
 	// +optional
 	// +default="hugo"
 	name string,
+	// The bindAddr to use
+	// +optional
+	// +default="1313"
+	bindAddr string,
+	// The base url to use
+	// +optional
+	// +default="0.0.0.0"
+	baseURL string,
 	// The Port to use
 	// +optional
 	// +default="1313"
@@ -69,6 +78,12 @@ func (m *Hugo) Serve(
 	// +default="github.com/joshed-io/reveal-hugo"
 	theme string,
 ) (*dagger.Service, error) {
+
+	// STEP 0: GET PORT AS INT
+	portNumber, err := strconv.Atoi(port)
+	if err != nil {
+		return nil, err
+	}
 
 	// STEP 1: INIT HUGO SITE
 	siteDir, err := m.InitSite(ctx, name, config, content, theme)
@@ -80,12 +95,12 @@ func (m *Hugo) Serve(
 	svc := m.container().
 		WithMountedDirectory("/src", siteDir).
 		WithWorkdir("/src").
-		WithExposedPort(1313).
+		WithExposedPort(portNumber).
 		AsService(dagger.ContainerAsServiceOpts{
 			Args: []string{
 				"hugo", "server",
-				"--bind", "0.0.0.0",
-				"--baseURL", "http://localhost",
+				"--bind", bindAddr,
+				"--baseURL", baseURL,
 				"--port", port,
 			},
 		})

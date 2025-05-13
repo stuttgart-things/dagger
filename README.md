@@ -81,8 +81,8 @@ dagger call -m kyverno version \
 dagger call -m gitlab get-project-id \
 --token env:GITLAB_TOKEN \
 --server gitlab.com \
---project-name "Lab/stuttgart-things/idp/resource-engines" \
---progress plain
+--project-name "docs" \
+--group-path "Lab/stuttgart-things/idp"
 ```
 
 ```bash
@@ -90,7 +90,7 @@ dagger call -m gitlab get-project-id \
 dagger call -m gitlab list-merge-requests \
 --token env:GITLAB_TOKEN \
 --server gitlab.com \
---project-id 14466 \
+--project-id 14160 \
 --progress plain
 ```
 
@@ -132,6 +132,15 @@ dagger call -m gitlab print-merge-request-file-changes \
 --merge-request-id="1" \
 --project-id="14466" \
 --branch "RFC-_" \
+--progress plain
+```
+
+```bash
+# LIST ALL PROJECTS IN A GROUP
+dagger call -m gitlab list-projects \
+--server gitlab.com \
+--token env:GITLAB_TOKEN \
+--group-path "Lab%2Fstuttgart-things"
 --progress plain
 ```
 
@@ -337,6 +346,19 @@ MODULE=crossplane task create
 ```
 
 </details>
+
+## TESTING
+
+<details><summary><b>.env FILE</b></summary>
+
+```bash
+cat <<EOF > .env
+gitlab_server="#TOBESET"
+gitlab_project=docs # example
+gitlab_group="Lab/stuttgart-things/idp" # example
+gitlab_group_escaped="Lab%2Fstuttgart-things%2Fidp" # example
+EOF
+```
 
 ## DAGGER
 

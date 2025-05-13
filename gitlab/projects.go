@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"dagger/gitlab/internal/dagger"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 type Project struct {
@@ -15,70 +17,104 @@ type Project struct {
 	PathWithNamespace string `json:"path_with_namespace"`
 }
 
-// GetProjectID looks up a project ID by its repo path
+// GetProjectID looks up a project ID by its name and group path
 func (g *Gitlab) GetProjectID(
 	ctx context.Context,
 	server string,
 	token dagger.Secret,
-	projectName string,
+	projectName string, // e.g., "resource-engines"
+	groupPath string, // e.g., "Lab/stuttgart-things/idp"
 ) (string, error) {
-	projectsJSON, err := g.ListProjects(ctx, server, token)
+	escapedGroup := url.PathEscape(groupPath)
+
+	projectsJSON, err := g.ListProjects(ctx, server, token, escapedGroup)
 	if err != nil {
 		return "", fmt.Errorf("failed to list projects: %w", err)
 	}
-
-	fmt.Println("Projects JSON:", projectsJSON)
 
 	var projects []Project
 	if err := json.Unmarshal([]byte(projectsJSON), &projects); err != nil {
 		return "", fmt.Errorf("failed to parse projects JSON: %w", err)
 	}
 
+	var matches []Project
 	for _, project := range projects {
-		if project.PathWithNamespace == projectName {
-			return fmt.Sprintf("%d", project.ID), nil
+		if project.Name == projectName {
+			matches = append(matches, project)
 		}
 	}
 
-	return "", fmt.Errorf("project %q not found", projectName)
+	if len(matches) == 0 {
+		return "", fmt.Errorf("project %q not found in group %q", projectName, groupPath)
+	}
+	if len(matches) > 1 {
+		return "", fmt.Errorf("multiple projects named %q found in group %q", projectName, groupPath)
+	}
+
+	return fmt.Sprintf("%d", matches[0].ID), nil
 }
 
-// ListProjects now takes a Secret
+// ListProjects lists all projects in a given group (with pagination)
 func (g *Gitlab) ListProjects(
 	ctx context.Context,
 	server string,
 	token dagger.Secret,
+	groupPath string, // already escaped: "Lab%2Fstuttgart-things%2Fidp"
 ) (string, error) {
-	// Read the secret value
 	tok, err := token.Plaintext(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to read secret: %w", err)
 	}
 
-	url := "https://" + server + "/api/v4/projects"
+	var allProjects []byte
+	page := 1
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to create request: %w", err)
+	for {
+		url := fmt.Sprintf(
+			"https://%s/api/v4/groups/%s/projects?per_page=100&page=%d",
+			server, groupPath, page,
+		)
+
+		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to create request: %w", err)
+		}
+		req.Header.Set("PRIVATE-TOKEN", tok)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return "", fmt.Errorf("failed to send request: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			return "", fmt.Errorf("unexpected status: %d - %s", resp.StatusCode, body)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("failed to read response: %w", err)
+		}
+
+		body = bytes.TrimPrefix(body, []byte("["))
+		body = bytes.TrimSuffix(body, []byte("]"))
+
+		if len(body) > 0 {
+			if len(allProjects) > 0 {
+				allProjects = append(allProjects, ',')
+			}
+			allProjects = append(allProjects, body...)
+		}
+
+		if resp.Header.Get("X-Next-Page") == "" {
+			break
+		}
+		page++
 	}
 
-	req.Header.Set("PRIVATE-TOKEN", tok)
+	allProjects = append([]byte("["), allProjects...)
+	allProjects = append(allProjects, ']')
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("unexpected status: %d - %s", resp.StatusCode, body)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read response: %w", err)
-	}
-
-	return string(body), nil
+	return string(allProjects), nil
 }
