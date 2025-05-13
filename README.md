@@ -7,7 +7,7 @@ collection of dagger modules.
 <details><summary><b>HUGO</b></summary>
 
 ```bash
-# BUILD + EXPORT STATIC CONTENT
+# INIT HUGO FOLDER STRUCTURE (INCLUDING THEME)
 dagger call -m hugo \
 init-site \
 --name blog \
@@ -20,6 +20,14 @@ dagger call -m hugo serve \
 --config tests/hugo/hugo.toml \
 --content tests/hugo/content \
 up --progress plain
+
+# BUILD + EXPORT STATIC CONTENT (INCLUDING THEME)
+dagger call -m hugo \
+build-and-export \
+--name blog \
+--config tests/hugo/hugo.toml \
+--content tests/hugo/content \
+export --path /tmp/blog/static
 ```
 
 </details>
