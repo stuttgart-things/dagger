@@ -30,6 +30,17 @@ build-and-export \
 export --path /tmp/blog/static
 ```
 
+# SERVE EXPORTED STATIC CONTENT
+
+```bash
+# WORKAROUND FOR NOW
+chmod -R o+rX /tmp/dagger/hugo/presentation/static
+docker run --rm -p 8080:80 -v "/tmp/dagger/hugo/presentation/static:/usr/share/nginx/html" nginx
+```
+
+
+
+
 </details>
 
 <details><summary><b>PACKER</b></summary>
@@ -240,7 +251,7 @@ build-and-push \
 
 </details>
 
-<details><summary><b>GOLANG</b></summary>
+<details><summary><b>GO</b></summary>
 
 ### LINT PROJECT
 
@@ -253,10 +264,15 @@ lint --src "." --timeout 300s --progress plain
 ### BUILD PROJECT
 
 ```bash
-dagger call -m \
-"github.com/stuttgart-things/dagger/go@v0.4.4" \
-binary --src "." --os linux --arch amd64 --goMainFile main.go --binName calc \
-export --path=/tmp/go/build/ --progress plain
+dagger call -m github.com/stuttgart-things/dagger/go@v0.10.2 binary \
+--src "." \
+--os linux \
+--arch amd64 \
+--go-main-file main.go \
+--bin-name k2 \
+--go-version 1.24.2 \
+export --path=/tmp/go/build/ \
+--progress plain
 ```
 
 ### RUN-WORKFLOW-CONTAINER-STAGE

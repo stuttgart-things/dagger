@@ -51,7 +51,7 @@ func (m *Go) Binary(
 	ctx context.Context,
 	src *dagger.Directory,
 	// +optional
-	// +default="1.23.6"
+	// +default="1.24.2"
 	goVersion string,
 	// +optional
 	// +default="linux"
