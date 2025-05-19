@@ -1,3 +1,16 @@
+# [0.11.0](https://github.com/stuttgart-things/dagger/compare/v0.10.2...v0.11.0) (2025-05-19)
+
+
+### Bug Fixes
+
+* fix/export-hugo-static ([3014a95](https://github.com/stuttgart-things/dagger/commit/3014a9502d0ad9a3a51f26c6b9f1b956604d32d2))
+* fix/serve-with-port ([11eaf52](https://github.com/stuttgart-things/dagger/commit/11eaf52374da0ec3a712dae35d06d0d4334de22e))
+
+
+### Features
+
+* main ([560af63](https://github.com/stuttgart-things/dagger/commit/560af6363a6006cb5a4d95feefadb648ff097415))
+
 ## [0.10.2](https://github.com/stuttgart-things/dagger/compare/v0.10.1...v0.10.2) (2025-05-13)
 
 
