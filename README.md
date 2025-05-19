@@ -1,6 +1,6 @@
 # stuttgart-things/dagger
 
-collection of dagger modules.
+collection of dagger modules
 
 ## MODULES
 
@@ -36,7 +36,8 @@ export --path /tmp/blog/static
 ```bash
 # WORKAROUND FOR NOW
 chmod -R o+rX /tmp/blog/static
-docker run --rm -p 8080:80 -v "/tmp/blog/static:/usr/share/nginx/html" nginx
+docker run --rm -p 8080:80 \
+-v "/tmp/blog/static:/usr/share/nginx/html" nginx
 ```
 
 </details>
