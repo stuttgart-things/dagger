@@ -14,10 +14,6 @@ func (m *Hugo) Serve(
 	// +optional
 	// +default="hugo"
 	name string,
-	// The bindAddr to use
-	// +optional
-	// +default="1313"
-	bindAddr string,
 	// The base url to use
 	// +optional
 	// +default="0.0.0.0"
@@ -52,7 +48,7 @@ func (m *Hugo) Serve(
 		AsService(dagger.ContainerAsServiceOpts{
 			Args: []string{
 				"hugo", "server",
-				"--bind", bindAddr,
+				"--bind", baseURL,
 				"--baseURL", baseURL,
 				"--port", port,
 			},

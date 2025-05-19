@@ -8,11 +8,28 @@ import (
 func (m *Hugo) ExportStaticContent(
 	ctx context.Context,
 	siteDir *dagger.Directory,
+	// The Theme to use
+	// +optional
+	// +default="github.com/joshed-io/reveal-hugo"
+	theme string,
 ) (*dagger.Directory, error) {
 	// Create container with mounted site directory
 	ctr := m.container().
 		WithMountedDirectory("/src", siteDir).
 		WithWorkdir("/src")
+
+	ctr = ctr.WithExec([]string{
+		"hugo",
+		"mod",
+		"get", // Fixed quote escaping
+		theme,
+	})
+
+	ctr = ctr.WithExec([]string{
+		"hugo",
+		"mod",
+		"vendor", // Fixed quote escaping
+	})
 
 	// Run Hugo build command with proper arguments
 	ctr = ctr.WithExec([]string{
@@ -43,5 +60,5 @@ func (m *Hugo) BuildAndExport(
 	}
 
 	// Export static content
-	return m.ExportStaticContent(ctx, siteDir)
+	return m.ExportStaticContent(ctx, siteDir, theme)
 }

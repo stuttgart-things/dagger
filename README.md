@@ -10,15 +10,16 @@ collection of dagger modules.
 # INIT HUGO FOLDER STRUCTURE (INCLUDING THEME)
 dagger call -m hugo \
 init-site \
---name blog \
+--name test \
 --config tests/hugo/hugo.toml \
 --content tests/hugo/content \
-export --path /tmp/blog
+export --path /tmp/hugo/test
 
 # BUILD AND SERVE
 dagger call -m hugo serve \
 --config tests/hugo/hugo.toml \
 --content tests/hugo/content \
+--port 4144 \
 up --progress plain
 
 # BUILD + EXPORT STATIC CONTENT (INCLUDING THEME)
@@ -34,12 +35,9 @@ export --path /tmp/blog/static
 
 ```bash
 # WORKAROUND FOR NOW
-chmod -R o+rX /tmp/dagger/hugo/presentation/static
-docker run --rm -p 8080:80 -v "/tmp/dagger/hugo/presentation/static:/usr/share/nginx/html" nginx
+chmod -R o+rX /tmp/blog/static
+docker run --rm -p 8080:80 -v "/tmp/blog/static:/usr/share/nginx/html" nginx
 ```
-
-
-
 
 </details>
 

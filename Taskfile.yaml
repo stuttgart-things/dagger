@@ -95,7 +95,7 @@ tasks:
         --config {{ .TEST_HUGO_CONFIG }} \
         --content {{ .TEST_HUGO_CONTENT }} \
         export \
-        --path {{ .OUTPUT_HUGO_FOLDER }}
+        --path {{ .OUTPUT_HUGO_FOLDER }} -vvv
       - |
         # CLEANUP STATIC CONTENT
         rm -rf {{ .OUTPUT_HUGO_STATIC_CONTENT }} || true
@@ -107,7 +107,7 @@ tasks:
         --config {{ .TEST_HUGO_CONFIG }} \
         --content {{ .TEST_HUGO_CONTENT }} \
         export \
-        --path {{ .OUTPUT_HUGO_STATIC_CONTENT }}
+        --path {{ .OUTPUT_HUGO_STATIC_CONTENT }}  -vvv
     vars:
       NAME: presentation
       MODULE: hugo
