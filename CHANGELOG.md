@@ -1,3 +1,10 @@
+## [0.11.1](https://github.com/stuttgart-things/dagger/compare/v0.11.0...v0.11.1) (2025-05-28)
+
+
+### Bug Fixes
+
+* fix/hugo ([2f7ae5c](https://github.com/stuttgart-things/dagger/commit/2f7ae5c86d9908805fa6ca0543b69c5200d16f1f))
+
 # [0.11.0](https://github.com/stuttgart-things/dagger/compare/v0.10.2...v0.11.0) (2025-05-19)
 
 
