@@ -35,11 +35,18 @@ func (m *Hugo) ExportStaticContent(
 	ctr = ctr.WithExec([]string{
 		"hugo",
 		"--minify",
-		"--baseURL=\"/\"", // Fixed quote escaping
+		"--baseURL=/",
 		"--cleanDestinationDir",
+		"--theme", theme,
 	})
 
-	// Return the generated public directory with static content
+	// Use sed to replace /%22/%22/ with /
+	ctr = ctr.WithExec([]string{
+		"sh", "-c",
+		`sed -i 's|/%22/%22/|/|g' public/index.html`,
+	})
+
+	// RETURN THE GENERATED PUBLIC DIRECTORY WITH STATIC CONTENT
 	return ctr.Directory("public"), nil
 }
 
