@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"dagger/hugo/internal/dagger"
+	"fmt"
+	"strconv"
+	"strings"
 )
 
 func (m *Hugo) ExportStaticContent(
@@ -68,4 +71,63 @@ func (m *Hugo) BuildAndExport(
 
 	// Export static content
 	return m.ExportStaticContent(ctx, siteDir, theme)
+}
+
+func (m *Hugo) SyncMinioBucket(
+	ctx context.Context,
+	endpoint string,
+	accessKey *dagger.Secret,
+	secretKey *dagger.Secret,
+	bucketName string,
+	aliasName string,
+	insecure bool,
+) (*dagger.Directory, error) {
+
+	endpoint = strings.TrimPrefix(endpoint, "https://")
+	notSecure := strconv.FormatBool(insecure)
+
+	accessKeyStr, err := accessKey.Plaintext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("FAILED TO GET ACCESS KEY SECRET: %w", err)
+	}
+
+	secretKeyStr, err := secretKey.Plaintext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("FAILED TO GET SECRET KEY SECRET: %w", err)
+	}
+
+	var repoContent *dagger.Directory
+	repoContent = dag.Directory()
+
+	ctr := m.container().
+		WithMountedDirectory("/sync", repoContent).
+		From("minio/mc:latest").
+		WithEnvVariable("MC_INSECURE", notSecure).
+		WithEnvVariable("MC_HOST_"+strings.ToLower(aliasName), fmt.Sprintf("https://%s:%s@%s", accessKeyStr, secretKeyStr, endpoint))
+
+	output, err := ctr.WithExec([]string{
+		"mc", "ls",
+		aliasName,
+	}).Stdout(ctx)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("ALL BUCKETS: ", output)
+
+	ctr = ctr.
+		WithMountedDirectory("/sync", repoContent).
+		WithExec([]string{
+			"mc", "mirror",
+			aliasName + "/" + bucketName, "/sync",
+		})
+
+	if err != nil {
+		panic(err)
+	}
+
+	outputDir := ctr.Directory("/sync")
+
+	return outputDir, nil
 }
