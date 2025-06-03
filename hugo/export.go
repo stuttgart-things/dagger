@@ -69,6 +69,11 @@ func (m *Hugo) BuildAndExport(
 		return nil, err
 	}
 
+	// GET BUCKET CONTENT FROM MINIO
+	// combined := dag.Directory().
+	// 	WithDirectory(".", dir1).
+	// 	WithDirectory(".", dir2)
+
 	// Export static content
 	return m.ExportStaticContent(ctx, siteDir, theme)
 }
