@@ -25,7 +25,12 @@ func (m *Kyverno) Validate(
 		WithWorkdir("/")
 
 	result, err := kyverno.
-		WithExec([]string{"kubectl-kyverno", "apply", "/policy", "--resource", "/resource"}).
+		WithExec([]string{
+			"kubectl-kyverno",
+			"apply",
+			"/policy",
+			"--resource",
+			"/resource"}).
 		Stdout(ctx)
 
 	if err != nil {
