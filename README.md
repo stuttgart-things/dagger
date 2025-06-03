@@ -29,6 +29,17 @@ build-and-export \
 --config tests/hugo/hugo.toml \
 --content tests/hugo/content \
 export --path /tmp/blog/static
+
+# BUILD + EXPORT STATIC CONTENT (INCLUDING THEME)
+dagger call -m hugo \
+sync-minio-bucket \
+--endpoint https://artifacts.automation.example.com \
+--bucket-name images \
+--insecure=true \
+--access-key=env:MINIO_USER \
+--secret-key=env:MINIO_PASSWORD \
+--alias-name artifacts \
+export --path /tmp/images
 ```
 
 # SERVE EXPORTED STATIC CONTENT
