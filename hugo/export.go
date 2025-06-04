@@ -69,13 +69,71 @@ func (m *Hugo) BuildAndExport(
 		return nil, err
 	}
 
-	// GET BUCKET CONTENT FROM MINIO
-	// combined := dag.Directory().
-	// 	WithDirectory(".", dir1).
-	// 	WithDirectory(".", dir2)
-
 	// Export static content
 	return m.ExportStaticContent(ctx, siteDir, theme)
+}
+
+func (m *Hugo) BuildSyncExport(
+	ctx context.Context,
+	name string,
+	config *dagger.File,
+	content *dagger.Directory,
+	// The Theme to use
+	// +optional
+	// +default="github.com/joshed-io/reveal-hugo"
+	theme string,
+	endpoint string,
+	accessKey *dagger.Secret,
+	secretKey *dagger.Secret,
+	bucketName string,
+	aliasName string,
+	insecure bool,
+) (*dagger.Directory, error) {
+	// Initialize the site
+	siteDir, err := m.InitSite(ctx, name, config, content, theme)
+	if err != nil {
+		return nil, err
+	}
+
+	staticContentDir, err := m.ExportStaticContent(ctx, siteDir, theme)
+
+	syncedBucket, err := m.SyncMinioBucket(ctx, endpoint, accessKey, secretKey, bucketName, aliasName, insecure)
+
+	if err != nil {
+		return nil, fmt.Errorf("FAILED TO SYNC MINIO BUCKET: %w", err)
+	}
+
+	finalDir := staticContentDir.WithDirectory("images", syncedBucket)
+
+	// Escape slashes in endpoint for use in sed
+	safeEndpoint := strings.ReplaceAll(endpoint, "/", `\/`)
+	safeBucket := strings.ReplaceAll(bucketName, "/", `\/`)
+
+	// Build the full match string
+	matchPrefix := fmt.Sprintf("%s/%s/", safeEndpoint, safeBucket)
+
+	replaceCmd := fmt.Sprintf(
+		`find . -name '*.html' -exec sed -i 's|%s|images/|g' {} +`,
+		matchPrefix,
+	)
+
+	ctr := m.container().
+		WithMountedDirectory("/src", finalDir).
+		WithWorkdir("/src").
+		WithExec([]string{"sh", "-c", replaceCmd})
+	// ctr := m.container().
+	// 	WithMountedDirectory("/src", finalDir).
+	// 	WithWorkdir("/src").
+	// 	WithExec([]string{
+	// 		"sh", "-c",
+	// 		`find . -name '*.html' -exec sed -i 's|https://artifacts.automation.sthings-vsphere.labul.sva.de/idp/|images/|g' {} +`,
+	// 	})
+
+	// Get the modified directory from the container
+	updatedDir := ctr.Directory("/src")
+
+	// Export static content
+	return updatedDir, nil
 }
 
 func (m *Hugo) SyncMinioBucket(
