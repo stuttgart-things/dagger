@@ -1,3 +1,17 @@
+# [0.12.0](https://github.com/stuttgart-things/dagger/compare/v0.11.1...v0.12.0) (2025-06-04)
+
+
+### Bug Fixes
+
+* fix/hugo-bucket-export ([1e2174e](https://github.com/stuttgart-things/dagger/commit/1e2174e62dbfce8cb17055a3afce6c7ed74354d5))
+* fix/update-hugo-img-rewrites ([28e9c3f](https://github.com/stuttgart-things/dagger/commit/28e9c3f7b2506dc308efce9be1d0688ea2397ac7))
+
+
+### Features
+
+* fix/update-hugo-img-rewrites ([76bcb5c](https://github.com/stuttgart-things/dagger/commit/76bcb5ca23125d981ba0e8e75a0b35621274cd56))
+* fix/update-hugo-img-rewrites ([309376b](https://github.com/stuttgart-things/dagger/commit/309376b6bef8ab930e88aeabf163cb38e04189d1))
+
 ## [0.11.1](https://github.com/stuttgart-things/dagger/compare/v0.11.0...v0.11.1) (2025-05-28)
 
 
