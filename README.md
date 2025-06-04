@@ -40,6 +40,26 @@ sync-minio-bucket \
 --secret-key=env:MINIO_PASSWORD \
 --alias-name artifacts \
 export --path /tmp/images
+
+# BUILD + EXPORT STATIC CONTENT (INCLUDING THEME)
+export MINIO_USER=""
+export MINIO_PASSWORD=""
+
+dagger call -m hugo \
+build-sync-export \
+--name blog \
+--config tests/hugo/hugo.toml \
+--content tests/hugo/content/ \
+--endpoint https://artifacts.automation.sthings-vsphere.example.com \
+--bucket-name idp \
+--insecure=true \
+--access-key=env:MINIO_USER \
+--secret-key=env:MINIO_PASSWORD \
+--alias-name artifacts \
+-vv export \
+--path=/tmp/bucket
+
+
 ```
 
 # SERVE EXPORTED STATIC CONTENT
