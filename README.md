@@ -30,7 +30,10 @@ build-and-export \
 --content tests/hugo/content \
 export --path /tmp/blog/static
 
-# BUILD + EXPORT STATIC CONTENT (INCLUDING THEME)
+# JUST SYNC MINIO BUCKET
+export MINIO_USER=""
+export MINIO_PASSWORD=""
+
 dagger call -m hugo \
 sync-minio-bucket \
 --endpoint https://artifacts.automation.example.com \
@@ -41,7 +44,7 @@ sync-minio-bucket \
 --alias-name artifacts \
 export --path /tmp/images
 
-# BUILD + EXPORT STATIC CONTENT (INCLUDING THEME)
+# BUILD + EXPORT STATIC CONTENT (INCLUDING THEME+BUCKET)
 export MINIO_USER=""
 export MINIO_PASSWORD=""
 
@@ -58,8 +61,6 @@ build-sync-export \
 --alias-name artifacts \
 -vv export \
 --path=/tmp/bucket
-
-
 ```
 
 # SERVE EXPORTED STATIC CONTENT
