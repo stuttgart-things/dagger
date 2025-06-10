@@ -28,10 +28,13 @@ func (m *Terraform) Version(ctx context.Context) (string, error) {
 func (m *Terraform) Execute(
 	ctx context.Context,
 	terraformDir *dagger.Directory,
-	// operation
 	// +optional
-	// +default="init"
+	// +default="apply"
 	operation string,
+	// +optional
+	encryptedFile *dagger.File,
+	// +optional
+	sopsKey *dagger.Secret,
 ) (*dagger.Directory, error) {
 	if operation == "" {
 		operation = "init"
@@ -44,16 +47,26 @@ func (m *Terraform) Execute(
 	}
 
 	workDir := "/src"
-
-	// Mount the Terraform directory and set the working directory
 	ctr = ctr.WithDirectory(workDir, terraformDir).WithWorkdir(workDir)
+
+	// If encrypted tfvars is provided, decrypt and mount it
+	if encryptedFile != nil {
+		// Decrypt to string
+		decryptedContent, err := m.DecryptSops(ctx, sopsKey, encryptedFile)
+		if err != nil {
+			return nil, fmt.Errorf("decrypting sops file failed: %w", err)
+		}
+
+		// Create a file with the decrypted content and mount it as terraform.tfvars.json
+		ctr = ctr.WithNewFile(fmt.Sprintf("%s/terraform.tfvars.json", workDir), decryptedContent)
+	}
 
 	// Always run init first with --upgrade
 	ctr = ctr.WithExec([]string{"terraform", "init", "-upgrade", "-input=false", "-no-color"})
 
 	switch operation {
 	case "init":
-		// Do nothing else
+		// Nothing more to do
 	case "apply":
 		ctr = ctr.WithExec([]string{"terraform", "apply", "-auto-approve", "-input=false", "-no-color"})
 	case "destroy":
@@ -62,7 +75,11 @@ func (m *Terraform) Execute(
 		return nil, fmt.Errorf("unsupported terraform operation: %s", operation)
 	}
 
-	// Return the updated directory
+		// Delete the tfvars file
+	if encryptedFile != nil {
+		ctr = ctr.WithExec([]string{"rm", "-f", "terraform.tfvars.json"})
+	}
+
 	return ctr.Directory(workDir), nil
 }
 
@@ -85,7 +102,6 @@ func (m *Terraform) container(ctx context.Context) (*dagger.Container, error) {
 	return ctr, nil
 }
 
-
 func (m *Terraform) DecryptSops(
     ctx context.Context,
     sopsKey *dagger.Secret,
@@ -97,7 +113,7 @@ func (m *Terraform) DecryptSops(
     }
 
     workDir := "/src"
-    fileName := "encrypted.yaml"
+    fileName := "encrypted.json"
 
     // Mount encrypted file into container using string concatenation
     ctr = ctr.
