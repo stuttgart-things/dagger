@@ -4,6 +4,30 @@ collection of dagger modules
 
 ## MODULES
 
+<details><summary><b>TERRAFORM</b></summary>
+
+
+```bash
+# RUN TERRAFORM OUTPUT
+dagger call -m terraform \
+execute \
+--terraform-dir /home/sthings/projects/stuttgart-things/terraform/builds/labda-dagger-vm \
+--operation apply -vv --progress plain export --path=~/projects/terraform/vms/dagger/
+```
+
+```bash
+# RUN TERRAFORM OUTPUT
+dagger call -m terraform \
+output \
+--terraform-dir ~/projects/terraform/vms/dagger/ \
+-vv --progress plain
+```
+
+
+
+</details>
+
+
 <details><summary><b>HUGO</b></summary>
 
 ```bash
