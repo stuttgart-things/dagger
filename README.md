@@ -6,13 +6,27 @@ collection of dagger modules
 
 <details><summary><b>TERRAFORM</b></summary>
 
-
 ```bash
-# RUN TERRAFORM OUTPUT
+# RUN TERRAFORM APPLY
 dagger call -m terraform \
 execute \
---terraform-dir /home/sthings/projects/stuttgart-things/terraform/builds/labda-dagger-vm \
---operation apply -vv --progress plain export --path=~/projects/terraform/vms/dagger/
+--terraform-dir /home/sthings/projects/terraform/vms/dagger/ \
+--operation apply \
+-vv --progress plain \
+export --path=~/projects/terraform/vms/dagger/
+```
+
+```bash
+# DECRYPT SOPS SECRETS FILE
+# + RUN TERRAFORM APPLY
+dagger call -m terraform \
+execute \
+--terraform-dir /home/sthings/projects/terraform/vms/dagger/ \
+--operation apply \
+--sops-key=env:SOPS_AGE_KEY \
+--encrypted-file /tmp/terraform.tfvars.enc.json \
+-vv --progress plain \
+export --path=~/projects/terraform/vms/dagger/
 ```
 
 ```bash
@@ -23,6 +37,13 @@ output \
 -vv --progress plain
 ```
 
+```bash
+# DECRYPT SOPS SECRET
+dagger call -m terraform \
+decrypt-sops \
+--sops-key=env:SOPS_AGE_KEY \
+--encrypted-file /tmp/tfvars.enc.json
+```
 
 
 </details>
