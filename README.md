@@ -45,7 +45,6 @@ decrypt-sops \
 --encrypted-file /tmp/tfvars.enc.json
 ```
 
-
 </details>
 
 
