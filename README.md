@@ -18,7 +18,7 @@ export --path=~/projects/terraform/vms/dagger/
 
 ```bash
 # DECRYPT SOPS SECRETS FILE
-# + RUN TERRAFORM APPLY
+# + RUN APPLY
 dagger call -m terraform \
 execute \
 --terraform-dir /home/sthings/projects/terraform/vms/dagger/ \
@@ -46,7 +46,6 @@ decrypt-sops \
 ```
 
 </details>
-
 
 <details><summary><b>HUGO</b></summary>
 
