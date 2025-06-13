@@ -1,3 +1,18 @@
+# [0.13.0](https://github.com/stuttgart-things/dagger/compare/v0.12.0...v0.13.0) (2025-06-13)
+
+
+### Features
+
+* feat/add-sops ([0cc2aa0](https://github.com/stuttgart-things/dagger/commit/0cc2aa02459cb4109e76c453a1f664fc2d94527f))
+* feat/add-sops ([c69cc1a](https://github.com/stuttgart-things/dagger/commit/c69cc1a802b69b27a1d9791ee3954845d9f457a0))
+* feat/add-sops ([6d656ad](https://github.com/stuttgart-things/dagger/commit/6d656adfd11e713160ed9823c6642defed03c4f7))
+* feat/add-sops ([bd1e535](https://github.com/stuttgart-things/dagger/commit/bd1e53562af20191ea4c8fe6c13e2ee35bb26c10))
+* feat/add-terraform-module ([147f123](https://github.com/stuttgart-things/dagger/commit/147f1239e31122fdd92e874f66c5e96e7c2775e8))
+* feat/add-terraform-module ([2834e86](https://github.com/stuttgart-things/dagger/commit/2834e86850f2d404da14f2cdd16f62c6c5a76ec6))
+* feat/add-terraform-module ([04244ff](https://github.com/stuttgart-things/dagger/commit/04244ffff7387df9d6ad1005f78652e5bfb1abb0))
+* feat/add-terraform-module ([c4960e3](https://github.com/stuttgart-things/dagger/commit/c4960e3f0e6fdf8f1e50c8f9da04740b30ad1115))
+* feat/add-terraform-module ([0840ace](https://github.com/stuttgart-things/dagger/commit/0840aced6e819e860f5ac6765c1343ac2905a139))
+
 # [0.12.0](https://github.com/stuttgart-things/dagger/compare/v0.11.1...v0.12.0) (2025-06-04)
 
 
