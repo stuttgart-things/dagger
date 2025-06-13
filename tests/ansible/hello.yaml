@@ -1,0 +1,10 @@
+---
+- name: Test playbook for localhost
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Print hello message
+      debug:
+        msg: "Hello from Ansible on localhost!"

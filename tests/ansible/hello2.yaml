@@ -1,0 +1,14 @@
+---
+- name: Test playbook for localhost
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Run a simple shell command
+      shell: echo "Ansible running on $(hostname)"
+      register: shell_output
+
+    - name: Show shell output
+      debug:
+        var: shell_output.stdout
