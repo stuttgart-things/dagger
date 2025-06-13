@@ -382,6 +382,15 @@ run-workflow-container-stage --src tests/calculator/ \
 
 <details><summary><b>ANSIBLE</b></summary>
 
+### EXECUTE ANSIBLE
+
+```bash
+dagger call -m ansible execute \
+--src . \
+--playbooks tests/ansible/hello.yaml,tests/ansible/hello2.yaml \
+-vv --progress plain
+```
+
 the idea of this module is to create versioned collection artifcat 'on the fly' -
 this module can work with a file structure like this:
 

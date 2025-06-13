@@ -21,6 +21,7 @@ var (
 	meta              = make(map[string]string)
 	requirements      = make(map[string]string)
 	collectionWorkDir = "/collection"
+	workDir           = "/src"
 )
 
 type CollectionResult struct {
@@ -102,7 +103,9 @@ func (m *Ansible) GithubRelease(
 }
 
 // BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
-func (m *Ansible) Build(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+func (m *Ansible) Build(
+	ctx context.Context,
+	src *dagger.Directory) *dagger.Directory {
 
 	ansible := m.AnsibleContainer.
 		WithDirectory(collectionWorkDir, src).
@@ -115,7 +118,9 @@ func (m *Ansible) Build(ctx context.Context, src *dagger.Directory) *dagger.Dire
 }
 
 // BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
-func (m *Ansible) ModifyRoleIncludes(ctx context.Context, src *dagger.Directory) *dagger.Directory {
+func (m *Ansible) ModifyRoleIncludes(
+	ctx context.Context,
+	src *dagger.Directory) *dagger.Directory {
 
 	ansible := m.AnsibleContainer.
 		WithDirectory(collectionWorkDir, src).
