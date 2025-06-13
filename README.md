@@ -7,13 +7,13 @@ collection of dagger modules
 <details><summary><b>TERRAFORM</b></summary>
 
 ```bash
-# RUN TERRAFORM APPLY
+# RUN TERRAFORM APPLY AND EXPORTS DIR w/ STATE
 dagger call -m terraform \
 execute \
---terraform-dir /home/sthings/projects/terraform/vms/dagger/ \
+--terraform-dir tests/terraform \
 --operation apply \
 -vv --progress plain \
-export --path=~/projects/terraform/vms/dagger/
+export --path=~/tmp/dagger/tests/terraform/
 ```
 
 ```bash

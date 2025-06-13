@@ -82,6 +82,35 @@ tasks:
       MODULE: ansible
       OUTPUT_COLLECTION_FOLDER: /tmp/dagger/ansible
 
+  test-terraform:
+    desc: Test terraform modules
+    cmds:
+      - |
+        dagger call -m {{ .MODULE }} \
+        version \
+        -vv --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        execute \
+        --terraform-dir {{ .TEST_TERRAFORM_CODE }} \
+        --operation apply \
+        -vv --progress plain \
+        export --path={{ .OUTPUT_STATE_FOLDER }}
+      - |
+        dagger call -m {{ .MODULE }} \
+        output \
+        --terraform-dir {{ .TEST_TERRAFORM_CODE }} \
+        -vv --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        execute --operation destroy \
+        --terraform-dir {{ .OUTPUT_STATE_FOLDER }} \
+        -vv --progress plain
+    vars:
+      TEST_TERRAFORM_CODE: tests/terraform
+      MODULE: terraform
+      OUTPUT_STATE_FOLDER: /tmp/dagger/{{ .MODULE }}
+
   test-hugo:
     desc: Test hugo
     cmds:
