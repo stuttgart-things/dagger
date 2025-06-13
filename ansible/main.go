@@ -1,5 +1,22 @@
 /*
-Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
+Package main provides a Dagger-based automation interface for building, modifying, and executing
+Ansible collections and playbooks within containerized environments.
+
+This module includes functionality to:
+  - Initialize Ansible collections from source files with metadata extraction and templating.
+  - Modify role names to conform to Ansible Galaxy standards (dashes to underscores).
+  - Build Ansible collections into distributable `.tar.gz` archives.
+  - Execute Ansible playbooks with optional support for Vault secrets and inventories.
+  - Automate GitHub releases for built collections using GitHub tokens.
+
+The Ansible pipeline leverages a customizable Ansible container and supports:
+  - Injecting playbooks, roles, templates, and modules.
+  - Enforcing semantic versioning for collections.
+  - Supporting Vault authentication via AppRole for secrets at runtime.
+  - Executing multiple playbooks with optional parameters and environment secrets.
+
+Usage is built around the Dagger API and is meant for CI/CD pipelines, release automation,
+or repeatable infrastructure-as-code workflows.
 */
 
 package main
@@ -35,7 +52,9 @@ type Ansible struct {
 }
 
 // RunCollectionBuildPipeline orchestrates init, modify and build of an ansible collection
-func (m *Ansible) RunCollectionBuildPipeline(ctx context.Context, src *dagger.Directory) (*dagger.Directory, error) {
+func (m *Ansible) RunCollectionBuildPipeline(
+	ctx context.Context,
+	src *dagger.Directory) (*dagger.Directory, error) {
 
 	// INIT COLLECTION
 	collection, err := m.InitCollection(ctx, src)
