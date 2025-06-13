@@ -12,6 +12,7 @@ func (m *Sops) Encrypt(
 	ageKey *dagger.Secret,
 	plaintextFile *dagger.File,
 	fileExtension string, // e.g., "yaml", "json", "env"
+	sopsConfig *dagger.File, // Optional: ~/.sops.yaml config file
 ) (*dagger.File, error) {
 	// Set default file extension to "yaml" if none provided
 	if fileExtension == "" {
@@ -32,6 +33,11 @@ func (m *Sops) Encrypt(
 	ctr = ctr.
 		WithMountedFile(workDir+"/"+plainFile, plaintextFile).
 		WithWorkdir(workDir)
+
+	// Mount the optional .sops.yaml config file
+	if sopsConfig != nil {
+		ctr = ctr.WithMountedFile("/root/.sops.yaml", sopsConfig)
+	}
 
 	// Provide the SOPS secret key (required for encryption)
 	if ageKey != nil {

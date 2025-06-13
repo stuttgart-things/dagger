@@ -4,6 +4,31 @@ collection of dagger modules
 
 ## MODULES
 
+<details><summary><b>SOPS</b></summary>
+
+```bash
+# ENCRYPT SOPS SECRET
+export AGE=age1g438n4l..
+
+dagger call -m sops \
+encrypt --age-key env:AGE \
+--sops-config ~/.sops.yaml \
+--plaintext-file tests/sops/tfvars.json \
+--file-extension json \
+export --path=/tmp/tfvars.enc.json
+```
+
+```bash
+# DECRYPT SOPS SECRET
+dagger call -m sops \
+decrypt-sops \
+--sops-key=env:SOPS_AGE_KEY \
+--encrypted-file /tmp/tfvars.enc.json
+```
+
+</details>
+
+
 <details><summary><b>TERRAFORM</b></summary>
 
 ```bash
@@ -35,14 +60,6 @@ dagger call -m terraform \
 output \
 --terraform-dir ~/projects/terraform/vms/dagger/ \
 -vv --progress plain
-```
-
-```bash
-# DECRYPT SOPS SECRET
-dagger call -m terraform \
-decrypt-sops \
---sops-key=env:SOPS_AGE_KEY \
---encrypted-file /tmp/tfvars.enc.json
 ```
 
 </details>
