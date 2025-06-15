@@ -1,3 +1,10 @@
+## [0.13.1](https://github.com/stuttgart-things/dagger/compare/v0.13.0...v0.13.1) (2025-06-15)
+
+
+### Bug Fixes
+
+* fix/remove-sops-for-tf-execute ([0893289](https://github.com/stuttgart-things/dagger/commit/089328966148b17c89f81ccc6564244f169d0571))
+
 # [0.13.0](https://github.com/stuttgart-things/dagger/compare/v0.12.0...v0.13.0) (2025-06-13)
 
 
