@@ -1,3 +1,10 @@
+## [0.13.5](https://github.com/stuttgart-things/dagger/compare/v0.13.4...v0.13.5) (2025-06-15)
+
+
+### Bug Fixes
+
+* fix/remove-tf-struct ([c6d8632](https://github.com/stuttgart-things/dagger/commit/c6d86322563b09039e90527e6c7f02ed7b80d369))
+
 ## [0.13.4](https://github.com/stuttgart-things/dagger/compare/v0.13.3...v0.13.4) (2025-06-15)
 
 
