@@ -65,16 +65,17 @@ func (m *Terraform) Execute(
 	return ctr.Directory(workDir), nil
 }
 
-func (m *Terraform) Test(
-	ctx context.Context,
-	terraformDir *dagger.Directory,
+type TerraformTestOpts struct {
 	// +optional
 	// +default="apply"
-	operation string,
+	Operation string
+}
+
+func (m *Terraform) Test2(
+	ctx context.Context,
+	terraformDir *dagger.Directory,
+	opts TerraformTestOpts,
 ) (*dagger.Directory, error) {
-	if operation == "" {
-		operation = "init"
-	}
 
 	// Get the base container with Terraform
 	ctr, err := m.container(ctx)
@@ -88,7 +89,7 @@ func (m *Terraform) Test(
 	// Always run init first with --upgrade
 	ctr = ctr.WithExec([]string{"terraform", "init", "-upgrade", "-input=false", "-no-color"})
 
-	switch operation {
+	switch opts.Operation {
 	case "init":
 		// Nothing more to do
 	case "apply":
@@ -96,7 +97,7 @@ func (m *Terraform) Test(
 	case "destroy":
 		ctr = ctr.WithExec([]string{"terraform", "destroy", "-auto-approve", "-input=false", "-no-color"})
 	default:
-		return nil, fmt.Errorf("unsupported terraform operation: %s", operation)
+		return nil, fmt.Errorf("unsupported terraform operation: %s", op)
 	}
 
 	return ctr.Directory(workDir), nil
