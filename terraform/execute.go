@@ -65,22 +65,20 @@ func (m *Terraform) Execute(
 	return ctr.Directory(workDir), nil
 }
 
-type TerraformTestOpts struct {
-	// +optional
-	// +default="apply"
+type TerraformExecuteOpts struct {
 	Operation string
 }
 
-func (m *Terraform) Test2(
+func (m *Terraform) Execute2(
 	ctx context.Context,
 	terraformDir *dagger.Directory,
-	opts TerraformTestOpts,
-) (*dagger.Directory, error) {
+	opts TerraformExecuteOpts,
+) *dagger.Directory {
 
 	// Get the base container with Terraform
 	ctr, err := m.container(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("container init failed: %w", err)
+		fmt.Errorf("container init failed: %w", err)
 	}
 
 	workDir := "/src"
@@ -97,8 +95,21 @@ func (m *Terraform) Test2(
 	case "destroy":
 		ctr = ctr.WithExec([]string{"terraform", "destroy", "-auto-approve", "-input=false", "-no-color"})
 	default:
-		return nil, fmt.Errorf("unsupported terraform operation: %s", opts.Operation)
+		return nil
 	}
 
-	return ctr.Directory(workDir), nil
+	return ctr.Directory(workDir)
+}
+
+func (m *Terraform) Execute3(
+	ctx context.Context,
+	terraformDir *dagger.Directory,
+	// +optional
+	// +default="apply"
+	operation string,
+) *dagger.Directory {
+	// Call the core build function with the struct
+	return m.Execute2(ctx, terraformDir, TerraformExecuteOpts{
+		Operation: operation,
+	})
 }
