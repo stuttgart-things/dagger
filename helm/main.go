@@ -1,5 +1,3 @@
-// CI/CD pipeline (tasks) for verify, build and push Helm charts
-
 package main
 
 import (
