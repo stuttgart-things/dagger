@@ -97,7 +97,7 @@ func (m *Terraform) Test2(
 	case "destroy":
 		ctr = ctr.WithExec([]string{"terraform", "destroy", "-auto-approve", "-input=false", "-no-color"})
 	default:
-		return nil, fmt.Errorf("unsupported terraform operation: %s", op)
+		return nil, fmt.Errorf("unsupported terraform operation: %s", opts.Operation)
 	}
 
 	return ctr.Directory(workDir), nil
