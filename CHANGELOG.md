@@ -1,3 +1,10 @@
+## [0.13.3](https://github.com/stuttgart-things/dagger/compare/v0.13.2...v0.13.3) (2025-06-15)
+
+
+### Bug Fixes
+
+* fix/terraform-test ([9fe3fbc](https://github.com/stuttgart-things/dagger/commit/9fe3fbc3f1a661a59b7552b8b940665525cd0c5f))
+
 ## [0.13.2](https://github.com/stuttgart-things/dagger/compare/v0.13.1...v0.13.2) (2025-06-15)
 
 
