@@ -74,17 +74,28 @@ tasks:
       - pre-commit run -a
 
   test-ansible:
-    desc: Test ansible modules
+    desc: Test ansible functions
     cmds:
-      - dagger call -m ./{{ .MODULE }} run-collection-build-pipeline --src {{ .TEST_ANSIBLE_CODE }} --progress plain export --path={{ .OUTPUT_COLLECTION_FOLDER }}
-      - ls -lta {{ .OUTPUT_COLLECTION_FOLDER }}
+      - |
+        dagger call -m {{ .MODULE }} execute \
+        --src . \
+        --playbooks tests/ansible/hello.yaml,tests/ansible/hello2.yaml \
+        -vv --progress plain
+
+      - |
+        rm -rf {{ .OUTPUT_COLLECTION_FOLDER }} || true
+        dagger call -m ./{{ .MODULE }} run-collection-build-pipeline \
+        --src {{ .TEST_ANSIBLE_CODE }} \
+        --progress plain export \
+        --path={{ .OUTPUT_COLLECTION_FOLDER }}
+        ls -lta {{ .OUTPUT_COLLECTION_FOLDER }}
     vars:
       TEST_ANSIBLE_CODE: tests/ansible/collection # tests/ansible/collection #tests
       MODULE: ansible
       OUTPUT_COLLECTION_FOLDER: /tmp/dagger/ansible
 
   test-terraform:
-    desc: Test terraform modules
+    desc: Test terraform functions
     cmds:
       - |
         dagger call -m {{ .MODULE }} \
@@ -147,7 +158,7 @@ tasks:
       OUTPUT_HUGO_STATIC_CONTENT: /tmp/dagger/hugo/{{ .NAME }}/static
 
   test-crossplane:
-    desc: Test crossplame modules
+    desc: Test crossplame functions
     cmds:
       - dagger call -m ./{{ .MODULE }} init-package --name test --progress plain export --path={{ .OUTPUT_DIR }}
       - dagger call -m ./{{ .MODULE }} package --src {{ .TEST_PACKAGE }} --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}
@@ -165,7 +176,7 @@ tasks:
       TAG: 2.2.7
 
   test-go:
-    desc: Test go modules
+    desc: Test go functions
     cmds:
       - dagger call -m ./{{ .MODULE }} lint --src {{ .TEST_GO_CODE }} --timeout 300s --progress plain || true
       - dagger call -m ./{{ .MODULE }} binary --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
@@ -185,7 +196,7 @@ tasks:
       WORKFLOW_REPORT: /tmp/workflow.json
 
   test-helm:
-    desc: Test helm modules
+    desc: Test helm functions
     cmds:
       - dagger call -m {{ .MODULE }} lint --chart {{ .TEST_CHART }} --progress plain
       - dagger call -m {{ .MODULE }} render --chart {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain
@@ -201,7 +212,7 @@ tasks:
       USERNAME: stuttgart-things
 
   test-gitlab:
-    desc: Test gitlab modules
+    desc: Test gitlab functions
     cmds:
       - |
         dagger call -m {{ .MODULE }} list-projects \
