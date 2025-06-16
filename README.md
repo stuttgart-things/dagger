@@ -28,7 +28,6 @@ decrypt-sops \
 
 </details>
 
-
 <details><summary><b>TERRAFORM</b></summary>
 
 ```bash
@@ -390,6 +389,16 @@ dagger call -m ansible execute \
 --playbooks tests/ansible/hello.yaml,tests/ansible/hello2.yaml \
 -vv --progress plain
 ```
+
+```bash
+dagger call -m ansible execute \
+--requirements tests/ansible/requirements.yaml \
+--src . \
+--playbooks tests/ansible/hello.yaml,tests/ansible/hello2.yaml \
+-vv --progress plain
+```
+
+
 
 the idea of this module is to create versioned collection artifcat 'on the fly' -
 this module can work with a file structure like this:

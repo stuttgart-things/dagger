@@ -25,6 +25,10 @@ func (m *Ansible) Execute(
 	vaultSecretID *dagger.Secret,
 	// +optional
 	vaultUrl *dagger.Secret,
+	// +optional
+	sshUser *dagger.Secret,
+	// +optional
+	sshPassword *dagger.Secret,
 ) (bool, error) {
 
 	workDir := "/src"
@@ -34,10 +38,11 @@ func (m *Ansible) Execute(
 	if src != nil {
 		ansible = ansible.
 			WithDirectory(workDir, src).
-			WithWorkdir(workDir)
+			WithWorkdir(workDir).
+			WithEnvVariable("ANSIBLE_HOST_KEY_CHECKING", "False")
 	}
 
-	// Optional Vault envs
+	// OPTIONAL VAULT ENVS
 	if vaultAppRoleID != nil {
 		ansible = ansible.WithSecretVariable("VAULT_ROLE_ID", vaultAppRoleID)
 	}
@@ -48,23 +53,31 @@ func (m *Ansible) Execute(
 		ansible = ansible.WithSecretVariable("VAULT_ADDR", vaultUrl)
 	}
 
-	// Mount and install requirements
+	// Set SSH credentials as env vars for lookup inside extra-vars
+	if sshUser != nil {
+		ansible = ansible.WithSecretVariable("ANSIBLE_USER", sshUser)
+	}
+	if sshPassword != nil {
+		ansible = ansible.WithSecretVariable("ANSIBLE_PASSWORD", sshPassword)
+	}
+
+	// MOUNT AND INSTALL REQUIREMENTS
 	if requirements != nil {
 		reqPath := workDir + "/requirements.yml"
 		ansible = ansible.WithMountedFile(reqPath, requirements).
 			WithExec([]string{"ansible-galaxy", "install", "-r", reqPath})
 	}
 
-	// Mount inventory once
+	// MOUNT INVENTORY
 	if inventory != nil {
 		ansible = ansible.WithMountedFile(workDir+"/inventory", inventory)
 	}
 
-	// Split playbooks and parameters
+	// SPLIT PLAYBOOKS AND PARAMETERS
 	playbookList := strings.Split(playbooks, ",")
 	paramList := strings.Fields(parameters) // comma-split, but parameters are typically space-based
 
-	// Run each playbook
+	// RUN EACH PLAYBOOK
 	for _, playbook := range playbookList {
 		playbook = strings.TrimSpace(playbook)
 		if playbook == "" {
@@ -73,11 +86,18 @@ func (m *Ansible) Execute(
 
 		cmd := []string{"ansible-playbook", playbook, "-vv"}
 		if inventory != nil {
-			ansible = ansible.WithMountedFile(workDir+"/inventory", inventory)
 			cmd = append(cmd, "-i", "inventory")
 		}
+
+		// Append custom parameters passed in
 		if len(paramList) > 0 {
 			cmd = append(cmd, paramList...)
+		}
+
+		// Inject --extra-vars with env lookups if SSH credentials are set
+		if sshUser != nil && sshPassword != nil {
+			extraVars := "ansible_user='{{ lookup(\"env\", \"ANSIBLE_USER\") }}' ansible_password='{{ lookup(\"env\", \"ANSIBLE_PASSWORD\") }}'"
+			cmd = append(cmd, "--extra-vars", extraVars)
 		}
 
 		var err error
