@@ -13,10 +13,6 @@ func (m *Terraform) Execute(
 	// +optional
 	// +default="apply"
 	operation string,
-	// +optional
-	encryptedFile *dagger.File,
-	// +optional
-	sopsKey *dagger.Secret,
 ) (*dagger.Directory, error) {
 	if operation == "" {
 		operation = "init"
@@ -31,18 +27,6 @@ func (m *Terraform) Execute(
 	workDir := "/src"
 	ctr = ctr.WithDirectory(workDir, terraformDir).WithWorkdir(workDir)
 
-	// If encrypted tfvars is provided, decrypt and mount it
-	if encryptedFile != nil {
-		// Decrypt to string
-		decryptedContent, err := m.DecryptSops(ctx, sopsKey, encryptedFile)
-		if err != nil {
-			return nil, fmt.Errorf("decrypting sops file failed: %w", err)
-		}
-
-		// Create a file with the decrypted content and mount it as terraform.tfvars.json
-		ctr = ctr.WithNewFile(fmt.Sprintf("%s/terraform.tfvars.json", workDir), decryptedContent)
-	}
-
 	// Always run init first with --upgrade
 	ctr = ctr.WithExec([]string{"terraform", "init", "-upgrade", "-input=false", "-no-color"})
 
@@ -55,11 +39,6 @@ func (m *Terraform) Execute(
 		ctr = ctr.WithExec([]string{"terraform", "destroy", "-auto-approve", "-input=false", "-no-color"})
 	default:
 		return nil, fmt.Errorf("unsupported terraform operation: %s", operation)
-	}
-
-	// Delete the tfvars file
-	if encryptedFile != nil {
-		ctr = ctr.WithExec([]string{"rm", "-f", "terraform.tfvars.json"})
 	}
 
 	return ctr.Directory(workDir), nil

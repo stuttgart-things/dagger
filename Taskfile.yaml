@@ -62,6 +62,7 @@ tasks:
       - task: test-ansible
       - task: test-docker
       - task: test-hugo
+      - task: test-terraform
       - task: pr
       - npx semantic-release --dry-run
       - npx semantic-release --debug --no-ci
