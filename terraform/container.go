@@ -17,7 +17,7 @@ func (m *Terraform) container(ctx context.Context) (*dagger.Container, error) {
 
 	ctr := dag.Container().
 		From(m.BaseImage).
-		WithExec([]string{"apk", "add", "--no-cache", "curl", "unzip", "sops", "git"}).
+		WithExec([]string{"apk", "add", "--no-cache", "curl", "unzip", "git"}).
 		WithExec([]string{"sh", "-c", fmt.Sprintf("curl -sSL %s -o /tmp/terraform.zip", terraformURL)}).
 		WithExec([]string{"unzip", "-d", "/usr/bin", "/tmp/terraform.zip"}).
 		WithExec([]string{"chmod", "+x", "/usr/bin/terraform"}).
