@@ -398,7 +398,19 @@ dagger call -m ansible execute \
 -vv --progress plain
 ```
 
+```bash
+export SSH_USER=sthings
+export SSH_PASSWORD=<REPLACEME>
 
+dagger call -m ansible execute \
+--requirements tests/ansible/requirements.yaml \
+--src . \
+--playbooks tests/ansible/hello.yaml,sthings.baseos.setup \
+--inventory /home/sthings/projects/terraform/vms/sthings-runner/rke2.ini \
+--ssh-user=env:SSH_USER \
+--ssh-password=env:SSH_PASSWORD \
+--parameters "send_to_homerun=false" \
+-vv --progress plain
 
 the idea of this module is to create versioned collection artifcat 'on the fly' -
 this module can work with a file structure like this:
