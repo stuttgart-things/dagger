@@ -73,9 +73,8 @@ func (m *Ansible) Execute(
 		ansible = ansible.WithMountedFile(workDir+"/inventory", inventory)
 	}
 
-	// SPLIT PLAYBOOKS AND PARAMETERS
+	// SPLIT PLAYBOOKS
 	playbookList := strings.Split(playbooks, ",")
-	paramList := strings.Fields(parameters) // comma-split, but parameters are typically space-based
 
 	// RUN EACH PLAYBOOK
 	for _, playbook := range playbookList {
@@ -89,15 +88,22 @@ func (m *Ansible) Execute(
 			cmd = append(cmd, "-i", "inventory")
 		}
 
-		// Append custom parameters passed in
-		if len(paramList) > 0 {
-			cmd = append(cmd, paramList...)
+		// Build extra-vars string
+		var extraVars []string
+
+		if sshUser != nil && sshPassword != nil {
+			extraVars = append(extraVars,
+				"ansible_user='{{ lookup(\"env\", \"ANSIBLE_USER\") }}'",
+				"ansible_password='{{ lookup(\"env\", \"ANSIBLE_PASSWORD\") }}'",
+			)
 		}
 
-		// Inject --extra-vars with env lookups if SSH credentials are set
-		if sshUser != nil && sshPassword != nil {
-			extraVars := "ansible_user='{{ lookup(\"env\", \"ANSIBLE_USER\") }}' ansible_password='{{ lookup(\"env\", \"ANSIBLE_PASSWORD\") }}'"
-			cmd = append(cmd, "--extra-vars", extraVars)
+		if parameters != "" {
+			extraVars = append(extraVars, parameters)
+		}
+
+		if len(extraVars) > 0 {
+			cmd = append(cmd, "--extra-vars", strings.Join(extraVars, " "))
 		}
 
 		var err error
