@@ -1,3 +1,11 @@
+# [0.14.0](https://github.com/stuttgart-things/dagger/compare/v0.13.6...v0.14.0) (2025-06-18)
+
+
+### Features
+
+* feat/ansible-execution ([6fb588d](https://github.com/stuttgart-things/dagger/commit/6fb588d97d47aecc1ddf9eb9678169dbc4279387))
+* feat/ansible-execution ([bf8a89b](https://github.com/stuttgart-things/dagger/commit/bf8a89beb07d5cac144fa83eef964e59c785dce4))
+
 ## [0.13.6](https://github.com/stuttgart-things/dagger/compare/v0.13.5...v0.13.6) (2025-06-16)
 
 
