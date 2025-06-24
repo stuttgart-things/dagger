@@ -4,6 +4,19 @@ collection of dagger modules
 
 ## MODULES
 
+<details><summary><b>GIT</b></summary>
+
+```bash
+dagger call -m git clone-git-hub \
+--repository stuttgart-things/stuttgart-things \
+--token env:GITHUB_TOKEN \
+-vv --progress plain \
+export --path=/tmp/repo
+```
+
+</details>
+
+
 <details><summary><b>SOPS</b></summary>
 
 ```bash
@@ -162,6 +175,40 @@ dagger call -m packer build \
 --vault-secret-id env:VAULT_SECRET_ID \
 --progress plain -vv
 ```
+
+```bash
+# MOVE VM TEMPLATE
+export VCENTER_FQDN=https://10.100.135.50/sdk
+export VCENTER_USER=<>
+export VCENTER_PASSWORD<>
+
+dagger call -m packer vcenteroperation \
+--operation move \
+--vcenter env:VCENTER_FQDN \
+--username env:VCENTER_USER \
+--password env:VCENTER_PASSWORD \
+--source /Datacenter/vm/stuttgart-things/rancher-things/sthings-app-4 \
+--target /Datacenter/vm/stuttgart-things/testing/ \
+--progress plain -vv
+```
+
+```bash
+# RENAME VM TEMPLATE
+export VCENTER_FQDN=https://10.100.135.50/sdk
+export VCENTER_USER=<>
+export VCENTER_PASSWORD<>
+
+dagger call -m packer vcenteroperation \
+--operation rename \
+--vcenter env:VCENTER_FQDN \
+--username env:VCENTER_USER \
+--password env:VCENTER_PASSWORD \
+--source /Datacenter/vm/stuttgart-things/vm-templates/u22-rke2-ipi  \
+--target u22-rke2-old \
+--progress plain -vv
+```
+
+
 
 </details>
 
@@ -411,6 +458,7 @@ dagger call -m ansible execute \
 --ssh-password=env:SSH_PASSWORD \
 --parameters "send_to_homerun=false" \
 -vv --progress plain
+```
 
 the idea of this module is to create versioned collection artifcat 'on the fly' -
 this module can work with a file structure like this:
