@@ -14,22 +14,16 @@ type Packer struct {
 	BaseImage string
 }
 
-func (m *Packer) Build(
+func (m *Packer) Bake(
 	ctx context.Context,
 	// The Packer version to use
 	// +optional
 	// +default="1.12.0"
-	packerVersion,
+	packerVersion string,
 	// The Packer arch
 	// +optional
 	// +default="linux_amd64"
-	arch,
-	// +optional
-	repoURL,
-	// The Branch name
-	// +optional
-	// +default="main"
-	branch string,
+	arch string,
 	// If true, only init packer w/out build
 	// +optional
 	// +default=false
@@ -47,10 +41,7 @@ func (m *Packer) Build(
 	// +optional
 	vaultToken *dagger.Secret,
 	buildPath string,
-	// +optional
-	token *dagger.Secret, // injected securely
-	// +optional
-	localDir *dagger.Directory, // NEW: optional local directory
+	localDir *dagger.Directory,
 ) {
 
 	workingDir := filepath.Dir(buildPath)
@@ -59,14 +50,8 @@ func (m *Packer) Build(
 	var repoContent *dagger.Directory
 	var err error
 
-	if localDir != nil {
-		repoContent = localDir
-	} else {
-		repoContent, err = m.ClonePrivateRepo(ctx, repoURL, branch, token)
-		if err != nil {
-			panic(fmt.Errorf("failed to clone repo: %w", err))
-		}
-	}
+	repoContent = localDir
+
 	buildDir := repoContent.Directory(workingDir)
 
 	entries1, err := buildDir.Entries(ctx)
@@ -102,18 +87,4 @@ func (m *Packer) Build(
 	if err != nil {
 		fmt.Errorf("failed to initialize: %w", err)
 	}
-}
-
-// ClonePrivateRepo clones a private GitHub repo using HTTPS and a personal access token
-func (m *Packer) ClonePrivateRepo(
-	ctx context.Context,
-	repoURL, // e.g. "https://github.com/your-org/your-private-repo.git"
-	branch string, // e.g. "main"
-	token *dagger.Secret, // injected securely
-) (*dagger.Directory, error) {
-	src := dag.Git(repoURL).
-		WithAuthToken(token).
-		Branch(branch).Tree()
-
-	return src, nil
 }

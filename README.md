@@ -149,22 +149,14 @@ docker run --rm -p 8080:80 \
 <details><summary><b>PACKER</b></summary>
 
 ```bash
-# GIT
-dagger call -m packer build \
---repo-url https://github.com/stuttgart-things/stuttgart-things.git \
---branch "feat/packer-hello" \
---token env:GITHUB_TOKEN \
---build-path packer/builds/hello \
+# LOCAL
+dagger call -m packer bake \
+--local-dir "." \
+--build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl \
 --progress plain -vv
 ```
 
 ```bash
-# LOCAL
-dagger call -m packer build \
---local-dir "." \
---build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl \
---progress plain -vv
-
 # LOCAL - w/ VAULT AUTH
 dagger call -m packer build \
 --local-dir "." \
@@ -207,8 +199,6 @@ dagger call -m packer vcenteroperation \
 --target u22-rke2-old \
 --progress plain -vv
 ```
-
-
 
 </details>
 
