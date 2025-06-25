@@ -1,3 +1,10 @@
+## [0.15.1](https://github.com/stuttgart-things/dagger/compare/v0.15.0...v0.15.1) (2025-06-25)
+
+
+### Bug Fixes
+
+* fix/packer-remove-clone ([ab6145f](https://github.com/stuttgart-things/dagger/commit/ab6145fab78b46bc2a4f531a53b839804ef066fb))
+
 # [0.15.0](https://github.com/stuttgart-things/dagger/compare/v0.14.0...v0.15.0) (2025-06-25)
 
 
