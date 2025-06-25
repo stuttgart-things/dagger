@@ -1,3 +1,10 @@
+# [0.15.0](https://github.com/stuttgart-things/dagger/compare/v0.14.0...v0.15.0) (2025-06-25)
+
+
+### Features
+
+* feat/add-vcenter-operation ([42999f4](https://github.com/stuttgart-things/dagger/commit/42999f4b78e22bede2455f6b3c3db2637a2bf304))
+
 # [0.14.0](https://github.com/stuttgart-things/dagger/compare/v0.13.6...v0.14.0) (2025-06-18)
 
 
