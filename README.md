@@ -16,7 +16,6 @@ export --path=/tmp/repo
 
 </details>
 
-
 <details><summary><b>SOPS</b></summary>
 
 ```bash
@@ -149,20 +148,23 @@ docker run --rm -p 8080:80 \
 <details><summary><b>PACKER</b></summary>
 
 ```bash
-# LOCAL
 dagger call -m packer bake \
 --local-dir "." \
---build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl \
+--build-path tests/packer/hello/hello.pkr.hcl \
 --progress plain -vv
 ```
 
 ```bash
-# LOCAL - w/ VAULT AUTH
-dagger call -m packer build \
---local-dir "." \
---build-path tests/packer/u24/ubuntu24-base-os.pkr.hcl \
+# w/ VAULT AUTH (PACKER ONLY WORKS WITH VAULT TOKEN, FOR ANSIBLE WE'RE USING APPROLE AUTH)
+export VAULT_ROLE_ID=<>
+export VAULT_TOKEN=<>
+export VAULT_SECRET_ID<>
+
+dagger call -m packer bake \
+--local-dir "/home/sthings/projects/stuttgart-things/packer/builds/ubuntu24-labda-vsphere/" \
+--build-path ubuntu24-base-os.pkr.hc\
 --vault-addr https://vault-vsphere.example.com:8200 \
---vault-role-id 1d42d7e7-8c14-e5f9-801d-b3ecef416616 \
+--vault-role-id env:VAULT_ROLE_ID \
 --vault-token env:VAULT_TOKEN \
 --vault-secret-id env:VAULT_SECRET_ID \
 --progress plain -vv
