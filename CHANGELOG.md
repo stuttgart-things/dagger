@@ -1,3 +1,10 @@
+## [0.15.2](https://github.com/stuttgart-things/dagger/compare/v0.15.1...v0.15.2) (2025-06-26)
+
+
+### Bug Fixes
+
+* fix/packer-bake-func ([0295b93](https://github.com/stuttgart-things/dagger/commit/0295b93efab12102266e77e35fbc5b10383895e6))
+
 ## [0.15.1](https://github.com/stuttgart-things/dagger/compare/v0.15.0...v0.15.1) (2025-06-25)
 
 
