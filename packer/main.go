@@ -33,7 +33,7 @@ func (m *Packer) Bake(
 	vaultAddr string,
 	// vaultRoleID
 	// +optional
-	vaultRoleID string,
+	vaultRoleID *dagger.Secret,
 	// vaultSecretID
 	// +optional
 	vaultSecretID *dagger.Secret,
@@ -43,7 +43,6 @@ func (m *Packer) Bake(
 	buildPath string,
 	localDir *dagger.Directory,
 ) {
-
 	workingDir := filepath.Dir(buildPath)
 	packerFile := filepath.Base(buildPath)
 
@@ -64,11 +63,20 @@ func (m *Packer) Bake(
 	base := m.container(packerVersion, arch).
 		WithMountedDirectory("/src", buildDir).
 		WithEnvVariable("VAULT_ADDR", vaultAddr).
-		WithEnvVariable("VAULT_ROLE_ID", vaultRoleID).
 		WithEnvVariable("VAULT_SKIP_VERIFY", "TRUE").
-		WithSecretVariable("VAULT_TOKEN", vaultToken).
-		WithSecretVariable("VAULT_SECRET_ID", vaultSecretID).
 		WithWorkdir("/src")
+
+	if vaultToken != nil {
+		base = base.WithSecretVariable("VAULT_TOKEN", vaultToken)
+	}
+
+	if vaultRoleID != nil {
+		base = base.WithSecretVariable("VAULT_ROLE_ID", vaultRoleID)
+	}
+
+	if vaultSecretID != nil {
+		base = base.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
+	}
 
 	// RUN PACKER INIT AND PERSIST CONTAINER STATE
 	packerContainer := base.WithExec([]string{"packer", "init", packerFile})
