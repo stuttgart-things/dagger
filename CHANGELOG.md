@@ -1,3 +1,10 @@
+## [0.15.3](https://github.com/stuttgart-things/dagger/compare/v0.15.2...v0.15.3) (2025-06-29)
+
+
+### Bug Fixes
+
+* feat/add-git-branch ([aa02833](https://github.com/stuttgart-things/dagger/commit/aa02833959b697b0f9fc998dbc00e369b686ba0e))
+
 ## [0.15.2](https://github.com/stuttgart-things/dagger/compare/v0.15.1...v0.15.2) (2025-06-26)
 
 
