@@ -9,6 +9,7 @@ collection of dagger modules
 ```bash
 dagger call -m git clone-git-hub \
 --repository stuttgart-things/stuttgart-things \
+--ref main \
 --token env:GITHUB_TOKEN \
 -vv --progress plain \
 export --path=/tmp/repo
