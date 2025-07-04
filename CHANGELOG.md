@@ -1,3 +1,10 @@
+# [0.16.0](https://github.com/stuttgart-things/dagger/compare/v0.15.3...v0.16.0) (2025-07-04)
+
+
+### Features
+
+* feat/add-template-output ([eff9832](https://github.com/stuttgart-things/dagger/commit/eff983285b3cc7912f394d9e22d60059c0b8c801))
+
 ## [0.15.3](https://github.com/stuttgart-things/dagger/compare/v0.15.2...v0.15.3) (2025-06-29)
 
 
