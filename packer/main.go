@@ -42,57 +42,52 @@ func (m *Packer) Bake(
 	vaultToken *dagger.Secret,
 	buildPath string,
 	localDir *dagger.Directory,
-) {
+) string {
 	workingDir := filepath.Dir(buildPath)
 	packerFile := filepath.Base(buildPath)
 
-	var repoContent *dagger.Directory
-	var err error
-
-	repoContent = localDir
-
+	repoContent := localDir
 	buildDir := repoContent.Directory(workingDir)
 
-	entries1, err := buildDir.Entries(ctx)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Files in buildPath:", entries1)
+	logFilePath := "/src/packer.log"
 
-	// MOUNT BUILDDIR AND SET WORKING DIRECTORY
+	// PREPARE BASE CONTAINER WITH ENVIRONMENT AND SECRETS
 	base := m.container(packerVersion, arch).
 		WithMountedDirectory("/src", buildDir).
+		WithWorkdir("/src").
 		WithEnvVariable("VAULT_ADDR", vaultAddr).
 		WithEnvVariable("VAULT_SKIP_VERIFY", "TRUE").
-		WithWorkdir("/src")
+		WithEnvVariable("PACKER_LOG", "1").
+		WithEnvVariable("PACKER_LOG_PATH", logFilePath)
 
 	if vaultToken != nil {
 		base = base.WithSecretVariable("VAULT_TOKEN", vaultToken)
 	}
-
 	if vaultRoleID != nil {
 		base = base.WithSecretVariable("VAULT_ROLE_ID", vaultRoleID)
 	}
-
 	if vaultSecretID != nil {
 		base = base.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
 	}
 
-	// RUN PACKER INIT AND PERSIST CONTAINER STATE
-	packerContainer := base.WithExec([]string{"packer", "init", packerFile})
+	// RUN `PACKER INIT`
+	initContainer := base.WithExec([]string{"packer", "init", packerFile})
 
-	// NOW RUN BUILD ON THE RESULT OF INIT
+	// RUN `PACKER BUILD` UNLESS INITONLY IS TRUE
+	var buildContainer *dagger.Container
 	if !initOnly {
-		buildOut, err := packerContainer.
-			WithExec([]string{"packer", "build", packerFile}).
-			Stdout(ctx)
-		if err != nil {
-			panic(fmt.Errorf("failed to build: %w", err))
-		}
-		fmt.Println(buildOut)
+		buildContainer = initContainer.WithExec([]string{"packer", "build", packerFile})
+	} else {
+		buildContainer = initContainer
 	}
 
+	// READ THE PACKER LOG FROM THE CONTAINER
+	logContents, err := buildContainer.
+		File(logFilePath).
+		Contents(ctx)
 	if err != nil {
-		fmt.Errorf("failed to initialize: %w", err)
+		panic(fmt.Errorf("failed to read packer log: %w", err))
 	}
+
+	return logContents
 }

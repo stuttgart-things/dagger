@@ -48,6 +48,7 @@ decrypt-sops \
 dagger call -m terraform \
 execute \
 --terraform-dir tests/terraform \
+--variables "name=patrick,food=kaiserschmarrn" \
 --operation apply \
 -vv --progress plain \
 export --path=~/tmp/dagger/tests/terraform/

@@ -73,6 +73,15 @@ tasks:
     cmds:
       - pre-commit run -a
 
+  test-packer:
+    desc: Test packer functions
+    cmds:
+      - |
+        dagger call -m packer bake \
+        --local-dir "." \
+        --build-path tests/packer/hello/hello.pkr.hcl \
+        --progress plain -vv
+
   test-ansible:
     desc: Test ansible functions
     cmds:
