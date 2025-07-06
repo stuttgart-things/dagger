@@ -1,3 +1,10 @@
+# [0.17.0](https://github.com/stuttgart-things/dagger/compare/v0.16.0...v0.17.0) (2025-07-06)
+
+
+### Features
+
+* feat/rework-golang ([4a4473e](https://github.com/stuttgart-things/dagger/commit/4a4473eac55d889026797cd241bfbf18ed7ad48c))
+
 # [0.16.0](https://github.com/stuttgart-things/dagger/compare/v0.15.3...v0.16.0) (2025-07-04)
 
 
