@@ -7,51 +7,6 @@ import (
 	"strings"
 )
 
-func (m *Go) SecurityScan(
-	ctx context.Context,
-	src *dagger.Directory,
-	// +optional
-	// +default="2.22.1"
-	secureGoVersion string,
-) (*dagger.File, error) {
-	// Create a container with gosec installed
-	container := dag.Container().
-		From("securego/gosec:"+secureGoVersion). // Use the official gosec image
-		WithDirectory("/src", src).
-		WithWorkdir("/src")
-
-	// Run gosec to scan the source code and write the output to a file
-	reportPath := "/src/security-report.txt"
-	container = container.
-		WithExec([]string{"sh", "-c", "gosec ./... > " + reportPath + " || true"}) // Ignore exit code
-
-	// Get the security report file
-	reportFile := container.File(reportPath)
-
-	// Return the security report file
-	return reportFile, nil
-}
-
-// SearchVulnerabilities parses the Trivy scan report and filters vulnerabilities by severity
-func (m *Go) SearchVulnerabilities(
-	ctx context.Context,
-	scanOutput string, // The scan output as a string
-	severityFilter string, // Comma-separated list of severities to filter (e.g., "HIGH,CRITICAL")
-) ([]string, error) {
-	// Parse the scan output and filter vulnerabilities by severity
-	var vulnerabilities []string
-
-	// Example: Split the scan output into lines and filter by severity
-	lines := strings.Split(scanOutput, "\n")
-	for _, line := range lines {
-		if strings.Contains(line, severityFilter) {
-			vulnerabilities = append(vulnerabilities, line)
-		}
-	}
-
-	return vulnerabilities, nil
-}
-
 func (m *Go) TrivyScan(
 	ctx context.Context,
 	src *dagger.Directory,
@@ -78,6 +33,26 @@ func (m *Go) TrivyScan(
 
 	// Return the Trivy report file
 	return reportFile, nil
+}
+
+// SearchVulnerabilities parses the Trivy scan report and filters vulnerabilities by severity
+func (m *Go) SearchVulnerabilities(
+	ctx context.Context,
+	scanOutput string, // The scan output as a string
+	severityFilter string, // Comma-separated list of severities to filter (e.g., "HIGH,CRITICAL")
+) ([]string, error) {
+	// Parse the scan output and filter vulnerabilities by severity
+	var vulnerabilities []string
+
+	// Example: Split the scan output into lines and filter by severity
+	lines := strings.Split(scanOutput, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, severityFilter) {
+			vulnerabilities = append(vulnerabilities, line)
+		}
+	}
+
+	return vulnerabilities, nil
 }
 
 func (m *Go) ScanRemoteImage(

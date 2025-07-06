@@ -9,7 +9,11 @@ import (
 func (m *Go) Test(
 	ctx context.Context,
 	src *dagger.Directory,
-	goVersion string, // Go version to use for testing
+	// Go version to use for testing
+	// +optional
+	// +default="1.24.4"
+	goVersion string,
+	// Test arguments to pass to `go test`
 	// +optional
 	// +default="./..."
 	testArg string, // Arguments for `go test`
@@ -22,27 +26,15 @@ func (m *Go) Test(
 
 	// Run Go tests with coverage
 	output, err := container.
-		WithExec([]string{"go", "test", "-cover", testArg}).
+		WithExec([]string{
+			"go",
+			"test",
+			"-cover",
+			testArg}).
 		Stdout(ctx)
 	if err != nil {
 		return "", fmt.Errorf("error running tests: %w", err)
 	}
 
 	return output, nil
-}
-
-// Lint runs the linter on the provided source code
-func (m *Go) Lint(
-	ctx context.Context,
-	src *dagger.Directory,
-	// +optional
-	// +default="500s"
-	timeout string,
-) *dagger.Container {
-
-	golangciLintRunOpts := dagger.GolangciLintRunOpts{
-		Timeout: timeout,
-	}
-
-	return dag.GolangciLint().Run(src, golangciLintRunOpts)
 }

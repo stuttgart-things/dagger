@@ -47,7 +47,7 @@ func (m *Go) build(
 
 	return outputDir
 }
-func (m *Go) Binary(
+func (m *Go) BuildBinary(
 	ctx context.Context,
 	src *dagger.Directory,
 	// +optional

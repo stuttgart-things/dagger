@@ -155,7 +155,7 @@ func (m *Go) RunWorkflowEntryStage(
 	go func() {
 		buildStart := time.Now()
 
-		buildOutput := m.Binary(ctx, src, goVersion, os, arch, goMainFile, binName, ldflags)
+		buildOutput := m.BuildBinary(ctx, src, goVersion, os, arch, goMainFile, binName, ldflags)
 		stats.Build.Duration = time.Since(buildStart).String()
 
 		// Calculate binary size
