@@ -387,23 +387,27 @@ build-and-push \
 ### LINT PROJECT
 
 ```bash
-dagger call -m \
-"github.com/stuttgart-things/dagger/go@v0.2.2" \
-lint --src "." --timeout 300s --progress plain
+dagger call -m go \
+lint --src "." \
+--timeout 300s \
+--progress plain \
+-vv
 ```
 
 ### BUILD PROJECT
 
 ```bash
-dagger call -m github.com/stuttgart-things/dagger/go@v0.10.2 binary \
+dagger call -m go \
+build-binary \
 --src "." \
 --os linux \
 --arch amd64 \
 --go-main-file main.go \
 --bin-name k2 \
---go-version 1.24.2 \
+--go-version 1.24.4 \
 export --path=/tmp/go/build/ \
---progress plain
+--progress plain \
+-vv
 ```
 
 ### RUN-WORKFLOW-CONTAINER-STAGE
