@@ -1,3 +1,10 @@
+# [0.18.0](https://github.com/stuttgart-things/dagger/compare/v0.17.0...v0.18.0) (2025-07-07)
+
+
+### Features
+
+* feat/add-terraform-secret-vars ([bf20909](https://github.com/stuttgart-things/dagger/commit/bf20909f49514b50dfbdd1bec46f7ce371d5ab66))
+
 # [0.17.0](https://github.com/stuttgart-things/dagger/compare/v0.16.0...v0.17.0) (2025-07-06)
 
 
