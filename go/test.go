@@ -24,14 +24,25 @@ func (m *Go) Test(
 		WithDirectory("/src", src).
 		WithWorkdir("/src")
 
-	// Run Go tests with coverage
-	output, err := container.
+	testOutput, err := container.
+		WithExec([]string{
+			"go",
+			"test",
+			"-v",
+			testArg}).
+		Stdout(ctx)
+
+	// RUN GO TESTS WITH COVERAGE
+	coverageOutput, err := container.
 		WithExec([]string{
 			"go",
 			"test",
 			"-cover",
 			testArg}).
 		Stdout(ctx)
+
+	output := testOutput + "\n" + coverageOutput
+
 	if err != nil {
 		return "", fmt.Errorf("error running tests: %w", err)
 	}
