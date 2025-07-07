@@ -55,6 +55,18 @@ export --path=~/tmp/dagger/tests/terraform/
 ```
 
 ```bash
+# RUN TERRAFORM APPLY AND EXPORTS DIR w/ STATE + MOUNT SECRETS FILE
+dagger call -m terraform \
+execute \
+--terraform-dir tests/terraform \
+--variables "name=patrick" \ # HIGHEST VAR PRIORITY
+--secret-json-variables file://tests/terraform/terraform.tfvars.json \
+--operation apply \
+-vv --progress plain \
+export --path=~/tmp/dagger/tests/terraform/
+```
+
+```bash
 # DECRYPT SOPS SECRETS FILE
 # + RUN APPLY
 dagger call -m terraform \

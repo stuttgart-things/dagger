@@ -15,14 +15,16 @@ func (m *Terraform) Execute(
 	// +default="apply"
 	operation string,
 	// +optional
-	// e.g., "name=patrick,age=37"
+	// e.g., "name=patrick,food=schnitzel"
 	variables string,
+	// +optional
+	secretJsonVariables *dagger.Secret,
 ) (*dagger.Directory, error) {
 	if operation == "" {
 		operation = "init"
 	}
 
-	// Get the base container with Terraform
+	// GET THE BASE CONTAINER WITH TERRAFORM
 	ctr, err := m.container(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("container init failed: %w", err)
@@ -31,10 +33,10 @@ func (m *Terraform) Execute(
 	workDir := "/src"
 	ctr = ctr.WithDirectory(workDir, terraformDir).WithWorkdir(workDir)
 
-	// Always run init first with --upgrade
+	// ALWAYS RUN INIT FIRST WITH --UPGRADE
 	ctr = ctr.WithExec([]string{"terraform", "init", "-upgrade", "-input=false", "-no-color"})
 
-	// Parse variables string into -var arguments
+	// PARSE VARIABLES STRING INTO -VAR ARGUMENTS
 	varArgs := []string{}
 	if variables != "" {
 		pairs := strings.Split(variables, ",")
@@ -47,17 +49,30 @@ func (m *Terraform) Execute(
 		}
 	}
 
+	if secretJsonVariables != nil {
+		// MOUNT THE SECRET VARIABLES AS A FILE
+		ctr = ctr.WithMountedSecret(workDir+"/terraform.tfvars.json", secretJsonVariables)
+	}
+
 	switch operation {
 	case "init":
 		// Nothing more to do
 	case "apply":
 		ctr = ctr.WithExec(append([]string{
-			"terraform", "apply", "-auto-approve", "-input=false", "-no-color"},
+			"terraform",
+			"apply",
+			"-auto-approve",
+			"-input=false",
+			"-no-color"},
 			varArgs...,
 		))
 	case "destroy":
 		ctr = ctr.WithExec(append([]string{
-			"terraform", "destroy", "-auto-approve", "-input=false", "-no-color"},
+			"terraform",
+			"destroy",
+			"-auto-approve",
+			"-input=false",
+			"-no-color"},
 			varArgs...,
 		))
 	default:
