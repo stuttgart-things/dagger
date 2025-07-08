@@ -4,6 +4,20 @@ collection of dagger modules
 
 ## MODULES
 
+<details><summary><b>TRIVY</b></summary>
+
+```bash
+# FILESYSTEM SCAN
+dagger call -m trivy scan-filesystem \
+--src /home/sthings/projects/stuttgart-things \
+--progress plain -vv \
+export --path=/tmp/trivy.json
+cat /tmp/trivy.json
+```
+
+</details>
+
+
 <details><summary><b>GIT</b></summary>
 
 ```bash
