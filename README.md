@@ -11,8 +11,19 @@ collection of dagger modules
 dagger call -m trivy scan-filesystem \
 --src /home/sthings/projects/stuttgart-things \
 --progress plain -vv \
-export --path=/tmp/trivy.json
-cat /tmp/trivy.json
+export --path=/tmp/trivy-fs.json
+cat /tmp/trivy-fs.json
+```
+
+```bash
+# IMAGE SCAN (w/ REG LOGIN)
+export REG_USER=""
+export REG_PW=""
+
+dagger call -m trivy scan-image \
+--image-ref nginx:latest \ --registry-user=env:REG_USER \ --registry-password=env:REG_PW \
+--progress plain -vv \
+export --path=/tmp/image-nginx.json
 ```
 
 </details>
