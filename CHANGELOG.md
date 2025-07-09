@@ -1,3 +1,12 @@
+# [0.19.0](https://github.com/stuttgart-things/dagger/compare/v0.18.0...v0.19.0) (2025-07-09)
+
+
+### Features
+
+* feat/add-trivy ([cd7c019](https://github.com/stuttgart-things/dagger/commit/cd7c019ba192636ccb3f1c4c05922a396b6ea9c2))
+* feat/add-trivy ([7cec314](https://github.com/stuttgart-things/dagger/commit/7cec31401ce087d71bb975c259ab1696a309a48a))
+* feat/add-trivy ([0c4d8b1](https://github.com/stuttgart-things/dagger/commit/0c4d8b103a03bcb80eac63264ee0070240e6e7f0))
+
 # [0.18.0](https://github.com/stuttgart-things/dagger/compare/v0.17.0...v0.18.0) (2025-07-07)
 
 
