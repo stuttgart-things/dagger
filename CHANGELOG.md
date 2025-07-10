@@ -1,3 +1,10 @@
+## [0.19.1](https://github.com/stuttgart-things/dagger/compare/v0.19.0...v0.19.1) (2025-07-10)
+
+
+### Bug Fixes
+
+* fix/ko-build ([c5afaed](https://github.com/stuttgart-things/dagger/commit/c5afaed10dc7de3712ca7429c6ddfde9d3e29ce0))
+
 # [0.19.0](https://github.com/stuttgart-things/dagger/compare/v0.18.0...v0.19.0) (2025-07-09)
 
 
