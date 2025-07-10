@@ -7,9 +7,18 @@ collection of dagger modules
 <details><summary><b>TRIVY</b></summary>
 
 ```bash
-# FILESYSTEM SCAN
+# FILESYSTEM SCAN LOCAL
 dagger call -m trivy scan-filesystem \
 --src /home/sthings/projects/stuttgart-things \
+--progress plain -vv \
+export --path=/tmp/trivy-fs.json
+cat /tmp/trivy-fs.json
+```
+
+```bash
+# FILESYSTEM SCAN FROM REMOTE GIT REPO
+dagger call -m trivy scan-filesystem \
+--src git://github.com/stuttgart-things/ansible.git \
 --progress plain -vv \
 export --path=/tmp/trivy-fs.json
 cat /tmp/trivy-fs.json
@@ -21,7 +30,9 @@ export REG_USER=""
 export REG_PW=""
 
 dagger call -m trivy scan-image \
---image-ref nginx:latest \ --registry-user=env:REG_USER \ --registry-password=env:REG_PW \
+--image-ref nginx:latest \
+--registry-user=env:REG_USER \
+--registry-password=env:REG_PW \
 --progress plain -vv \
 export --path=/tmp/image-nginx.json
 ```
@@ -447,19 +458,24 @@ export --path=/tmp/go/build/ \
 -vv
 ```
 
-### RUN-WORKFLOW-CONTAINER-STAGE
+### KO BUILD
 
 ```bash
-dagger call -m \
-github.com/stuttgart-things/dagger/go@v0.4.2 \
-run-workflow-container-stage --src tests/calculator/ \
---token=env:GITHUB_TOKEN --token-name GITHUB_TOKEN \
---repo ghcr.io/stuttgart-things/dagger \
---ko-version 3979dd70544adde24d336d5b605f4cf6f0ea9479 \
---output /tmp/calc-image.report.json --progress plain
+# BUILD JUST LOCAL
+dagger call -m go ko-build \
+--src tests/go/calculator/ \
+--push="false" \
+--progress plain -vv
 ```
 
-</details>
+```bash
+# BUILD + PUSH
+dagger call -m go ko-build \
+--src tests/go/calculator/ \
+--token=env:GITHUB_TOKEN \
+--repo ghcr.io/stuttgart-things/machineshop \
+--progress plain -vv
+```
 
 <details><summary><b>ANSIBLE</b></summary>
 

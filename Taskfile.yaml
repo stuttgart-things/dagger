@@ -191,9 +191,6 @@ tasks:
       - dagger call -m ./{{ .MODULE }} build-binary --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
       - dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --push true --progress plain
       - dagger call -m ./{{ .MODULE }} security-scan --src {{ .TEST_GO_CODE }} --progress plain
-      #- dagger call -m ./go/ ko-build-and-scan --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --token-name GITHUB_TOKEN --repo {{ .KO_REPO }} --ko-version {{ .KO_VERSION }} --push true --output /tmp/report2.json
-      # - dagger call -m ./{{ .MODULE }} internal-pipeline --src {{ .TEST_GO_CODE }} --progress plain || true
-      #- dagger call -m ./{{ .MODULE }} run-workflow-entry-stage --src {{ .TEST_GO_CODE }} --lint-can-fail=true --security-scan-can-fail=true --trivy-scan-can-fail=true export --path {{ .WORKFLOW_REPORT }} --progress plain
     vars:
       MODULE: go
       TEST_GO_CODE: tests/go/calculator/
