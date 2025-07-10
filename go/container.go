@@ -13,6 +13,7 @@ func (m *Go) KoBuild(
 	// +optional
 	// +default="GITHUB_TOKEN"
 	tokenName string,
+	// +optional
 	token *dagger.Secret,
 	// +optional
 	// +default="ko.local"
@@ -21,7 +22,7 @@ func (m *Go) KoBuild(
 	// +default="."
 	buildArg string,
 	// +optional
-	// +default="v0.17.1"
+	// +default="v0.18.0"
 	koVersion string,
 	// +optional
 	// +default="true"
@@ -29,26 +30,32 @@ func (m *Go) KoBuild(
 ) (string, error) {
 	srcDir := "/src"
 
-	ko := m.
+	ctr := m.
 		GetKoContainer(koVersion).
 		WithDirectory(srcDir, src).
-		WithWorkdir(srcDir)
+		WithWorkdir(srcDir).
+		WithEnvVariable("GIT_COMMIT", "dev")
 
-	// DEFINE THE APPLICATION BUILD COMMAND W/ KO
-	output, err := ko.
-		WithEnvVariable("KO_DOCKER_REPO", repo).
-		WithSecretVariable(tokenName, token).
-		WithExec(
-			[]string{"ko", "build", "--push=" + push, buildArg},
-		).
-		Stdout(ctx)
+	if push == "true" {
+		ctr = ctr.
+			WithEnvVariable("KO_DOCKER_REPO", repo).
+			WithSecretVariable(tokenName, token)
+	}
+
+	// Add OCI layout path when not pushing
+	args := []string{"ko", "build", "--push=" + push, buildArg}
+
+	if push == "false" {
+		args = append(args, "--oci-layout-path=/oci-layout")
+	}
+
+	output, err := ctr.WithExec(args).Stdout(ctx)
+
 	if err != nil {
 		return "", fmt.Errorf("error running ko build: %w", err)
 	}
 
-	// Extract the image address from the output
-	imageAddress := strings.TrimSpace(output)
-	return imageAddress, nil
+	return strings.TrimSpace(output), nil
 }
 
 // func (m *Go) RunWorkflowContainerStage(
