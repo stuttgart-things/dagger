@@ -1,3 +1,10 @@
+# [0.22.0](https://github.com/stuttgart-things/dagger/compare/v0.21.0...v0.22.0) (2025-07-11)
+
+
+### Features
+
+* feat/add-vault-to-terraform ([a7e73b6](https://github.com/stuttgart-things/dagger/commit/a7e73b6d6202308833c8ec97256c56b41df85ded))
+
 # [0.21.0](https://github.com/stuttgart-things/dagger/compare/v0.20.0...v0.21.0) (2025-07-11)
 
 
