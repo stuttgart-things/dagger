@@ -20,7 +20,7 @@ func (m *Terraform) Output(
 	ctr = ctr.
 		WithDirectory(workDir, terraformDir).
 		WithWorkdir(workDir).
-		WithExec([]string{"terraform", "output", "-json"})
+		WithExec([]string{"terraform", "output", "--json"})
 
 	out, err := ctr.Stdout(ctx)
 	if err != nil {
