@@ -393,7 +393,8 @@ dagger call -m crane copy \
 ### LINT
 
 ```bash
-dagger call -m docker lint \
+dagger call -m docker \
+lint \
 --src tests/docker \
 -vv --progress plain
 ```
@@ -401,7 +402,8 @@ dagger call -m docker lint \
 ### BUILD
 
 ```bash
-dagger call -m docker build \
+dagger call -m docker \
+build \
 --src tests/docker \
 -vv --progress plain
 ```
@@ -409,29 +411,27 @@ dagger call -m docker build \
 ### BUILD + PUSH TEMPORARY IMAGE w/o AUTH
 
 ```bash
-dagger call -m \
-github.com/stuttgart-things/dagger/docker@v0.6.2 \
+dagger call -m docker \
 build-and-push \
---source images/sthings-alpine \
---repository-name stuttgart-things/alpine \
+--source tests/docker \
+--repository-name stuttgart-things/test \
 --registry-url ttl.sh \
---version 1h \
---progress plain
+--tag 1.2.3 \
+-vv --progress plain
 ```
 
 ### BUILD + PUSH IMAGE w/ AUTH
 
 ```bash
-dagger call -m \
-github.com/stuttgart-things/dagger/docker@v0.6.2 \
+dagger call -m docker \
 build-and-push \
 --source tests/docker \
+--repository-name stuttgart-things/test \
 --registry-url ghcr.io \
---repository-name stuttgart-things/sthings-alpine \
---version 1.10 \
---with-registry-username=env:USER \
---with-registry-password=env:PASSWORD \
---progress plain
+--tag 1.2.3 \
+--registry-username=env:GITHUB_USER \
+--registry-password=env:GITHUB_TOKEN \
+-vv --progress plain
 ```
 
 </details>
