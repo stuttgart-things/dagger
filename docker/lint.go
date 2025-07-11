@@ -10,7 +10,7 @@ import (
 )
 
 type LintOption struct {
-	Source     *dagger.Directory `validate:"required"`
+	src        *dagger.Directory `validate:"required"`
 	Dockerfile string            `default:"Dockerfile"`
 	Threashold string            `default:"error"`
 }
@@ -18,20 +18,17 @@ type LintOption struct {
 // Lint permit to lint dockerfile image
 func (m *Docker) Lint(
 	ctx context.Context,
-
-	// the source directory
-	source *dagger.Directory,
-
+	// the src directory
+	src *dagger.Directory,
 	// The dockerfile path
 	// +optional
 	dockerfile string,
-
 	// The failure threshold
 	// +optional
 	threshold string,
 ) (string, error) {
 	option := &LintOption{
-		Source:     source,
+		src:        src,
 		Dockerfile: dockerfile,
 	}
 
@@ -44,7 +41,7 @@ func (m *Docker) Lint(
 	}
 
 	return m.BaseHadolintContainer.
-		WithDirectory("/project", option.Source).
+		WithDirectory("/project", option.src).
 		WithWorkdir("/project").
 		WithExec(helper.ForgeCommandf("/bin/hadolint --failure-threshold %s %s", option.Threashold, option.Dockerfile)).
 		Stdout(ctx)

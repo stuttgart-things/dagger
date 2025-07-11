@@ -7,15 +7,12 @@ import (
 
 // Build permit to build image from Dockerfile
 func (m *Docker) Build(
-
 	// the source directory
-	source *dagger.Directory,
-
+	src *dagger.Directory,
 	// The dockerfile path
 	// +optional
 	// +default="Dockerfile"
 	dockerfile string,
-
 	// Set extra directories
 	// +optional
 	withDirectories []*dagger.Directory,
@@ -28,11 +25,11 @@ func (m *Docker) Build(
 	}
 
 	for _, directory := range withDirectories {
-		source = source.WithDirectory(fmt.Sprintf("%s", directory), directory)
+		src = src.WithDirectory(fmt.Sprintf("%s", directory), directory)
 	}
 
 	return &ImageBuild{
-		Container: source.DockerBuild(
+		Container: src.DockerBuild(
 			dagger.DirectoryDockerBuildOpts{
 				Dockerfile: dockerfile,
 			},

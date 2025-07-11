@@ -23,54 +23,53 @@ func (m *ImageBuild) GetContainer() *dagger.Container {
 // Push permits pushing an image to a registry, with support for insecure registries
 func (m *ImageBuild) Push(
 	ctx context.Context,
-
 	// The repository name
 	repositoryName string,
-
-	// The version
-	version string,
-
+	// The tag
+	tag string,
 	// The registry username
 	// +optional
-	withRegistryUsername *dagger.Secret,
-
+	registryUsername *dagger.Secret,
 	// The registry password
 	// +optional
-	withRegistryPassword *dagger.Secret,
-
+	registryPassword *dagger.Secret,
 	// The registry URL
 	registryUrl string,
 ) (string, error) {
 
-	// Mitigate semver version
-	semVersion, err := semver.NewVersion(version)
+	// Mitigate semver tag
+	semtag, err := semver.NewVersion(tag)
 	if err == nil {
 		var buffer bytes.Buffer
 
-		fmt.Fprintf(&buffer, "%d.%d.%d", semVersion.Major, semVersion.Minor, semVersion.Patch)
+		fmt.Fprintf(&buffer, "%d.%d.%d", semtag.Major, semtag.Minor, semtag.Patch)
 
-		if semVersion.PreRelease != "" {
-			fmt.Fprintf(&buffer, "-%s", semVersion.PreRelease)
+		if semtag.PreRelease != "" {
+			fmt.Fprintf(&buffer, "-%s", semtag.PreRelease)
 		}
-		if semVersion.Metadata != "" {
-			fmt.Fprintf(&buffer, "-%s", semVersion.Metadata)
+		if semtag.Metadata != "" {
+			fmt.Fprintf(&buffer, "-%s", semtag.Metadata)
 		}
 
-		version = buffer.String()
+		tag = buffer.String()
 	}
 
 	// Configure registry authentication (if credentials are provided)
-	if withRegistryUsername != nil && withRegistryPassword != nil {
-		username, err := withRegistryUsername.Plaintext(ctx)
+	if registryUsername != nil && registryPassword != nil {
+		username, err := registryUsername.Plaintext(ctx)
 		if err != nil {
 			return "", errors.Wrap(err, "Error when getting registry username")
 		}
-		m.Container = m.Container.WithRegistryAuth(registryUrl, username, withRegistryPassword)
+		m.Container = m.Container.WithRegistryAuth(registryUrl, username, registryPassword)
 	}
 
 	// Publish the image
 	return m.Container.Publish(
 		ctx,
-		fmt.Sprintf("%s/%s:%s", registryUrl, repositoryName, version),
+		fmt.Sprintf(
+			"%s/%s:%s",
+			registryUrl,
+			repositoryName,
+			tag),
 	)
 }
