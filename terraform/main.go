@@ -1,18 +1,22 @@
-// Terraform is a Dagger module that runs Terraform commands inside a containerized environment.
+// Terraform module for Dagger-based infrastructure automation
 //
-// It uses a custom container built on the Wolfi base image with Terraform, SOPS, Git, and supporting tools pre-installed.
-// The module supports securely decrypting a SOPS-encrypted `terraform.tfvars.json` using an optional AGE key,
-// and mounts it into the working directory for use during plan or apply operations.
+// This module provides functionality to run Terraform operations inside a
+// containerized Dagger pipeline. It supports applying, destroying, and
+// initializing Terraform configurations with optional variable injection.
 //
-// Supported Terraform operations include `init`, `apply`, and `destroy`. The module always runs `terraform init` first,
-// and then executes the specified operation. After execution, any sensitive files such as the decrypted tfvars file are deleted.
+// The module executes Terraform in a controlled container environment,
+// optionally injecting HCL-style variables and secret JSON variables. It
+// is especially useful in CI/CD scenarios where reproducibility and
+// secure secret handling are required.
 //
-// The module also exposes helper methods:
-//   - `Version`: returns the installed Terraform version.
-//   - `Output`: retrieves Terraform outputs in JSON format.
-//   - `DecryptSops`: decrypts a file using SOPS and returns its content as a string.
+// Supported features include:
+//   - Running `terraform init`, `apply`, or `destroy` inside a Dagger container
+//   - Supplying key-value `-var` arguments via a comma-separated string
+//   - Injecting a `terraform.tfvars.json` file via a mounted Dagger secret
+//   - Fetching outputs from the Terraform state in JSON format
 //
-// It is designed to run Terraform commands reproducibly in CI pipelines or local development environments with secret handling and plugin caching.
+// This module is intended to encapsulate Terraform workflows inside a
+// container runtime, simplifying automation across cloud or local environments.
 
 package main
 
