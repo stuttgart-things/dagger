@@ -92,6 +92,7 @@ export --path=~/tmp/dagger/tests/terraform/
 
 ```bash
 # RUN TERRAFORM APPLY AND EXPORTS DIR w/ STATE + MOUNT SECRETS FILE
+# SECRETS FILE MUST EXIST UNECRYPTED ON FS
 dagger call -m terraform \
 execute \
 --terraform-dir tests/terraform \
