@@ -19,6 +19,15 @@ func (m *Terraform) Execute(
 	variables string,
 	// +optional
 	secretJsonVariables *dagger.Secret,
+	// vaultRoleID
+	// +optional
+	vaultRoleID *dagger.Secret,
+	// vaultSecretID
+	// +optional
+	vaultSecretID *dagger.Secret,
+	// vaultToken
+	// +optional
+	vaultToken *dagger.Secret,
 ) (*dagger.Directory, error) {
 	if operation == "" {
 		operation = "init"
@@ -30,8 +39,21 @@ func (m *Terraform) Execute(
 		return nil, fmt.Errorf("container init failed: %w", err)
 	}
 
+	// INJECT VAULT SECRETS AS ENVIRONMENT VARIABLES
+	if vaultRoleID != nil {
+		ctr = ctr.WithSecretVariable("TF_VAR_vault_role_id", vaultRoleID)
+	}
+	if vaultSecretID != nil {
+		ctr = ctr.WithSecretVariable("TF_VAR_vault_secret_id", vaultSecretID)
+	}
+	if vaultToken != nil {
+		ctr = ctr.WithSecretVariable("TF_VAR_vault_token", vaultToken)
+	}
+
 	workDir := "/src"
-	ctr = ctr.WithDirectory(workDir, terraformDir).WithWorkdir(workDir)
+	ctr = ctr.WithDirectory(workDir, terraformDir).
+		WithWorkdir(workDir).
+		WithEnvVariable("VAULT_SKIP_VERIFY", "TRUE")
 
 	// ALWAYS RUN INIT FIRST WITH --UPGRADE
 	ctr = ctr.WithExec([]string{"terraform", "init", "-upgrade", "-input=false", "-no-color"})

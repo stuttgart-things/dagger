@@ -104,16 +104,16 @@ export --path=~/tmp/dagger/tests/terraform/
 ```
 
 ```bash
-# DECRYPT SOPS SECRETS FILE
-# + RUN APPLY
+# RUN TERRAFORM APPLY w/ VAULT LOOKUPS
 dagger call -m terraform \
 execute \
---terraform-dir /home/sthings/projects/terraform/vms/dagger/ \
+--terraform-dir /home/sthings/projects/blueprints/tests/vmtemplate/tfvaulttest \
+--vault-secret-id env:VAULT_SECRET_ID \
+--vault-role-id env:VAULT_ROLE_ID \
+--variables "vault_addr=https://vault.example.com:8200" \
 --operation apply \
---sops-key=env:SOPS_AGE_KEY \
---encrypted-file /tmp/terraform.tfvars.enc.json \
 -vv --progress plain \
-export --path=~/projects/terraform/vms/dagger/
+export --path=~/tmp/dagger/tests/terraform/
 ```
 
 ```bash
