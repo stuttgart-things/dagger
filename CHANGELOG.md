@@ -1,3 +1,15 @@
+# [0.21.0](https://github.com/stuttgart-things/dagger/compare/v0.20.0...v0.21.0) (2025-07-11)
+
+
+### Bug Fixes
+
+* feat/fix-terraform-module ([ede60cc](https://github.com/stuttgart-things/dagger/commit/ede60cc35e95bd9535535953ae60ec2296e77e89))
+
+
+### Features
+
+* main ([52cf437](https://github.com/stuttgart-things/dagger/commit/52cf437e2ae4b500145fdc01b89cc7af8ad10eec))
+
 # [0.20.0](https://github.com/stuttgart-things/dagger/compare/v0.19.1...v0.20.0) (2025-07-11)
 
 
