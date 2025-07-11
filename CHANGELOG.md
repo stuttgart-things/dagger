@@ -1,3 +1,10 @@
+# [0.20.0](https://github.com/stuttgart-things/dagger/compare/v0.19.1...v0.20.0) (2025-07-11)
+
+
+### Features
+
+* feat/restructure-docker ([cb784d2](https://github.com/stuttgart-things/dagger/commit/cb784d2940e7e523e2f40489d3383e7f8ad95342))
+
 ## [0.19.1](https://github.com/stuttgart-things/dagger/compare/v0.19.0...v0.19.1) (2025-07-10)
 
 
