@@ -245,7 +245,7 @@ tasks:
         --source {{ .SOURCE }} \
         --repository-name {{ .REPOSITORY_NAME }} \
         --registry-url {{ .REGISTRY_URL }} \
-        --version {{ .VERSION }} \
+        --tag {{ .VERSION }} \
         --progress plain
     vars:
       MODULE: docker

@@ -390,14 +390,20 @@ dagger call -m crane copy \
 
 <details><summary><b>DOCKER</b></summary>
 
-### SCAN IMAGE
+### LINT
 
 ```bash
-dagger call -m \
-github.com/stuttgart-things/dagger/docker@v0.6.2 \
-trivy-scan \
---image-ref nginx:latest \
---progress plain
+dagger call -m docker lint \
+--src tests/docker \
+-vv --progress plain
+```
+
+### BUILD
+
+```bash
+dagger call -m docker build \
+--src tests/docker \
+-vv --progress plain
 ```
 
 ### BUILD + PUSH TEMPORARY IMAGE w/o AUTH

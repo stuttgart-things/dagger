@@ -1,16 +1,20 @@
-// A generated module for Docker functions
+// Docker module for container image handling
 //
-// This module has been generated via dagger init and serves as a reference to
-// basic module structure as you get started with Dagger.
+// This module provides Docker-related functionality using Dagger. It supports
+// building Docker images (optionally with extra directories), performing lint
+// checks with Hadolint, and pushing built images to a container registry.
 //
-// Two functions have been pre-created. You can modify, delete, or add to them,
-// as needed. They demonstrate usage of arguments and return types using simple
-// echo and grep commands. The functions can be called from the dagger CLI or
-// from one of the SDKs.
+// The module allows you to inject a custom base container for Hadolint, or
+// a custom container for advanced build scenarios that require specific
+// build arguments or tooling.
 //
-// The first line in this comment block is a short description line and the
-// rest is a long description with more detail on the module's purpose or usage,
-// if appropriate. All modules should have a short description.
+// Typical usage includes:
+//   - Building a Docker image from a provided source and Dockerfile
+//   - Optionally attaching extra directories to the build context
+//   - Authenticating and pushing the image to a Docker registry
+//
+// This module is designed to be used as part of a CI/CD pipeline, either via
+// the Dagger CLI or any supported Dagger SDK.
 
 package main
 
@@ -23,8 +27,6 @@ import (
 type Docker struct {
 	// +private
 	BaseHadolintContainer *dagger.Container
-	BaseTrivyContainer    *dagger.Container
-
 	// +private
 	BuildContainer *dagger.Container
 }
@@ -34,12 +36,6 @@ func New(
 	// It need contain hadolint
 	// +optional
 	baseHadolintContainer *dagger.Container,
-
-	// base hadolint container
-	// It need contain hadolint
-	// +optional
-	baseTrivyContainer *dagger.Container,
-
 	// The external build of container
 	// Usefull when need build args
 	// +optional
@@ -55,12 +51,6 @@ func New(
 		image.BaseHadolintContainer = image.GetBaseHadolintContainer()
 	}
 
-	if baseTrivyContainer != nil {
-		image.BaseTrivyContainer = baseTrivyContainer
-	} else {
-		image.BaseTrivyContainer = image.GetTrivyContainer()
-	}
-
 	return image
 }
 
@@ -70,26 +60,20 @@ func (m *Docker) GetBaseHadolintContainer() *dagger.Container {
 		From("ghcr.io/hadolint/hadolint:2.12.0")
 }
 
-// GetBaseHadolintContainer return the default image for hadolint
-func (m *Docker) GetTrivyContainer() *dagger.Container {
-	return dag.Container().
-		From("aquasec/trivy:0.60.0")
-}
-
 func (m *Docker) BuildAndPush(
 	ctx context.Context,
 	// The source directory
 	source *dagger.Directory,
 	// The repository name
 	repositoryName string,
-	// The version
-	version string,
+	// tag
+	tag string,
 	// The registry username
 	// +optional
-	withRegistryUsername *dagger.Secret,
+	registryUsername *dagger.Secret,
 	// The registry password
 	// +optional
-	withRegistryPassword *dagger.Secret,
+	registryPassword *dagger.Secret,
 	// The registry URL
 	registryUrl string,
 	// The Dockerfile path
@@ -100,35 +84,19 @@ func (m *Docker) BuildAndPush(
 	// +optional
 	withDirectories []*dagger.Directory,
 ) (string, error) {
-	// Step 1: Run linting
-	lintOutput, err := m.Lint(ctx, source, dockerfile, "error") // Use default threshold
-	if err != nil {
-		return "", fmt.Errorf("linting failed: %w", err)
-	}
-	fmt.Println("Linting Results:")
-	fmt.Println(lintOutput)
 
-	// Step 2: Build the image
+	// STEP 2: BUILD THE IMAGE
 	builtImage := m.Build(source, dockerfile, withDirectories)
 	if builtImage == nil {
 		return "", fmt.Errorf("build failed: builtImage is nil")
 	}
 
-	// Step 3: Push the image to the registry
-	imageRef := fmt.Sprintf("%s/%s:%s", registryUrl, repositoryName, version)
-	_, err = builtImage.Push(ctx, repositoryName, version, withRegistryUsername, withRegistryPassword, registryUrl)
+	// STEP 3: PUSH THE IMAGE TO THE REGISTRY
+	imageRef := fmt.Sprintf("%s/%s:%s", registryUrl, repositoryName, tag)
+	_, err := builtImage.Push(ctx, repositoryName, tag, registryUsername, registryPassword, registryUrl)
 	if err != nil {
 		return "", fmt.Errorf("push failed: %w", err)
 	}
 
-	// Step 4: Run Trivy scan on the built image
-	trivyOutput, err := m.TrivyScan(ctx, imageRef, withRegistryUsername, withRegistryPassword)
-	if err != nil {
-		return "", fmt.Errorf("Trivy scan failed: %w", err)
-	}
-	fmt.Println("Trivy Scan Results:")
-	fmt.Println(trivyOutput)
-
-	// Return success along with the linting and Trivy results
-	return fmt.Sprintf("Successfully built and pushed %s\nLinting Results:\n%s\nTrivy Scan Results:\n%s", imageRef, lintOutput, trivyOutput), nil
+	return fmt.Sprintf("Successfully built and pushed", imageRef), nil
 }
