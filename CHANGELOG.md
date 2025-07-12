@@ -1,3 +1,10 @@
+# [0.23.0](https://github.com/stuttgart-things/dagger/compare/v0.22.0...v0.23.0) (2025-07-12)
+
+
+### Features
+
+* feat/add-docker-reg-secret ([81371b8](https://github.com/stuttgart-things/dagger/commit/81371b8eef7e75bde869334b4f2e4459559532e4))
+
 # [0.22.0](https://github.com/stuttgart-things/dagger/compare/v0.21.0...v0.22.0) (2025-07-11)
 
 
