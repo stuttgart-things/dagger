@@ -39,7 +39,6 @@ export --path=/tmp/image-nginx.json
 
 </details>
 
-
 <details><summary><b>GIT</b></summary>
 
 ```bash
