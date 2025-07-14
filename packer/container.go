@@ -32,10 +32,15 @@ func (m *Packer) container(
 		govcTarball = fmt.Sprintf("govc_%s.tar.gz", govcArch)
 	)
 
-	ctr := dag.Container().From(m.BaseImage)
+	ctr := dag.
+		Container().
+		From(m.BaseImage)
 
 	// Install base packages + Ansible dependencies with Wolfi-compatible names
-	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache",
+	ctr = ctr.WithExec([]string{
+		"apk",
+		"add",
+		"--no-cache",
 		"wget",
 		"unzip",
 		"bash",
@@ -51,7 +56,13 @@ func (m *Packer) container(
 	})
 
 	// Install Ansible via pip
-	ctr = ctr.WithExec([]string{"pip3", "install", "--no-cache-dir", "ansible", "hvac", "passlib"})
+	ctr = ctr.WithExec([]string{
+		"pip3",
+		"install",
+		"--no-cache-dir",
+		"ansible",
+		"hvac",
+		"passlib"})
 
 	// Install Packer
 	ctr = ctr.WithExec([]string{"wget", "-q", packerURL})  // Added -q for quieter output

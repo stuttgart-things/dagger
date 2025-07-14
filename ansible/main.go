@@ -49,6 +49,10 @@ type CollectionResult struct {
 
 type Ansible struct {
 	AnsibleContainer *dagger.Container
+	// Base Wolfi image to use
+	// +optional
+	// +default="cgr.dev/chainguard/wolfi-base:latest"
+	BaseImage string
 }
 
 // RunCollectionBuildPipeline orchestrates init, modify and build of an ansible collection
@@ -82,7 +86,6 @@ func (m *Ansible) RunCollectionBuildPipeline(
 	}
 
 	return buildCollection, nil
-
 }
 
 // BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)

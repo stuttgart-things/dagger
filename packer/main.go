@@ -71,12 +71,20 @@ func (m *Packer) Bake(
 	}
 
 	// RUN `PACKER INIT`
-	initContainer := base.WithExec([]string{"packer", "init", packerFile})
+	initContainer := base.WithExec([]string{
+		"packer",
+		"init",
+		packerFile,
+	})
 
 	// RUN `PACKER BUILD` UNLESS INITONLY IS TRUE
 	var buildContainer *dagger.Container
 	if !initOnly {
-		buildContainer = initContainer.WithExec([]string{"packer", "build", packerFile})
+		buildContainer = initContainer.WithExec([]string{
+			"packer",
+			"build",
+			packerFile,
+		})
 	} else {
 		buildContainer = initContainer
 	}

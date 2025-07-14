@@ -33,7 +33,7 @@ func (m *Ansible) Execute(
 
 	workDir := "/src"
 
-	ansible := m.AnsibleContainer
+	ansible := m.container(m.BaseImage)
 
 	if src != nil {
 		ansible = ansible.
