@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-// FUNCTION TO CREATE DOCKER CONFIG.JSON AND RETURN IT AS A STRING
+// CreateDockerConfigJSON creates a Docker config.json and returns it as a string.
 func CreateDockerConfigJSON(username, password, registry string) (string, error) {
 	// ENCODE USERNAME:PASSWORD IN BASE64
 	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", username, password)))
