@@ -2,6 +2,7 @@
 Copyright © 2024 Patrick Hermann patrick.hermann@sva.de
 */
 
+// Package registry provides utilities for creating Docker registry configuration files.
 package registry
 
 import (
