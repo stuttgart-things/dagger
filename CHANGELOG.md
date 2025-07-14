@@ -1,3 +1,10 @@
+## [0.23.1](https://github.com/stuttgart-things/dagger/compare/v0.23.0...v0.23.1) (2025-07-14)
+
+
+### Bug Fixes
+
+* fix/ansible-container ([cbb024f](https://github.com/stuttgart-things/dagger/commit/cbb024ffc62b2758fbdf22d647a59d16b9c79b0f))
+
 # [0.23.0](https://github.com/stuttgart-things/dagger/compare/v0.22.0...v0.23.0) (2025-07-12)
 
 
