@@ -546,12 +546,30 @@ dagger call --progress plain -m ansible github-release \
 
 <details><summary><b>HELM</b></summary>
 
-RENDER A CHART w/ VALUES
+```bash
+# LINT
+dagger call -m helm \
+lint \
+--src tests/helm/test-chart \
+-vv --progress plain
+```
 
 ```bash
-# EXAMPLE MODULE
-VERSION=v0.0.4
-dagger call -m github.com/stuttgart-things/dagger/helm@${VERSION} template --chart ./Service --values this-env.yaml
+# RENDER A CHART w/ VALUES
+dagger call -m helm \
+render \
+--src tests/helm/test-chart \
+--valuesFile tests/helm/test-values.yaml \
+-vv --progress plain
+```
+
+```bash
+# PACKAGE + EXPORT CHART AS TGZ
+dagger call -m helm \
+package \
+--src tests/helm/test-chart \
+-vv --progress plain \
+export --path=/tmp/chart.tgz
 ```
 
 </details>

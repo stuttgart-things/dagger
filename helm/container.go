@@ -6,7 +6,6 @@ import (
 )
 
 func (m *Helm) container() *dagger.Container {
-
 	arch := "linux_amd64"
 	helmfileVersion := "1.1.3"
 	helmfileBin := "helmfile"
