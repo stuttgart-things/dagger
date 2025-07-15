@@ -598,24 +598,21 @@ task: Available tasks for this project:
 * check:                 Run pre-commit hooks
 * commit:                Commit + push code into branch
 * create:                Create new dagger module
+* do:                    Select a task to run
 * pr:                    Create pull request into main
 * release:               push new version
 * switch-local:          Switch to local branch
 * switch-remote:         Switch to remote branch
-* tasks:                 Select a task to run
 * test:                  Select test to run
-* test-ansible:          Test ansible modules
-* test-crossplane:       Test crossplame modules
-* test-go:               Test go modules
-* test-helm:             Test helm modules
-```
-
-</details>
-
-<details><summary>SELECT TASK</summary>
-
-```bash
-task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose) && task ${task}
+* test-ansible:          Test ansible functions
+* test-crossplane:       Test crossplame functions
+* test-docker:           Test docker module
+* test-gitlab:           Test gitlab functions
+* test-go:               Test go functions
+* test-helm:             Test helm functions
+* test-hugo:             Test hugo
+* test-packer:           Test packer functions
+* test-terraform:        Test terraform functions
 ```
 
 </details>
@@ -641,6 +638,8 @@ gitlab_group="Lab/stuttgart-things/idp" # example
 gitlab_group_escaped="Lab%2Fstuttgart-things%2Fidp" # example
 EOF
 ```
+
+</details>
 
 ## DAGGER
 
