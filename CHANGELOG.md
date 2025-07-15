@@ -1,3 +1,12 @@
+# [0.24.0](https://github.com/stuttgart-things/dagger/compare/v0.23.1...v0.24.0) (2025-07-15)
+
+
+### Features
+
+* feat/update-helm-functions ([96b2e65](https://github.com/stuttgart-things/dagger/commit/96b2e6524f85cc3a5ac6e4246d67a8db576a8463))
+* feat/update-helm-functions ([4f3ab59](https://github.com/stuttgart-things/dagger/commit/4f3ab59c1413fc853cac297f23cb419c69e1bcee))
+* feat/update-helm-functions ([f4f8b96](https://github.com/stuttgart-things/dagger/commit/f4f8b96bdc36dd4e68c85bfb5bd3dfa9cf0204ac))
+
 ## [0.23.1](https://github.com/stuttgart-things/dagger/compare/v0.23.0...v0.23.1) (2025-07-14)
 
 
