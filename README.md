@@ -483,6 +483,8 @@ dagger call -m go ko-build \
 --progress plain -vv
 ```
 
+</details>
+
 <details><summary><b>ANSIBLE</b></summary>
 
 ### EXECUTE ANSIBLE
