@@ -1,3 +1,10 @@
+# [0.25.0](https://github.com/stuttgart-things/dagger/compare/v0.24.0...v0.25.0) (2025-07-15)
+
+
+### Features
+
+* feat/add-helmfile-render ([f8c3b3b](https://github.com/stuttgart-things/dagger/commit/f8c3b3b9ba4b512804972b4b0a831702df0d806a))
+
 # [0.24.0](https://github.com/stuttgart-things/dagger/compare/v0.23.1...v0.24.0) (2025-07-15)
 
 
