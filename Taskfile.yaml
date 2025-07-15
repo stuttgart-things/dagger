@@ -21,12 +21,41 @@ tasks:
       SDK:
         sh: gum choose "go" "python"
 
-  do:
-    desc: Select a task to run
+  test:
+    desc: Select test to run
     cmds:
       - |
-        task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose)
-        task ${task}
+        totest=$(gum choose "ansible" "go" "helm" "crossplane")
+        echo "Selected: ${totest}"
+        task test-${totest}
+
+  branch:
+    desc: Create branch from main
+    cmds:
+      - git checkout main
+      - git branch
+      - git pull
+      - |
+        echo "Enter to be created (remote) branch:"
+        read BRANCH_NAME;
+        git checkout -b ${BRANCH_NAME}
+        git push origin ${BRANCH_NAME}
+      - git branch
+      - git branch --set-upstream-to=origin/main ${BRANCH_NAME}
+
+  release:
+    desc: push new version
+    cmds:
+      - task: test-go
+      - task: test-helm
+      - task: test-ansible
+      - task: test-docker
+      - task: test-hugo
+      - task: test-terraform
+      - task: pr
+      - npx semantic-release --dry-run
+      - npx semantic-release --debug --no-ci
+      - echo released version $(git describe --tags --abbrev=0)
 
   switch-remote:
     desc: Switch to remote branch
@@ -46,28 +75,6 @@ tasks:
         branch=$(printf "%s\n" "${branches[@]}" | gum choose)
         git checkout ${branch} && git pull
 
-  test:
-    desc: Select test to run
-    cmds:
-      - |
-        totest=$(gum choose "ansible" "go" "helm" "crossplane")
-        echo "Selected: ${totest}"
-        task test-${totest}
-
-  release:
-    desc: push new version
-    cmds:
-      - task: test-go
-      #- task: test-helm
-      - task: test-ansible
-      - task: test-docker
-      - task: test-hugo
-      - task: test-terraform
-      - task: pr
-      - npx semantic-release --dry-run
-      - npx semantic-release --debug --no-ci
-      - echo released version $(git describe --tags --abbrev=0)
-
   check:
     desc: "Run pre-commit hooks"
     cmds:
@@ -80,7 +87,6 @@ tasks:
         dagger call -m packer bake \
         --local-dir "." \
         --build-path tests/packer/hello/hello.pkr.hcl \
-
 
   test-ansible:
     desc: Test ansible functions
@@ -204,18 +210,41 @@ tasks:
   test-helm:
     desc: Test helm functions
     cmds:
-      - dagger call -m {{ .MODULE }} lint --chart {{ .TEST_CHART }} --progress plain
-      - dagger call -m {{ .MODULE }} render --chart {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain
-      #- dagger call -m {{ .MODULE }} package --src {{ .TEST_CHART }} --progress plain export --path={{ .TEST_PACKAGE }} && rm -rf {{ .TEST_PACKAGE }}
-      - dagger call -m {{ .MODULE }} run-pipeline --src {{ .TEST_CHART }} --values {{ .TEST_VALUES }} --progress plain
-      #- dagger call -m {{ .MODULE }} push --src {{ .TEST_CHART }} --progress plain --username {{ .USERNAME }} --password=env:GITHUB_TOKEN --registry {{ .PACKAGE_REGISTRY }} --repository {{ .USERNAME }}
+      - |
+        dagger call -m {{ .MODULE }} \
+        lint \
+        --src {{ .TEST_CHART }} \
+        -vv --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        render \
+        --src {{ .TEST_CHART }} \
+        --valuesFile {{ .TEST_VALUES }} \
+        -vv --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        package \
+        --src {{ .TEST_CHART }} \
+        -vv --progress plain \
+        export --path={{ .TEST_EXPORT }}
+      - |
+        dagger call -m {{ .MODULE }} \
+        push \
+        --src {{ .TEST_CHART }} \
+        --registry {{ .PACKAGE_REGISTRY }} \
+        --repository {{ .REPOSITORY }} \
+        --username {{ .USERNAME }} \
+        --password env:GITHUB_TOKEN \
+        -vv --progress plain \
     vars:
       MODULE: helm
-      TEST_CHART: tests/test-chart/
-      TEST_PACKAGE: tests/chart.tgz
-      TEST_VALUES: tests/test-values.yaml
+      TEST_CHART: tests/{{ .MODULE }}/test-chart/
+      TEST_PACKAGE: tests/{{ .MODULE }}/chart.tgz
+      TEST_VALUES: tests/{{ .MODULE }}/test-values.yaml
+      TEST_EXPORT: /tmp/{{ .MODULE }}
       PACKAGE_REGISTRY: ghcr.io
-      USERNAME: stuttgart-things
+      REPOSITORY: stuttgart-things
+      USERNAME: patrick-hermann-sva
 
   test-gitlab:
     desc: Test gitlab functions
@@ -254,19 +283,6 @@ tasks:
       REGISTRY_URL: ttl.sh
       VERSION: 1h
 
-  branch:
-    desc: Create branch from main
-    cmds:
-      - git checkout main
-      - git branch
-      - git pull
-      - |
-        echo "Enter to be created (remote) branch:"
-        read BRANCH_NAME;
-        git checkout -b ${BRANCH_NAME}
-        git push origin ${BRANCH_NAME}
-      - git branch
-      - git branch --set-upstream-to=origin/main ${BRANCH_NAME}
 
   commit:
     desc: Commit + push code into branch
@@ -301,3 +317,10 @@ tasks:
       #- gh pr checks $(gh pr list | grep "^[^#;]" | grep '{{ .BRANCH }}' | awk '{print $1}') --watch
       - gh pr merge $(gh pr list | grep "^[^#;]" | grep '{{ .BRANCH }}' | awk '{print $1}') --auto --rebase --delete-branch
       - git checkout main && git pull
+
+  do:
+    desc: Select a task to run
+    cmds:
+      - |
+        task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose)
+        task ${task}
