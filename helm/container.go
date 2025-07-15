@@ -22,11 +22,12 @@ func (m *Helm) container() *dagger.Container {
 			m.BaseImage,
 		)
 
-	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache", "wget", "helm"})
+	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache", "wget", "helm", "git"})
 	ctr = ctr.WithExec([]string{"wget", "-O", "/tmp/" + helmfileTar, helmfileURL})
 	ctr = ctr.WithExec([]string{"tar", "-xzf", "/tmp/" + helmfileTar, "-C", "/tmp/"})
 	ctr = ctr.WithExec([]string{"mv", fmt.Sprintf("/tmp/%s", helmfileBin), destBinPath})
 	ctr = ctr.WithExec([]string{"chmod", "+x", destBinPath})
+	ctr = ctr.WithExec([]string{"helmfile", "init", "--force"})
 
 	return ctr
 }

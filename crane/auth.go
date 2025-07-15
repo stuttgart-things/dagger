@@ -6,7 +6,11 @@ import (
 )
 
 // authenticate adds registry authentication to the container
-func authenticate(ctr *dagger.Container, registry *RegistryAuth, insecure bool) *dagger.Container {
+func authenticate(
+	ctr *dagger.Container,
+	registry *RegistryAuth,
+	insecure bool) *dagger.Container {
+
 	loginCmd := []string{
 		"sh", "-c",
 		fmt.Sprintf(`echo "$CRANE_PASSWORD" | crane auth login %s --username %s --password-stdin %s`,
