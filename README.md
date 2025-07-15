@@ -575,6 +575,7 @@ export --path=/tmp/chart.tgz
 ```
 
 ```bash
+# PUSH CHART TO REGISTRY
 dagger call -m helm \
 push \
 --src tests/helm/test-chart \
@@ -585,6 +586,14 @@ push \
 -vv --progress plain
 ```
 
+```bash
+# RENDER HELMFILE (w/ REG AUTH)
+dagger call -m helm \
+render-helmfile \
+--src tests/helm/ \
+--registry-secret file://~/.docker/config.json \
+-vv --progress plain
+```
 
 </details>
 

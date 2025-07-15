@@ -1,0 +1,19 @@
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+releases:
+  - name: postgresserver
+    namespace: test2
+    chart: bitnami/postgresql
+    version: 16.7.18
+    createNamespace: true
+    values:
+      - postgresqlPassword: supersecurepassword
+      - postgresqlUsername: admin
+      - postgresqlDatabase: mydb
+      - primary:
+          persistence:
+            enabled: false   # for testing without PVCs
+      - metrics:
+          enabled: true
