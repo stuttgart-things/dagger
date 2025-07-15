@@ -9,11 +9,12 @@ import (
 
 func (m *Helm) Push(
 	ctx context.Context,
+	src *dagger.Directory,
 	registry string,
 	repository string,
 	username string,
 	password *dagger.Secret,
-	src *dagger.Directory) (string, error) {
+) (string, error) {
 
 	projectDir := "/helm"
 	helmContainer := m.container()

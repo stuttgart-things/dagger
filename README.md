@@ -572,6 +572,18 @@ package \
 export --path=/tmp/chart.tgz
 ```
 
+```bash
+dagger call -m helm \
+push \
+--src tests/helm/test-chart \
+--registry ghcr.io \
+--repository stuttgart-things \
+--username patrick-hermann-sva \
+--password env:GITHUB_TOKEN \
+-vv --progress plain
+```
+
+
 </details>
 
 ## DEV
