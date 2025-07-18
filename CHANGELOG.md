@@ -1,3 +1,10 @@
+# [0.26.0](https://github.com/stuttgart-things/dagger/compare/v0.25.0...v0.26.0) (2025-07-18)
+
+
+### Features
+
+* feat/restructure-ansible ([c869387](https://github.com/stuttgart-things/dagger/commit/c8693877eb2c1c8e84876f360a7c17ac423c3cdd))
+
 # [0.25.0](https://github.com/stuttgart-things/dagger/compare/v0.24.0...v0.25.0) (2025-07-15)
 
 
