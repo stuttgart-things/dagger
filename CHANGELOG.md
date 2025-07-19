@@ -1,3 +1,10 @@
+# [0.27.0](https://github.com/stuttgart-things/dagger/compare/v0.26.0...v0.27.0) (2025-07-19)
+
+
+### Features
+
+* feat/add-helm-polaris-scan ([223c34f](https://github.com/stuttgart-things/dagger/commit/223c34f022d9c99cccdbdd83ea5c0125dd5a19c9))
+
 # [0.26.0](https://github.com/stuttgart-things/dagger/compare/v0.25.0...v0.26.0) (2025-07-18)
 
 
