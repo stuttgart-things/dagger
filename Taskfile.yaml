@@ -236,12 +236,28 @@ tasks:
         --username {{ .USERNAME }} \
         --password env:GITHUB_TOKEN \
         -vv --progress plain \
+      - |
+        dagger call -m {{ .MODULE }} \
+        push \
+        --src {{ .TEST_CHART }} \
+        --registry {{ .PACKAGE_REGISTRY }} \
+        --repository {{ .REPOSITORY }} \
+        --username {{ .USERNAME }} \
+        --password env:GITHUB_TOKEN \
+        -vv --progress plain \
+      - |
+        dagger call -m {{ .MODULE }} \
+        validate-chart \
+        --src {{ .TEST_CHART }} \
+        -vv --progress plain \
+        export --path={{ .TEST_EXPORT_POLARIS }}
     vars:
       MODULE: helm
       TEST_CHART: tests/{{ .MODULE }}/test-chart/
       TEST_PACKAGE: tests/{{ .MODULE }}/chart.tgz
       TEST_VALUES: tests/{{ .MODULE }}/test-values.yaml
       TEST_EXPORT: /tmp/{{ .MODULE }}
+      TEST_EXPORT_POLARIS: "/tmp/polaris.json"
       PACKAGE_REGISTRY: ghcr.io
       REPOSITORY: stuttgart-things
       USERNAME: patrick-hermann-sva
