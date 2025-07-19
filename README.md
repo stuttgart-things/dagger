@@ -592,7 +592,16 @@ dagger call -m helm \
 render-helmfile \
 --src tests/helm/ \
 --registry-secret file://~/.docker/config.json \
--vv --progress plain
+```
+
+```bash
+# MANIFEST VALIDATION w/ POLARIS
+dagger call -m helm \
+validate-chart \
+--severity danger \
+--src tests/helm/test-chart/ \
+-vv --progress plain \
+export --path=/tmp/polaris.json
 ```
 
 </details>
