@@ -1,3 +1,11 @@
+# [0.28.0](https://github.com/stuttgart-things/dagger/compare/v0.27.0...v0.28.0) (2025-07-24)
+
+
+### Features
+
+* feat/add-semantic-release ([e0ff155](https://github.com/stuttgart-things/dagger/commit/e0ff155a78d001500e8843aec71ad96581f734e3))
+* feat/add-semantic-release ([f6c9ae5](https://github.com/stuttgart-things/dagger/commit/f6c9ae533deeb40a5749ccf91573fd3615576608))
+
 # [0.27.0](https://github.com/stuttgart-things/dagger/compare/v0.26.0...v0.27.0) (2025-07-19)
 
 
