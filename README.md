@@ -4,6 +4,18 @@ collection of dagger modules
 
 ## MODULES
 
+<details><summary><b>RELEASE</b></summary>
+
+```bash
+# SEMANTIC RELEASE
+dagger call -m release semantic \
+--src ~/projects/k2n/ \
+--token env:GITHUB_TOKEN \
+--progress plain -vv \
+```
+
+</details>
+
 <details><summary><b>TRIVY</b></summary>
 
 ```bash
