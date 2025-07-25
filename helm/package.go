@@ -20,7 +20,10 @@ func (m *Helm) Package(
 	chartDir := helmContainer.
 		WithDirectory(projectDir, updatedChart).
 		WithWorkdir(projectDir).
-		WithExec([]string{"helm", "package", "."})
+		WithExec([]string{
+			"helm",
+			"package",
+			"."})
 
 	// List files to find the packaged .tgz
 	files, err := chartDir.Directory(projectDir).Entries(ctx)

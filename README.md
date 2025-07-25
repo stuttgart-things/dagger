@@ -14,6 +14,16 @@ dagger call -m release semantic \
 --progress plain -vv \
 ```
 
+```bash
+# DELETE EXISTING TAG
+dagger call -m release delete-tag \
+--src ~/projects/k2n/ \
+--release-tag v1.0.0 \
+--git-config file://~/.gitconfig \
+-vv --progress plain \
+export --path ~/projects/k2n/
+```
+
 </details>
 
 <details><summary><b>TRIVY</b></summary>
