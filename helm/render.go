@@ -73,7 +73,11 @@ func (m *Helm) RenderHelmfile(
 		helmContainer = helmContainer.WithMountedSecret(dockerConfigPath, registrySecret)
 	}
 
-	args := []string{"helmfile", "-f", helmfileName, "template"}
+	args := []string{
+		"helmfile",
+		"-f",
+		helmfileName,
+		"template"}
 
 	renderedManifests, err := helmContainer.
 		WithExec(args).
