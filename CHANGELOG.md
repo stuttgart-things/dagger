@@ -1,3 +1,10 @@
+# [0.29.0](https://github.com/stuttgart-things/dagger/compare/v0.28.0...v0.29.0) (2025-07-25)
+
+
+### Features
+
+* feat/add-remove-release ([95edcc1](https://github.com/stuttgart-things/dagger/commit/95edcc13a2156b758fb0ce8a095438d850700c06))
+
 # [0.28.0](https://github.com/stuttgart-things/dagger/compare/v0.27.0...v0.28.0) (2025-07-24)
 
 
