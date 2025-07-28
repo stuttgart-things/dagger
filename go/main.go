@@ -21,6 +21,7 @@ type GoBuildOpts struct {
 	GoMainFile string
 	BinName    string
 	Ldflags    string // Add this field for linker flags
+	Package    string
 }
 
 // GetGoLangContainer returns the default image for golang
