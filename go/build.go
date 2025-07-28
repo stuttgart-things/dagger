@@ -34,7 +34,7 @@ func (m *Go) build(
 
 	// Add ldflags if provided
 	if opts.Ldflags != "" {
-		buildCmd = append(buildCmd, "-ldflags", FormatLdflags(opts.Ldflags, opts.Package))
+		buildCmd = append(buildCmd, "-ldflags", formatLdflags(opts.Ldflags, opts.Package))
 	}
 
 	// Add the main Go file to the build command
@@ -94,7 +94,7 @@ func (m *Go) Build(
 	return m.build(ctx, src, opts)
 }
 
-func FormatLdflags(ldflags string, pkg string) string {
+func formatLdflags(ldflags string, pkg string) string {
 	var result []string
 
 	// Ensure pkg ends with "/"
