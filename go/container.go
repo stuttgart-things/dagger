@@ -150,3 +150,18 @@ func (m *Go) KoBuild(
 
 // 	return "No vulnerabilities found.", nil
 // }
+
+// GetGoLangContainer returns the default image for golang
+func (m *Go) GetGoLangContainer(goVersion string) *dagger.Container {
+	return dag.Container().
+		From("golang:" + goVersion)
+}
+
+func (m *Go) GetKoContainer(
+	// +optional
+	// +default="v0.17.1"
+	koVersion string,
+) *dagger.Container {
+	return dag.Container().
+		From("ghcr.io/ko-build/ko:" + koVersion)
+}

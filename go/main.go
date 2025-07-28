@@ -24,21 +24,6 @@ type GoBuildOpts struct {
 	Package    string
 }
 
-// GetGoLangContainer returns the default image for golang
-func (m *Go) GetGoLangContainer(goVersion string) *dagger.Container {
-	return dag.Container().
-		From("golang:" + goVersion)
-}
-
-func (m *Go) GetKoContainer(
-	// +optional
-	// +default="v0.17.1"
-	koVersion string,
-) *dagger.Container {
-	return dag.Container().
-		From("ghcr.io/ko-build/ko:" + koVersion)
-}
-
 func New(
 	// golang container
 	// It need contain golang
