@@ -1,3 +1,10 @@
+## [0.31.1](https://github.com/stuttgart-things/dagger/compare/v0.31.0...v0.31.1) (2025-07-28)
+
+
+### Bug Fixes
+
+* fix/go-package-name ([2df7541](https://github.com/stuttgart-things/dagger/commit/2df75419e0f4e75e3404c02342799733c06ddc93))
+
 # [0.31.0](https://github.com/stuttgart-things/dagger/compare/v0.30.0...v0.31.0) (2025-07-28)
 
 
