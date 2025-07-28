@@ -4,6 +4,7 @@ import (
 	"context"
 	"dagger/go/internal/dagger"
 	"fmt"
+	"strings"
 )
 
 func (m *Go) build(
@@ -33,7 +34,7 @@ func (m *Go) build(
 
 	// Add ldflags if provided
 	if opts.Ldflags != "" {
-		buildCmd = append(buildCmd, "-ldflags", opts.Ldflags)
+		buildCmd = append(buildCmd, "-ldflags", FormatLdflags(opts.Ldflags, opts.Package))
 	}
 
 	// Add the main Go file to the build command
@@ -47,6 +48,7 @@ func (m *Go) build(
 
 	return outputDir
 }
+
 func (m *Go) BuildBinary(
 	ctx context.Context,
 	src *dagger.Directory,
@@ -66,7 +68,10 @@ func (m *Go) BuildBinary(
 	// +default="main"
 	binName string,
 	// +optional
-	ldflags string, // Add ldflags as an optional parameter
+	ldflags string,
+	// +optional
+	// +default=""
+	packageName string,
 ) *dagger.Directory {
 	// Call the core build function with the struct
 	return m.build(ctx, src, GoBuildOpts{
@@ -75,7 +80,8 @@ func (m *Go) BuildBinary(
 		Arch:       arch,
 		GoMainFile: goMainFile,
 		BinName:    binName,
-		Ldflags:    ldflags, // Pass ldflags to the build function
+		Ldflags:    ldflags,
+		Package:    packageName,
 	})
 }
 
@@ -86,4 +92,26 @@ func (m *Go) Build(
 ) *dagger.Directory {
 	// Call the core build function
 	return m.build(ctx, src, opts)
+}
+
+func FormatLdflags(ldflags string, pkg string) string {
+	var result []string
+
+	// Ensure pkg ends with "/"
+	if pkg != "" && !strings.HasSuffix(pkg, "/") {
+		pkg += "/"
+	}
+
+	parts := strings.Split(ldflags, ";")
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			kv := strings.SplitN(trimmed, "=", 2)
+			if len(kv) == 2 {
+				flag := fmt.Sprintf("-X %s%s=%s", pkg, kv[0], kv[1])
+				result = append(result, flag)
+			}
+		}
+	}
+	return strings.Join(result, " ")
 }

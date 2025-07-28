@@ -478,6 +478,8 @@ build-binary \
 --src "." \
 --os linux \
 --arch amd64 \
+--ldflags "cmd.version=1.278910; cmd.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+--package-name github.com/stuttgart-things/k2n \
 --go-main-file main.go \
 --bin-name k2 \
 --go-version 1.24.4 \
