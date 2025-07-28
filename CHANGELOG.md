@@ -1,3 +1,15 @@
+# [0.30.0](https://github.com/stuttgart-things/dagger/compare/v0.29.0...v0.30.0) (2025-07-28)
+
+
+### Bug Fixes
+
+* feat/update-go-ldflags ([095e909](https://github.com/stuttgart-things/dagger/commit/095e909f8631f168a0997ce9799b41d77bf93a67))
+
+
+### Features
+
+* feat/add-package-for-ldflags ([7d63c43](https://github.com/stuttgart-things/dagger/commit/7d63c435e8b061288728b960ee8510acb7210dee))
+
 # [0.29.0](https://github.com/stuttgart-things/dagger/compare/v0.28.0...v0.29.0) (2025-07-25)
 
 
