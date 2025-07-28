@@ -1,3 +1,10 @@
+# [0.31.0](https://github.com/stuttgart-things/dagger/compare/v0.30.0...v0.31.0) (2025-07-28)
+
+
+### Features
+
+* fix/go-module ([65b1138](https://github.com/stuttgart-things/dagger/commit/65b113821d948854d58842b9a48706bde2fe2ed8))
+
 # [0.30.0](https://github.com/stuttgart-things/dagger/compare/v0.29.0...v0.30.0) (2025-07-28)
 
 
