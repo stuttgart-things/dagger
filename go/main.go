@@ -15,13 +15,13 @@ type Go struct {
 }
 
 type GoBuildOpts struct {
-	GoVersion  string
-	Os         string
-	Arch       string
-	GoMainFile string
-	BinName    string
-	Ldflags    string // Add this field for linker flags
-	Package    string
+	GoVersion   string
+	Os          string
+	Arch        string
+	GoMainFile  string
+	BinName     string
+	Ldflags     string // Add this field for linker flags
+	PackageName string
 }
 
 func New(
