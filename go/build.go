@@ -34,7 +34,7 @@ func (m *Go) build(
 
 	// Add ldflags if provided
 	if opts.Ldflags != "" {
-		buildCmd = append(buildCmd, "-ldflags", formatLdflags(opts.Ldflags, opts.Package))
+		buildCmd = append(buildCmd, "-ldflags", formatLdflags(opts.Ldflags, opts.PackageName))
 	}
 
 	// Add the main Go file to the build command
@@ -75,13 +75,13 @@ func (m *Go) BuildBinary(
 ) *dagger.Directory {
 	// Call the core build function with the struct
 	return m.build(ctx, src, GoBuildOpts{
-		GoVersion:  goVersion,
-		Os:         os,
-		Arch:       arch,
-		GoMainFile: goMainFile,
-		BinName:    binName,
-		Ldflags:    ldflags,
-		Package:    packageName,
+		GoVersion:   goVersion,
+		Os:          os,
+		Arch:        arch,
+		GoMainFile:  goMainFile,
+		BinName:     binName,
+		Ldflags:     ldflags,
+		PackageName: packageName,
 	})
 }
 

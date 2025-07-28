@@ -9,7 +9,7 @@ func (m *Go) SecurityScan(
 	ctx context.Context,
 	src *dagger.Directory,
 	// +optional
-	// +default="2.22.5"
+	// +default="2.22.7"
 	secureGoVersion string,
 ) (*dagger.File, error) {
 	// Create a container with gosec installed
