@@ -1,3 +1,10 @@
+## [0.31.2](https://github.com/stuttgart-things/dagger/compare/v0.31.1...v0.31.2) (2025-08-05)
+
+
+### Bug Fixes
+
+* fix/kyverno-module-dag ([bef36b3](https://github.com/stuttgart-things/dagger/commit/bef36b38ebe8f4a8d9b7e4cda59bd6664d5feec0))
+
 ## [0.31.1](https://github.com/stuttgart-things/dagger/compare/v0.31.0...v0.31.1) (2025-07-28)
 
 
