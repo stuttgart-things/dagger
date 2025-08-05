@@ -138,6 +138,19 @@ tasks:
       MODULE: terraform
       OUTPUT_STATE_FOLDER: /tmp/dagger/{{ .MODULE }}
 
+  test-kyverno:
+    desc: Test Kyverno
+    cmds:
+      - |
+        dagger call -m kyverno validate \
+        --policy {{ .TEST_KYVERNO_POLICY }} \
+        --resource {{ .TEST_KYVERNO_RESOURCE }} \
+        -vv --progress plain
+    vars:
+      MODULE: kyverno
+      TEST_KYVERNO_POLICY: tests/kyverno/policies/
+      TEST_KYVERNO_RESOURCE: tests/kyverno/resource-good/
+
   test-hugo:
     desc: Test hugo
     cmds:

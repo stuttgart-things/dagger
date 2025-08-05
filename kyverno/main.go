@@ -4,8 +4,6 @@ import (
 	"context"
 	"dagger/kyverno/internal/dagger"
 	"fmt"
-
-	"dagger.io/dagger/dag"
 )
 
 type Kyverno struct {
