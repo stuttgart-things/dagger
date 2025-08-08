@@ -17,7 +17,10 @@ func (m *Sops) DecryptSops(
 	}
 
 	workDir := "/src"
-	fileName := "encrypted.json"
+	fileName, err := encryptedFile.Name(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to get file name: %w", err)
+	}
 
 	// Mount encrypted file into container using string concatenation
 	ctr = ctr.
