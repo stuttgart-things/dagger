@@ -1,3 +1,10 @@
+# [0.32.0](https://github.com/stuttgart-things/dagger/compare/v0.31.2...v0.32.0) (2025-09-02)
+
+
+### Features
+
+* feat/add-helmfile-deployment ([63fee92](https://github.com/stuttgart-things/dagger/commit/63fee927de6cfef16a5f6a1926eb91fbd65c41f0))
+
 ## [0.31.2](https://github.com/stuttgart-things/dagger/compare/v0.31.1...v0.31.2) (2025-08-05)
 
 
