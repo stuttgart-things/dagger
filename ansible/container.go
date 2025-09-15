@@ -1,5 +1,3 @@
-package main
-
 import (
 	"dagger/ansible/internal/dagger"
 )
@@ -35,6 +33,7 @@ func (m *Ansible) container(
 		"git",
 		"sshpass",
 		"gzip",
+		"acl",
 	})
 
 	// Install Ansible via pip
@@ -45,6 +44,9 @@ func (m *Ansible) container(
 		"ansible",
 		"hvac",
 		"passlib"})
+
+	// Set Ansible env var to avoid tmpfile chown errors
+	ctr = ctr.WithEnvVariable("ANSIBLE_ALLOW_WORLD_READABLE_TMPFILES", "true")
 
 	return ctr
 }

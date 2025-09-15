@@ -619,6 +619,25 @@ render-helmfile \
 ```
 
 ```bash
+# APPLY HELMFILE (w/ KUBECONFIG)
+dagger call -m helm \
+helmfile-operation \
+--src tests/helm/ \
+--kube-config file://~/.kube/labda-sthings-infra \
+-vv --progress plain
+```
+
+```bash
+# DESTROY HELMFILE (w/ KUBECONFIG)
+dagger call -m helm \
+helmfile-operation \
+--operation destroy \
+--src tests/helm/ \
+--kube-config file://~/.kube/labda-sthings-infra \
+-vv --progress plain
+```
+
+```bash
 # MANIFEST VALIDATION w/ POLARIS
 dagger call -m helm \
 validate-chart \
