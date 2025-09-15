@@ -1,3 +1,5 @@
+package main
+
 import (
 	"dagger/ansible/internal/dagger"
 )
@@ -16,7 +18,7 @@ func (m *Ansible) container(
 		Container().
 		From(m.BaseImage)
 
-	// Install base packages + Ansible dependencies with Wolfi-compatible names
+	// INSTALL BASE PACKAGES + ANSIBLE DEPENDENCIES WITH WOLFI-COMPATIBLE NAMES
 	ctr = ctr.WithExec([]string{
 		"apk",
 		"add",
@@ -45,7 +47,7 @@ func (m *Ansible) container(
 		"hvac",
 		"passlib"})
 
-	// Set Ansible env var to avoid tmpfile chown errors
+	// SET ANSIBLE ENV VAR TO AVOID TMPFILE CHOWN ERRORS
 	ctr = ctr.WithEnvVariable("ANSIBLE_ALLOW_WORLD_READABLE_TMPFILES", "true")
 
 	return ctr
