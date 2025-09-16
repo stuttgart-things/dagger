@@ -1,3 +1,16 @@
+# [0.33.0](https://github.com/stuttgart-things/dagger/compare/v0.32.0...v0.33.0) (2025-09-16)
+
+
+### Bug Fixes
+
+* main ([6ed3237](https://github.com/stuttgart-things/dagger/commit/6ed32376a9ecbb72177ce0a96ac4993cb3bc7e11))
+
+
+### Features
+
+* feat/add-acl-to-ansible-container ([f4c7840](https://github.com/stuttgart-things/dagger/commit/f4c7840a11068bdfed99bfdeca399b9c32472944))
+* feat/add-vals-to-helmfile ([741ad5e](https://github.com/stuttgart-things/dagger/commit/741ad5e20df9ef976890055b1f4a1ec9abc6e2ab))
+
 # [0.32.0](https://github.com/stuttgart-things/dagger/compare/v0.31.2...v0.32.0) (2025-09-02)
 
 
