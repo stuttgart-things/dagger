@@ -615,7 +615,7 @@ push \
 dagger call -m helm \
 render-helmfile \
 --src tests/helm/ \
---registry-secret file://~/.docker/config.json \
+--registry-secret file://~/.docker/config.json
 ```
 
 ```bash
@@ -624,6 +624,19 @@ dagger call -m helm \
 helmfile-operation \
 --src tests/helm/ \
 --kube-config file://~/.kube/labda-sthings-infra \
+-vv --progress plain
+```
+
+```bash
+# DESTROY RELEASES w/ HELMFILE (w/ KUBECONFIG DOWNLOADED FROM VAULT)
+dagger call -m helm \
+helmfile-operation \
+--operation destroy \
+--src tests/helm/ \
+--vault-url env:VAULT_ADDR \
+--vault-secret-id env:VAULT_SECRET_ID \
+--vault-app-role-id env:VAULT_ROLE_ID \
+--secretPathKubeconfig kubeconfigs/test2/kubeconfig \
 -vv --progress plain
 ```
 
