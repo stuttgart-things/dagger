@@ -8,7 +8,7 @@ require (
 	github.com/Khan/genqlient v0.8.0
 	github.com/coreos/go-semver v0.3.1
 	github.com/creasty/defaults v1.8.0
-	github.com/disaster37/dagger-library-go/lib v0.0.0-20250306101003-4662fcc8adbd
+	github.com/disaster37/dagger-library-go/lib 07b0229c2fd0
 	github.com/gookit/validate v1.5.4
 	github.com/vektah/gqlparser/v2 v2.5.22
 	go.opentelemetry.io/otel v1.32.0
