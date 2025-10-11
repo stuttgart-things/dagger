@@ -5,18 +5,28 @@ import (
 )
 
 func (m *Ansible) container(
-	// The Packer arch
+	// The base image
 	// +optional
-	// +default="linux_amd64"
-	arch string) *dagger.Container {
+	// +default="cgr.dev/chainguard/wolfi-base:latest"
+	baseImage string,
+	// The Ansible version
+	// +optional
+	// +default="11.11.0"
+	version string,
+) *dagger.Container {
 
-	if m.BaseImage == "" {
-		m.BaseImage = "cgr.dev/chainguard/wolfi-base:latest"
-	}
+	// if m.BaseImage == "" {
+	// 	m.BaseImage = baseImage
+	// }
+
+	// Ensure version has a default value
+	// if version == "" {
+	// 	version = "11.11.0"
+	// }
 
 	ctr := dag.
 		Container().
-		From(m.BaseImage)
+		From("cgr.dev/chainguard/wolfi-base:latest")
 
 	// INSTALL BASE PACKAGES + ANSIBLE DEPENDENCIES WITH WOLFI-COMPATIBLE NAMES
 	ctr = ctr.WithExec([]string{
@@ -44,7 +54,7 @@ func (m *Ansible) container(
 		"pip3",
 		"install",
 		"--no-cache-dir",
-		"ansible",
+		"ansible==" + version,
 		"hvac",
 		"passlib"})
 

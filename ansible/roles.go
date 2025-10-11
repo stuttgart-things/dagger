@@ -10,9 +10,14 @@ import (
 // BUILDS A GIVEN COLLECTION DIR TO A ARCHIVE FILE (.TGZ)
 func (m *Ansible) ModifyRoleIncludes(
 	ctx context.Context,
-	src *dagger.Directory) *dagger.Directory {
+	src *dagger.Directory,
+	// The Ansible version
+	// +optional
+	// +default="11.11.0"
+	ansibleVersion string,
+) *dagger.Directory {
 
-	ansible := m.container(m.BaseImage).
+	ansible := m.container(m.BaseImage, ansibleVersion).
 		WithDirectory(collectionWorkDir, src).
 		WithWorkdir(collectionWorkDir)
 
