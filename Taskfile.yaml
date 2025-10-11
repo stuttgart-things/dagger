@@ -53,8 +53,8 @@ tasks:
       - task: test-hugo
       - task: test-terraform
       - task: pr
-      - npx semantic-release --dry-run
-      - npx semantic-release --debug --no-ci
+      - semantic-release --dry-run
+      - semantic-release --debug --no-ci
       - echo released version $(git describe --tags --abbrev=0)
 
   switch-remote:
