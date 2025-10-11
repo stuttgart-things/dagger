@@ -29,11 +29,15 @@ func (m *Ansible) Execute(
 	sshUser *dagger.Secret,
 	// +optional
 	sshPassword *dagger.Secret,
+	// The Ansible version
+	// +optional
+	// +default="11.11.0"
+	ansibleVersion string,
 ) (bool, error) {
 
 	workDir := "/src"
 
-	ansible := m.container(m.BaseImage)
+	ansible := m.container(m.BaseImage, ansibleVersion)
 
 	if src != nil {
 		ansible = ansible.

@@ -746,6 +746,24 @@ https://github.com/disaster37/dagger-library-go@v0.0.24
 
 </details>
 
+<details><summary><b>UPDATE MODULE DEPS</b></summary>
+
+```bash
+cd docker  # your module directory
+
+# Remove the cached module files
+rm -rf dagger.gen.go go.sum
+
+# Update the go.mod dependency
+go get dagger.io/dagger@v0.19.2
+go mod tidy
+
+# Regenerate the Dagger SDK files
+dagger develop
+```
+
+</details>
+
 <details><summary><b>CALL FUNCTION FROM LOCAL</b></summary>
 
 ```bash
@@ -762,11 +780,14 @@ lint --source tests/test-chart/ \
 
 </details>
 
-<details><summary><b>CALL FUNCTION FROM LOCAL</b></summary>
+<details><summary><b>CALL FUNCTION FROM GIT</b></summary>
 
 ```bash
 MODULE=golang #example
-dagger call -m github.com/stuttgart-things/dagger/${MODULE} build --progress plain --src ./ export --path build
+dagger call -m github.com/stuttgart-things/dagger/${MODULE} build  \
+--progress plain \
+--src ./ \
+export --path build
 ```
 
 </details>

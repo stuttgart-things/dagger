@@ -10,7 +10,12 @@ import (
 // RunCollectionBuildPipeline orchestrates init, modify and build of an ansible collection
 func (m *Ansible) RunCollectionBuildPipeline(
 	ctx context.Context,
-	src *dagger.Directory) (*dagger.Directory, error) {
+	src *dagger.Directory,
+	// The Ansible version
+	// +optional
+	// +default="11.11.0"
+	ansibleVersion string,
+) (*dagger.Directory, error) {
 
 	// INIT COLLECTION
 	collection, err := m.InitCollection(ctx, src)
@@ -20,7 +25,7 @@ func (m *Ansible) RunCollectionBuildPipeline(
 	fmt.Println("Collection initialized with namespace:", collection.Namespace, "and name:", collection.Name)
 
 	// MODIFY COLLECTION
-	modifiedCollectionDir := m.ModifyRoleIncludes(ctx, collection.Directory.Directory(collection.Namespace+"/"+collection.Name))
+	modifiedCollectionDir := m.ModifyRoleIncludes(ctx, collection.Directory.Directory(collection.Namespace+"/"+collection.Name), ansibleVersion)
 
 	// BUILD COLLECTION
 	buildCollection := m.Build(ctx, modifiedCollectionDir)

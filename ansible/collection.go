@@ -18,7 +18,7 @@ func (m *Ansible) Build(
 	ctx context.Context,
 	src *dagger.Directory) *dagger.Directory {
 
-	ansible := m.container(m.BaseImage).
+	ansible := m.container(m.BaseImage, "11.11.0").
 		WithDirectory(collectionWorkDir, src).
 		WithWorkdir(collectionWorkDir).
 		WithExec([]string{"ls", "-lta"}).
@@ -57,7 +57,7 @@ func (m *Ansible) InitCollection(
 	collectionContentDir := collectionWorkDir + "/" + metaInformation["namespace"].(string) + "/" + metaInformation["name"].(string)
 
 	// INIT COLLECTION
-	ansible := m.container(m.BaseImage).
+	ansible := m.container(m.BaseImage, "11.11.0").
 		WithDirectory(collectionWorkDir, src).
 		WithWorkdir(collectionWorkDir).
 		WithExec([]string{"ansible-galaxy", "collection", "init", metaInformation["namespace"].(string) + "." + metaInformation["name"].(string)})

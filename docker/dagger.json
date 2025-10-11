@@ -1,8 +1,7 @@
 {
   "name": "docker",
-  "engineVersion": "v0.16.2",
+  "engineVersion": "v0.19.2",
   "sdk": {
     "source": "go"
-  },
-  "source": "."
+  }
 }
