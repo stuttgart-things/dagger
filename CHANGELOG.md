@@ -1,3 +1,10 @@
+# [0.34.0](https://github.com/stuttgart-things/dagger/compare/v0.33.0...v0.34.0) (2025-10-11)
+
+
+### Features
+
+* feat/fix-ansible-version ([1ad3abe](https://github.com/stuttgart-things/dagger/commit/1ad3abe458a75f6da79a1407e18e7cadcb6d8d99))
+
 # [0.33.0](https://github.com/stuttgart-things/dagger/compare/v0.32.0...v0.33.0) (2025-09-16)
 
 
