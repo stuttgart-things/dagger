@@ -1,3 +1,11 @@
+# [0.35.0](https://github.com/stuttgart-things/dagger/compare/v0.34.0...v0.35.0) (2025-10-22)
+
+
+### Features
+
+* feat/add-kcl-module ([7986b62](https://github.com/stuttgart-things/dagger/commit/7986b62bee0a1296ef71831e8509dd0d0e7ebedd))
+* main ([e092ac3](https://github.com/stuttgart-things/dagger/commit/e092ac3e7570b70a4e232227fec5275562142257))
+
 # [0.34.0](https://github.com/stuttgart-things/dagger/compare/v0.33.0...v0.34.0) (2025-10-11)
 
 
