@@ -1,8 +1,82 @@
-# stuttgart-things/dagger
+# Stuttgart-Things Dagger Modules
 
-collection of dagger modules
+A comprehensive collection of Dagger modules for infrastructure automation, container management, security scanning, and DevOps workflows.
 
-## MODULES
+## 🚀 Available Modules
+
+| Module | Purpose | Key Features |
+|--------|---------|--------------|
+| [**Ansible**](./ansible/README.md) | Automation & Configuration | Playbook execution, collection building, GitHub releases |
+| [**Go**](./go/README.md) | Go Development | Linting, building, Ko containers, security scanning |
+| [**Helm**](./helm/README.md) | Kubernetes Package Management | Chart operations, Helmfile, validation, registry publishing |  
+| [**Terraform**](./terraform/README.md) | Infrastructure as Code | Plan/apply automation, Vault integration, state management |
+| [**Docker**](./docker/README.md) | Container Management | Building, registry operations, multi-platform support |
+| [**Hugo**](./hugo/README.md) | Static Site Generation | Site building, MinIO integration, development server |
+| [**Crossplane**](./crossplane/README.md) | Cloud Infrastructure | Package management, OCI publishing, custom packages |
+| [**GitLab**](./gitlab/README.md) | GitLab Integration | API operations, merge requests, repository management |
+| [**Packer**](./packer/README.md) | Image Building | VM templates, vCenter operations, Vault authentication |
+| [**Kyverno**](./kyverno/README.md) | Policy Management | Policy validation, resource compliance testing |
+| [**Trivy**](./trivy/README.md) | Security Scanning | Vulnerability scanning, container security, compliance |
+| [**SOPS**](./sops/README.md) | Secret Management | Encryption/decryption, key management, K8s secrets |
+| [**Release**](./release/README.md) | Release Automation | Semantic versioning, changelog generation, GitHub releases |
+| [**Git**](./git/README.md) | Git Operations | Repository management, branching, tagging, remote sync |
+| [**Crane**](./crane/README.md) | Registry Operations | Image copying, manifest inspection, multi-arch support |
+
+## 🔧 Quick Start
+
+### Prerequisites
+- **Dagger CLI** installed ([installation guide](https://docs.dagger.io/install))
+- **Docker** runtime available
+- **Git** for repository operations
+
+### Using a Module
+
+```bash
+# Example: Lint Go code
+dagger call -m go lint --src ./my-go-project
+
+# Example: Build Helm chart
+dagger call -m helm build-chart --src ./my-helm-chart
+
+# Example: Scan for vulnerabilities  
+dagger call -m trivy scan-filesystem --src ./my-project
+```
+
+### Module Development
+
+Each module includes comprehensive documentation:
+- **Features** and capabilities
+- **Prerequisites** and setup
+- **Quick Start** examples
+- **API Reference** with all available functions
+- **Testing** instructions
+
+## 📋 Task Automation
+
+Interactive task selection using [gum](https://github.com/charmbracelet/gum):
+
+```bash
+# Run interactive task menu
+task
+
+# Available tasks include:
+# - Module testing and validation
+# - Release management
+# - Documentation generation
+# - Code quality checks
+```
+
+## 🔍 Detailed Examples
+
+For comprehensive usage examples and advanced configurations, see the individual module documentation linked above. Each module provides:
+
+- Step-by-step tutorials
+- Real-world use cases
+- Integration patterns
+- Best practices
+- Troubleshooting guides
+
+## 📖 Legacy Examples
 
 <details><summary><b>RELEASE</b></summary>
 
