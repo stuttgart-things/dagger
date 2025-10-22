@@ -25,7 +25,7 @@ tasks:
     desc: Select test to run
     cmds:
       - |
-        totest=$(gum choose "ansible" "go" "helm" "crossplane")
+        totest=$(gum choose "ansible" "go" "helm" "crossplane" "kcl")
         echo "Selected: ${totest}"
         task test-${totest}
 
@@ -87,6 +87,80 @@ tasks:
         dagger call -m packer bake \
         --local-dir "." \
         --build-path tests/packer/hello/hello.pkr.hcl \
+
+  test-kcl:
+    desc: Test KCL functions
+    cmds:
+      - |
+        echo "Testing KCL version..."
+        dagger call -m {{ .MODULE }} \
+        kcl-version \
+        --progress plain
+      - |
+        echo "Testing KCL basic functionality..."
+        dagger call -m {{ .MODULE }} \
+        test-kcl \
+        --progress plain
+      - |
+        echo "Testing KCL with project files..."
+        dagger call -m {{ .MODULE }} \
+        run-kcl \
+        --source {{ .TEST_KCL_PROJECT }} \
+        --entrypoint {{ .TEST_KCL_ENTRYPOINT }} \
+        --progress plain
+      - |
+        echo "Testing KCL validation..."
+        dagger call -m {{ .MODULE }} \
+        validate-kcl \
+        --source {{ .TEST_KCL_PROJECT }} \
+        --progress plain
+      - |
+        echo "Testing CRD conversion with local file..."
+        dagger call -m {{ .MODULE }} \
+        convert-crd \
+        --crd-file {{ .TEST_CRD_FILE }} \
+        --progress plain \
+        export --path={{ .OUTPUT_MODELS_DIR }}
+        echo "Generated CRD models:"
+        find {{ .OUTPUT_MODELS_DIR }} -name "*.k" -exec basename {} \;
+    vars:
+      MODULE: kcl
+      TEST_KCL_PROJECT: tests/kcl/test-kcl-project
+      TEST_KCL_ENTRYPOINT: main.k
+      TEST_CRD_FILE: tests/kcl/test-crd.yaml
+      OUTPUT_MODELS_DIR: /tmp/dagger/kcl-test-models
+
+  convert-crd:
+    desc: Convert CRD to KCL models using web source or local file
+    cmds:
+      - |
+        echo "Converting CRD to KCL models..."
+        if [ -n "{{ .CRD_URL }}" ]; then
+          echo "Using web source: {{ .CRD_URL }}"
+          dagger call -m {{ .MODULE }} \
+          convert-crd \
+          --crd-source "{{ .CRD_URL }}" \
+          --progress plain \
+          export --path={{ .OUTPUT_MODELS_DIR }}
+        elif [ -n "{{ .CRD_FILE }}" ]; then
+          echo "Using local file: {{ .CRD_FILE }}"
+          dagger call -m {{ .MODULE }} \
+          convert-crd \
+          --crd-file {{ .CRD_FILE }} \
+          --progress plain \
+          export --path={{ .OUTPUT_MODELS_DIR }}
+        else
+          echo "Error: Please provide either CRD_URL or CRD_FILE"
+          echo "Usage examples:"
+          echo "  task convert-crd CRD_URL=https://raw.githubusercontent.com/crossplane-contrib/provider-terraform/main/package/crds/tf.upbound.io_workspaces.yaml"
+          echo "  task convert-crd CRD_FILE=./my-crd.yaml"
+          exit 1
+        fi
+        echo "Generated models available in: {{ .OUTPUT_MODELS_DIR }}"
+        ls -la {{ .OUTPUT_MODELS_DIR }}
+    vars:
+      MODULE: kcl
+      OUTPUT_MODELS_DIR: /tmp/dagger/kcl-models
 
   test-ansible:
     desc: Test ansible functions
