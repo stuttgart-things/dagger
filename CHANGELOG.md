@@ -1,3 +1,11 @@
+# [0.36.0](https://github.com/stuttgart-things/dagger/compare/v0.35.0...v0.36.0) (2025-10-24)
+
+
+### Features
+
+* add .container-use documentation folder ([6f0d104](https://github.com/stuttgart-things/dagger/commit/6f0d104cffb73369a7819bcac4c84c5f0895ef7c))
+* feat/add-liniting-module ([e98c7dc](https://github.com/stuttgart-things/dagger/commit/e98c7dc8c439af856719a22ce8f20334f1aff320))
+
 # [0.35.0](https://github.com/stuttgart-things/dagger/compare/v0.34.0...v0.35.0) (2025-10-22)
 
 
