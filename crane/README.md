@@ -221,13 +221,13 @@ dagger call -m crane list-repositories \
 # Copy each repository
 while read repo; do
   echo "Migrating $repo..."
-  
-  # List tags for repository  
+
+  # List tags for repository
   dagger call -m crane list-tags \
     --repository old-registry.com/$repo \
     --auth env:OLD_REGISTRY_AUTH \
     export --path=./tags-$repo.txt
-  
+
   # Copy each tag
   while read tag; do
     dagger call -m crane copy-image \

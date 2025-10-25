@@ -8,7 +8,7 @@ A comprehensive collection of Dagger modules for infrastructure automation, cont
 |--------|---------|--------------|
 | [**Ansible**](./ansible/README.md) | Automation & Configuration | Playbook execution, collection building, GitHub releases |
 | [**Go**](./go/README.md) | Go Development | Linting, building, Ko containers, security scanning |
-| [**Helm**](./helm/README.md) | Kubernetes Package Management | Chart operations, Helmfile, validation, registry publishing |  
+| [**Helm**](./helm/README.md) | Kubernetes Package Management | Chart operations, Helmfile, validation, registry publishing |
 | [**Terraform**](./terraform/README.md) | Infrastructure as Code | Plan/apply automation, Vault integration, state management |
 | [**Docker**](./docker/README.md) | Container Management | Building, registry operations, multi-platform support |
 | [**Hugo**](./hugo/README.md) | Static Site Generation | Site building, MinIO integration, development server |
@@ -38,7 +38,7 @@ dagger call -m go lint --src ./my-go-project
 # Example: Build Helm chart
 dagger call -m helm build-chart --src ./my-helm-chart
 
-# Example: Scan for vulnerabilities  
+# Example: Scan for vulnerabilities
 dagger call -m trivy scan-filesystem --src ./my-project
 ```
 
