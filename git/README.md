@@ -5,7 +5,7 @@ This module provides comprehensive Git operations including repository managemen
 ## Features
 
 - ✅ Repository cloning and initialization
-- ✅ Branch creation and management  
+- ✅ Branch creation and management
 - ✅ Commit operations with signing
 - ✅ Tag management
 - ✅ Remote repository synchronization
