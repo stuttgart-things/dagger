@@ -1,33 +1,34 @@
 # Stuttgart-Things Dagger Modules
 
-A comprehensive collection of Dagger modules for infrastructure automation, container management, security scanning, and DevOps workflows.
+A modular collection of Dagger building blocks for infrastructure, containers, security, and DevOps.
 
-## 🚀 Available Modules
+## 🚀 Module Overview
 
-| Module | Purpose | Key Features |
-|--------|---------|--------------|
-| [**Ansible**](./ansible/README.md) | Automation & Configuration | Playbook execution, collection building, GitHub releases |
-| [**Go**](./go/README.md) | Go Development | Linting, building, Ko containers, security scanning |
-| [**Helm**](./helm/README.md) | Kubernetes Package Management | Chart operations, Helmfile, validation, registry publishing |
-| [**Terraform**](./terraform/README.md) | Infrastructure as Code | Plan/apply automation, Vault integration, state management |
-| [**Docker**](./docker/README.md) | Container Management | Building, registry operations, multi-platform support |
-| [**Hugo**](./hugo/README.md) | Static Site Generation | Site building, MinIO integration, development server |
-| [**Crossplane**](./crossplane/README.md) | Cloud Infrastructure | Package management, OCI publishing, custom packages |
-| [**GitLab**](./gitlab/README.md) | GitLab Integration | API operations, merge requests, repository management |
-| [**Packer**](./packer/README.md) | Image Building | VM templates, vCenter operations, Vault authentication |
-| [**Kyverno**](./kyverno/README.md) | Policy Management | Policy validation, resource compliance testing |
-| [**Trivy**](./trivy/README.md) | Security Scanning | Vulnerability scanning, container security, compliance |
-| [**SOPS**](./sops/README.md) | Secret Management | Encryption/decryption, key management, K8s secrets |
-| [**Release**](./release/README.md) | Release Automation | Semantic versioning, changelog generation, GitHub releases |
-| [**Git**](./git/README.md) | Git Operations | Repository management, branching, tagging, remote sync |
-| [**Crane**](./crane/README.md) | Registry Operations | Image copying, manifest inspection, multi-arch support |
+| Module         | Purpose                        | Key Features |
+|---------------|--------------------------------|--------------|
+| [Ansible](./ansible/README.md)     | Automation & Configuration      | Playbook execution, collection build, GitHub release |
+| [Go](./go/README.md)               | Go Development                  | Linting, build, Ko containers, security scan |
+| [Helm](./helm/README.md)           | Kubernetes Package Management   | Chart operations, Helmfile, registry, validation |
+| [Terraform](./terraform/README.md) | Infrastructure as Code          | Plan/apply, Vault, state management |
+| [Docker](./docker/README.md)       | Container Management            | Build, registry, multi-platform, linting |
+| [Hugo](./hugo/README.md)           | Static Websites                 | Build, MinIO, dev server, theme management |
+| [Crossplane](./crossplane/README.md)| Cloud Infrastructure           | Package management, OCI push, custom packages |
+| [GitLab](./gitlab/README.md)       | GitLab Integration              | API, merge requests, repo management |
+| [Packer](./packer/README.md)       | Image Building                  | VM templates, vCenter, Vault |
+| [Kyverno](./kyverno/README.md)     | Policy Management               | Policy validation, compliance, GitOps |
+| [Trivy](./trivy/README.md)         | Security Scanning               | Vulnerability scan, container, compliance |
+| [SOPS](./sops/README.md)           | Secret Management               | Encryption, K8s secrets, key management |
+| [Release](./release/README.md)     | Release Automation              | Semver, changelog, GitHub release |
+| [Git](./git/README.md)             | Git Operations                  | Repo, branch, tag, remote, sync |
+| [Crane](./crane/README.md)         | Registry Operations             | Image copy, manifest, multi-arch |
+| [KCL](./kcl/README.md)             | KCL Config & CRD Conversion     | KCL CLI, CRD2KCL, validation, OCI push |
 
-## 🔧 Quick Start
+## 🛠️ Quick Start
 
 ### Prerequisites
-- **Dagger CLI** installed ([installation guide](https://docs.dagger.io/install))
-- **Docker** runtime available
-- **Git** for repository operations
+- Dagger CLI ([installation guide](https://docs.dagger.io/install))
+- Docker
+- Git
 
 ### Using a Module
 
@@ -38,29 +39,28 @@ dagger call -m go lint --src ./my-go-project
 # Example: Build Helm chart
 dagger call -m helm build-chart --src ./my-helm-chart
 
-# Example: Scan for vulnerabilities
+# Example: Security scan
 dagger call -m trivy scan-filesystem --src ./my-project
 ```
 
-### Module Development
+### Development & Documentation
 
-Each module includes comprehensive documentation:
-- **Features** and capabilities
-- **Prerequisites** and setup
-- **Quick Start** examples
-- **API Reference** with all available functions
-- **Testing** instructions
+Each module includes:
+- Features & capabilities
+- Setup & quick start
+- API reference
+- Test instructions
 
 ## 📋 Task Automation
 
-Interactive task selection using [gum](https://github.com/charmbracelet/gum):
+Interactive task menu with [gum](https://github.com/charmbracelet/gum):
 
 ```bash
-# Run interactive task menu
+# Start task menu
 task
 
-# Available tasks include:
-# - Module testing and validation
+# Available tasks:
+# - Module tests and validation
 # - Release management
 # - Documentation generation
 # - Code quality checks
@@ -68,7 +68,7 @@ task
 
 ## 🔍 Detailed Examples
 
-For comprehensive usage examples and advanced configurations, see the individual module documentation linked above. Each module provides:
+For comprehensive use cases and advanced configurations, see the individual module documentation above. Each module offers:
 
 - Step-by-step tutorials
 - Real-world use cases
