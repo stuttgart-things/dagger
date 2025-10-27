@@ -39,7 +39,7 @@ func SearchVulnerabilities(ctx context.Context, scanOutput string, severityFilte
 		if result.Class != "secret" {
 			continue // You could handle "os-pkgs", etc., separately
 		}
-		for _, secret := range result.Secrets {
+		for _, secret := range result.Secrets { // pragma: allowlist secret
 			if filter[secret.Severity] {
 				results = append(results, fmt.Sprintf(
 					"[SECRET] %s: %s (in %s at line %d)",
@@ -53,3 +53,6 @@ func SearchVulnerabilities(ctx context.Context, scanOutput string, severityFilte
 	}
 	return results, nil
 }
+
+// pragma: allowlist secret
+// ...existing code...

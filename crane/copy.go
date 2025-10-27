@@ -49,7 +49,7 @@ func (m *Crane) Copy(
 
 	var sourceAuth, targetAuth *RegistryAuth
 
-	if sourceRegistry != "" && sourceUsername != "" && sourcePassword != nil {
+	if sourceRegistry != "" && sourceUsername != "" && sourcePassword != nil { // pragma: allowlist secret
 		sourceAuth = &RegistryAuth{
 			URL:      sourceRegistry,
 			Username: sourceUsername,
@@ -57,7 +57,7 @@ func (m *Crane) Copy(
 		}
 	}
 
-	if targetRegistry != "" && targetUsername != "" && targetPassword != nil {
+	if targetRegistry != "" && targetUsername != "" && targetPassword != nil { // pragma: allowlist secret
 		targetAuth = &RegistryAuth{
 			URL:      targetRegistry,
 			Username: targetUsername,
@@ -98,7 +98,7 @@ func (m *Crane) copyImage(
 	ctr := m.container(insecure)
 
 	// MOUNT DOCKER CONFIG SECRET IF PROVIDED
-	if dockerConfigSecret != nil {
+	if dockerConfigSecret != nil { // pragma: allowlist secret
 		// Set DOCKER_CONFIG environment variable to custom path
 		configDir := "/.docker"
 		configPath := configDir + "/config.json"

@@ -43,7 +43,7 @@ func (m *Terraform) Execute(
 	if vaultRoleID != nil {
 		ctr = ctr.WithSecretVariable("TF_VAR_vault_role_id", vaultRoleID)
 	}
-	if vaultSecretID != nil {
+	if vaultSecretID != nil { // pragma: allowlist secret
 		ctr = ctr.WithSecretVariable("TF_VAR_vault_secret_id", vaultSecretID)
 	}
 	if vaultToken != nil {
@@ -71,7 +71,7 @@ func (m *Terraform) Execute(
 		}
 	}
 
-	if secretJsonVariables != nil {
+	if secretJsonVariables != nil { // pragma: allowlist secret
 		// MOUNT THE SECRET VARIABLES AS A FILE
 		ctr = ctr.WithMountedSecret(workDir+"/terraform.tfvars.json", secretJsonVariables)
 	}

@@ -6,7 +6,7 @@ metadata:
   labels:
     crossplane.io/xrd: xregistry.resources.stuttgart-things.com
 spec:
-  writeConnectionSecretsToNamespace: crossplane-system
+  writeConnectionSecretsToNamespace: crossplane-system # pragma: allowlist secret
   compositeTypeRef:
     apiVersion: resources.stuttgart-things.com/v1alpha1
     kind: XRegistry

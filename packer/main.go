@@ -66,7 +66,7 @@ func (m *Packer) Bake(
 	if vaultRoleID != nil {
 		base = base.WithSecretVariable("VAULT_ROLE_ID", vaultRoleID)
 	}
-	if vaultSecretID != nil {
+	if vaultSecretID != nil { // pragma: allowlist secret
 		base = base.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
 	}
 

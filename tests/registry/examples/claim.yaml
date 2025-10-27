@@ -12,5 +12,6 @@ spec:
   storageSize: 2Gi
   version: 2.2.3
   cert:
-    secretName: registry-ingress-tls
+    secretName: registry-ingress-tls # pragma: allowlist secret
     issuerName: cluster-issuer-approle
+# pragma: allowlist secret

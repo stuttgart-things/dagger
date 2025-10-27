@@ -166,7 +166,7 @@ func (m *Hugo) SyncMinioBucket(
 		WithMountedDirectory("/sync", repoContent).
 		From("minio/mc:latest").
 		WithEnvVariable("MC_INSECURE", notSecure).
-		WithEnvVariable("MC_HOST_"+strings.ToLower(aliasName), fmt.Sprintf("https://%s:%s@%s", accessKeyStr, secretKeyStr, endpoint))
+		WithEnvVariable("MC_HOST_"+strings.ToLower(aliasName), fmt.Sprintf("https://%s:%s@%s", accessKeyStr, secretKeyStr, endpoint)) // # pragma: allowlist secret
 
 	output, err := ctr.WithExec([]string{
 		"mc", "ls",
@@ -194,3 +194,5 @@ func (m *Hugo) SyncMinioBucket(
 
 	return outputDir, nil
 }
+
+// pragma: allowlist secret

@@ -9,5 +9,6 @@
       "pin": "96c13b929c636316317f745ff36cda4e4c66f680"
     }
   ],
-  "source": "."
+  "source": ".",
+  "pragma": "allowlist secret"
 }

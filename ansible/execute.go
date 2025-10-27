@@ -50,7 +50,7 @@ func (m *Ansible) Execute(
 	if vaultAppRoleID != nil {
 		ansible = ansible.WithSecretVariable("VAULT_ROLE_ID", vaultAppRoleID)
 	}
-	if vaultSecretID != nil {
+	if vaultSecretID != nil { // pragma: allowlist secret
 		ansible = ansible.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
 	}
 	if vaultUrl != nil {
@@ -61,7 +61,7 @@ func (m *Ansible) Execute(
 	if sshUser != nil {
 		ansible = ansible.WithSecretVariable("ANSIBLE_USER", sshUser)
 	}
-	if sshPassword != nil {
+	if sshPassword != nil { // pragma: allowlist secret
 		ansible = ansible.WithSecretVariable("ANSIBLE_PASSWORD", sshPassword)
 	}
 
@@ -95,7 +95,7 @@ func (m *Ansible) Execute(
 		// Build extra-vars string
 		var extraVars []string
 
-		if sshUser != nil && sshPassword != nil {
+		if sshUser != nil && sshPassword != nil { // pragma: allowlist secret
 			extraVars = append(extraVars,
 				"ansible_user='{{ lookup(\"env\", \"ANSIBLE_USER\") }}'",
 				"ansible_password='{{ lookup(\"env\", \"ANSIBLE_PASSWORD\") }}'",

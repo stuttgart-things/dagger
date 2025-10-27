@@ -43,22 +43,35 @@ dagger call -m kcl convert-crd \
   export --path=./generated-models
 ```
 
+### Packages
+
+```bash
+# Push package to ghcr
+dagger call -m kcl push-module \
+--src /home/sthings/projects/kcl/models/flux-source \ --module-name flux-source  \
+--user env:GITHUB_USER  \
+--password env:GITHUB_TOKEN  \
+--address oci://ghcr.io/stuttgart-things
+-vv
+```
+
 ## Functions
 
 ### Core KCL Functions
 
-| Function | Purpose | Parameters | Returns |
-|----------|---------|------------|---------|
-| `KclVersion()` | Get installed KCL version | None | Version string |
-| `TestKcl()` | Basic functionality test | None | Test output |
-| `RunKcl()` | Execute KCL configuration | `source`, `entrypoint` | KCL output |
-| `ValidateKcl()` | Validate KCL syntax | `source` | Validation result |
+| Function         | Purpose                      | Parameters                | Returns        |
+|------------------|-----------------------------|---------------------------|----------------|
+| `KclVersion()`   | Get installed KCL version   | None                      | Version string |
+| `TestKcl()`      | Basic functionality test     | None                      | Test output    |
+| `RunKcl()`       | Execute KCL configuration   | `source`, `entrypoint`    | KCL output     |
+| `ValidateKcl()`  | Validate KCL syntax         | `source`                  | Validation result |
+| `PushModule()`   | Push KCL module to registry | `src`, `moduleName`, `user`, `password`, `address` | Push result |
 
 ### CRD Conversion Functions
 
-| Function | Purpose | Parameters | Returns |
-|----------|---------|------------|---------|
-| `ConvertCrd()` | Convert single CRD to KCL models | `crdSource?`, `crdFile?` | Generated models directory |
+| Function                  | Purpose                              | Parameters                                 | Returns                  |
+|---------------------------|--------------------------------------|--------------------------------------------|--------------------------|
+| `ConvertCrd()`            | Convert single CRD to KCL models     | `crdSource?`, `crdFile?`                   | Generated models directory |
 | `ConvertCrdToDirectory()` | Convert CRD with custom output structure | `workdir`, `crdSource?`, `crdFile?`, `outputPath?` | Updated directory |
 
 ## CRD to KCL Conversion

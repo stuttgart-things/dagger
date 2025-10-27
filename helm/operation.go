@@ -45,7 +45,7 @@ func (m *Helm) HelmfileOperation(
 		WithEnvVariable("VAULT_AUTH_METHOD", "approle")
 
 	// CONDITIONALLY MOUNT THE SECRET IF PROVIDED
-	if registrySecret != nil {
+	if registrySecret != nil { // pragma: allowlist secret
 		helmContainer = helmContainer.WithMountedSecret(dockerConfigPath, registrySecret)
 	}
 
@@ -54,7 +54,7 @@ func (m *Helm) HelmfileOperation(
 		helmContainer = helmContainer.WithSecretVariable("VAULT_ROLE_ID", vaultAppRoleID)
 	}
 
-	if vaultSecretID != nil {
+	if vaultSecretID != nil { // pragma: allowlist secret
 		helmContainer = helmContainer.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
 	}
 
