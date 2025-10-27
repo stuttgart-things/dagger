@@ -20,7 +20,7 @@ func (m *Helm) Render(
 	helmContainer := m.container()
 
 	// CONDITIONALLY MOUNT THE SECRET IF PROVIDED
-	if registrySecret != nil {
+	if registrySecret != nil { // pragma: allowlist secret
 		helmContainer = helmContainer.WithMountedSecret(dockerConfigPath, registrySecret)
 	}
 
@@ -69,7 +69,7 @@ func (m *Helm) RenderHelmfile(
 		WithWorkdir(projectDir)
 
 	// CONDITIONALLY MOUNT THE SECRET IF PROVIDED
-	if registrySecret != nil {
+	if registrySecret != nil { // pragma: allowlist secret
 		helmContainer = helmContainer.WithMountedSecret(dockerConfigPath, registrySecret)
 	}
 

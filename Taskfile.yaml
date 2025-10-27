@@ -5,6 +5,9 @@ vars:
     sh: echo ${PWD##*/}
   BRANCH:
     sh: if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then echo $(git rev-parse --abbrev-ref HEAD); else echo main ; fi
+includes:
+  git:
+    taskfile: https://raw.githubusercontent.com/stuttgart-things/platform-engineering-showcase/refs/heads/main/taskfiles/git.yaml
 
 dotenv: ['.env', '{{.HOME}}/.env']
 
@@ -29,20 +32,6 @@ tasks:
         echo "Selected: ${totest}"
         task test-${totest}
 
-  branch:
-    desc: Create branch from main
-    cmds:
-      - git checkout main
-      - git branch
-      - git pull
-      - |
-        echo "Enter to be created (remote) branch:"
-        read BRANCH_NAME;
-        git checkout -b ${BRANCH_NAME}
-        git push origin ${BRANCH_NAME}
-      - git branch
-      - git branch --set-upstream-to=origin/main ${BRANCH_NAME}
-
   release:
     desc: push new version
     cmds:
@@ -52,33 +41,10 @@ tasks:
       - task: test-docker
       - task: test-hugo
       - task: test-terraform
-      - task: pr
+      - task: git:pr
       - semantic-release --dry-run
       - semantic-release --debug --no-ci
       - echo released version $(git describe --tags --abbrev=0)
-
-  switch-remote:
-    desc: Switch to remote branch
-    cmds:
-      - |
-        git fetch
-        branches=($(git branch -r | grep -v 'origin/HEAD' | sed 's|origin/||'))
-        branch=$(printf "%s\n" "${branches[@]}" | gum choose)
-        git switch -c ${branch} --track origin/${branch}
-        git branch && git status
-
-  switch-local:
-    desc: Switch to local branch
-    cmds:
-      - |
-        branches=$(git branch -a | grep -v 'remotes')
-        branch=$(printf "%s\n" "${branches[@]}" | gum choose)
-        git checkout ${branch} && git pull
-
-  check:
-    desc: "Run pre-commit hooks"
-    cmds:
-      - pre-commit run -a
 
   test-packer:
     desc: Test packer functions
@@ -289,7 +255,7 @@ tasks:
       TEST_GO_CODE: tests/go/calculator/
       OUTPUT_DIR: /tmp/calc
       KO_REPO: ttl.sh #ghcr.io/stuttgart-things/dagger
-      KO_VERSION: 3979dd70544adde24d336d5b605f4cf6f0ea9479
+      KO_VERSION: 3979dd70544adde24d336d5b605f4cf6f0ea9479 # pragma: allowlist secret
       OUTPUT_GO_DIR: /tmp/go
       #TEST_IMG_TAR: test.tar
       WORKFLOW_REPORT: /tmp/workflow.json
@@ -386,44 +352,17 @@ tasks:
       REGISTRY_URL: ttl.sh
       VERSION: 1h
 
-
-  commit:
-    desc: Commit + push code into branch
-    cmds:
-      - rm -rf dist/
-      - git branch --set-upstream-to=origin/{{ .BRANCH }}
-      - git pull
-      - |
-        git add *
-        if [[ -n $(git status --porcelain) ]]; then
-          echo "committing changes"
-          echo "ENTER COMMIT MESSAGE"
-          COMMIT_MESSAGE=$(echo $(gum choose "feat: {{ .BRANCH }}" "fix: {{ .BRANCH }}" "BREAKING CHANGE: {{ .BRANCH }}" "ENTER CUSTOM COMMIT MESSAGE"))
-
-          if [ "$COMMIT_MESSAGE" == "ENTER CUSTOM COMMIT MESSAGE" ]; then
-            COMMIT_MESSAGE=$(echo $(gum input --placeholder "scope" --value "commit to {{ .BRANCH }}"))
-          fi
-
-          git commit --allow-empty -a -m "$(echo ${COMMIT_MESSAGE})"
-        else
-          echo "no changes"
-        fi
-        git push origin -u {{ .BRANCH }}
-
-  pr:
-    desc: Create pull request into main
-    # deps: [lint]
-    cmds:
-      - task: commit
-      - gh pr create -t "{{ .BRANCH }}" -b "{{ .BRANCH }} branch into main"
-      - sleep 20s
-      #- gh pr checks $(gh pr list | grep "^[^#;]" | grep '{{ .BRANCH }}' | awk '{print $1}') --watch
-      - gh pr merge $(gh pr list | grep "^[^#;]" | grep '{{ .BRANCH }}' | awk '{print $1}') --auto --rebase --delete-branch
-      - git checkout main && git pull
-
   do:
     desc: Select a task to run
     cmds:
       - |
-        task=$(yq e '.tasks | keys' Taskfile.yaml | sed 's/^- //' | gum choose)
-        task ${task}
+        # Extract task names (keep internal colons, remove only trailing colon)
+        task_name=$(task -l | awk '/^\*/ {print $2}' | sed 's/:$//' | gum choose)
+
+        # Run the selected task
+        [ -n "$task_name" ] && task "$task_name"
+
+  default:
+    desc: Default task is select & do (work)
+    cmds:
+      - task do

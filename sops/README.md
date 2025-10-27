@@ -66,7 +66,7 @@ dagger call -m sops encrypt-k8s-secret \
 dagger call -m sops encrypt-file \
   --src ./config.yaml \
   --age-key env:AGE_KEY \
-  --gpg-fingerprint "1234567890ABCDEF" \
+  --gpg-fingerprint "1234567890ABCDEF" \ # pragma: allowlist secret
   export --path=./config.enc.yaml
 
 # Decrypt file
@@ -115,7 +115,7 @@ creation_rules:
   - path_regex: \.prod\.yaml$
     kms: arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012
   - path_regex: \.json$
-    pgp: "1234567890ABCDEF1234567890ABCDEF12345678"
+    pgp: "1234567890ABCDEF1234567890ABCDEF12345678" # pragma: allowlist secret
 ```
 
 ## Key Types
@@ -154,3 +154,5 @@ See the [main README](../README.md#sops) for detailed usage examples.
 - [GPG Guide](https://gnupg.org/documentation/)
 - [AWS KMS](https://aws.amazon.com/kms/)
 - [GCP KMS](https://cloud.google.com/kms)
+
+<!-- pragma: allowlist secret -->

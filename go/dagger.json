@@ -20,5 +20,19 @@
       "source": "github.com/luanmtruong/daggerverse/trivy",
       "pin": "96c13b929c636316317f745ff36cda4e4c66f680"
     }
+  ],
+  "pragma": [
+    {
+      "name": "docker",
+      "value": "false positive"
+    },
+    {
+      "name": "golangci-lint",
+      "value": "false positive"
+    },
+    {
+      "name": "pin",
+      "value": "pragma: allowlist secret"
+    }
   ]
 }

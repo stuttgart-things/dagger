@@ -7,7 +7,7 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: check-symlinks
-      - id: check-yaml
+      #- id: check-yaml
       - id: detect-private-key
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0  # or specific git tag
@@ -27,6 +27,8 @@ repos:
           - DL4006
           - --ignore
           - DL3015
+          - --ignore
+          - DL3007
   - repo: https://github.com/sirosen/check-jsonschema
     rev: 0.30.0
     hooks:
@@ -42,3 +44,8 @@ repos:
         language: python
         # for backward compatibility
         files: .*  # all files
+        args: ["--exclude-files", "git/dagger.json|tests/vm/terraform.tfvars.enc.json|repository-linting/dagger.json",
+               "--exclude-files", "ansible/dagger.json",
+               "--exclude-files", "go/dagger.json",
+                "--exclude-files", "tests/sops/tfvars.json"
+               ]

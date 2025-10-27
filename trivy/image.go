@@ -30,7 +30,7 @@ func (m *Trivy) ScanImage(
 	trivyContainer := dag.Container().
 		From("aquasec/trivy:" + trivyVersion)
 
-	if registryUser != nil && registryPassword != nil {
+	if registryUser != nil && registryPassword != nil { // pragma: allowlist secret
 		trivyContainer = trivyContainer.
 			WithSecretVariable("TRIVY_USERNAME", registryUser).
 			WithSecretVariable("TRIVY_PASSWORD", registryPassword)

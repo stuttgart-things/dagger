@@ -9,7 +9,7 @@ releases:
     version: 16.7.18
     createNamespace: true
     values:
-      - postgresqlPassword: supersecurepassword
+      - postgresqlPassword: supersecurepassword # pragma: allowlist secret
       - postgresqlUsername: admin
       - postgresqlDatabase: mydb
       - primary:

@@ -55,7 +55,7 @@ func (m *ImageBuild) Push(
 	}
 
 	// Configure registry authentication (if credentials are provided)
-	if registryUsername != nil && registryPassword != nil {
+	if registryUsername != nil && registryPassword != nil { // pragma: allowlist secret
 		username, err := registryUsername.Plaintext(ctx)
 		if err != nil {
 			return "", errors.Wrap(err, "Error when getting registry username")
@@ -72,4 +72,5 @@ func (m *ImageBuild) Push(
 			repositoryName,
 			tag),
 	)
+	// pragma: allowlist secret
 }
