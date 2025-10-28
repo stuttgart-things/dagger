@@ -1,3 +1,13 @@
+# [0.37.0](https://github.com/stuttgart-things/dagger/compare/v0.36.0...v0.37.0) (2025-10-28)
+
+
+### Features
+
+* feat/add-github-issue-creation ([6c10414](https://github.com/stuttgart-things/dagger/commit/6c10414079d269d5b7803306f5c4cdfa87c7d5c9))
+* feat/add-kcl-push ([0005251](https://github.com/stuttgart-things/dagger/commit/00052518abd1835b441ac23a7bb1be22003c94b5))
+* fix/remove-node-modules ([6565383](https://github.com/stuttgart-things/dagger/commit/65653833e33f646c759d1632dbec78c6a5d2937b))
+* main ([8bf7a94](https://github.com/stuttgart-things/dagger/commit/8bf7a943f6fe5ef1b806388d7661a5c2760d7867))
+
 # [0.36.0](https://github.com/stuttgart-things/dagger/compare/v0.35.0...v0.36.0) (2025-10-24)
 
 
