@@ -28,14 +28,13 @@ export --path=/tmp/private-repo
 
 ```bash
 dagger call -m git create-github-issue \
---repository "stuttgart-things/stuttgart-things" \
---token "env:GITHUB_TOKEN" \
+--repository stuttgart-things/stuttgart-things \
+--token env:GITHUB_TOKEN \
 --title "🧪 Test Issue from Dagger" \
 --body "This issue was automatically created using Dagger!" \
---label "automation" \
---label "test"
+--label automation \
+--label test
 ```
-
 
 ## Examples
 
