@@ -40,11 +40,37 @@ tasks:
       - task: test-ansible
       - task: test-docker
       - task: test-hugo
+      - task: test-linting
       - task: test-terraform
       - task: git:pr
       - semantic-release --dry-run
       - semantic-release --debug --no-ci
       - echo released version $(git describe --tags --abbrev=0)
+
+  test-linting:
+    desc: Test linting functions
+    cmds:
+      - |
+        dagger call -m linting \
+        lint-yaml --src {{ .YAML_TEST_DIR }} \
+        export --path={{ .LINT_REPORT_PATH }}
+      - |
+        dagger call -m linting \
+        lint-markdown --src {{ .MARKDOWN_TEST_DIR }} \
+        export --path={{ .MARKDOWN_REPORT_PATH }}
+      - |
+        dagger call -m linting \
+        run-pre-commit --src "{{ .PRE_COMMIT_SRC }}" \
+        --skip-hooks="{{ .PRE_COMMIT_SKIP_HOOKS }}" \
+        export --path="{{ .PRE_COMMIT_REPORT_PATH }}"
+    vars:
+      YAML_TEST_DIR: tests/linting/yaml/
+      LINT_REPORT_PATH: /tmp/report.yaml
+      MARKDOWN_TEST_DIR: tests/linting/markdown/
+      MARKDOWN_REPORT_PATH: /tmp/markdown-report.yaml
+      PRE_COMMIT_REPORT_PATH: /tmp/pre-commit-report.txt
+      PRE_COMMIT_SKIP_HOOKS: hadolint-docker
+      PRE_COMMIT_SRC: "./"
 
   test-packer:
     desc: Test packer functions

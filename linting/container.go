@@ -18,6 +18,12 @@ func (m *Linting) container() *dagger.Container {
 		"wget",
 		"yamllint",
 		"ruby",
+		"python3",
+		"py3-pip",
+		"git",
+		"bash",
+		"shellcheck",
+		"docker-cli",
 	})
 
 	ctr = ctr.WithExec([]string{
@@ -25,6 +31,14 @@ func (m *Linting) container() *dagger.Container {
 		"install",
 		"mdl",
 		"--no-document",
+	})
+
+	ctr = ctr.WithExec([]string{
+		"pip3",
+		"install",
+		"--break-system-packages",
+		"pre-commit",
+		"detect-secrets",
 	})
 
 	return ctr
