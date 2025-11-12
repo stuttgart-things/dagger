@@ -152,14 +152,18 @@ func (m *Go) KoBuild(
 // }
 
 // GetGoLangContainer returns the default image for golang
-func (m *Go) GetGoLangContainer(goVersion string) *dagger.Container {
+func (m *Go) GetGoLangContainer(
+	// +optional
+	// +default="1.25.4"
+	goVersion string,
+) *dagger.Container {
 	return dag.Container().
-		From("golang:" + goVersion)
+		From("golang:" + goVersion + "-alpine")
 }
 
 func (m *Go) GetKoContainer(
 	// +optional
-	// +default="v0.17.1"
+	// +default="v0.18.0"
 	koVersion string,
 ) *dagger.Container {
 	return dag.Container().

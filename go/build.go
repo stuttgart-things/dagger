@@ -53,7 +53,7 @@ func (m *Go) BuildBinary(
 	ctx context.Context,
 	src *dagger.Directory,
 	// +optional
-	// +default="1.24.2"
+	// +default="1.25.4"
 	goVersion string,
 	// +optional
 	// +default="linux"
