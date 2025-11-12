@@ -81,7 +81,7 @@ dagger call -m go build-binary \
   --package-name github.com/stuttgart-things/myapp \
   --go-main-file main.go \
   --bin-name myapp \
-  --go-version 1.24.4 \
+  --go-version 1.25.4 \
   export --path=/tmp/go/build/
 ```
 
