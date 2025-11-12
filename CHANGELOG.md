@@ -1,3 +1,10 @@
+## [0.38.1](https://github.com/stuttgart-things/dagger/compare/v0.38.0...v0.38.1) (2025-11-12)
+
+
+### Bug Fixes
+
+* fix/docker-version ([229900d](https://github.com/stuttgart-things/dagger/commit/229900dce81d0467d2b601b9eab9faf63c379fe0))
+
 # [0.38.0](https://github.com/stuttgart-things/dagger/compare/v0.37.0...v0.38.0) (2025-11-12)
 
 
