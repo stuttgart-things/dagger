@@ -1,3 +1,12 @@
+# [0.38.0](https://github.com/stuttgart-things/dagger/compare/v0.37.0...v0.38.0) (2025-11-12)
+
+
+### Features
+
+* feat/add-pre-commit ([1e65767](https://github.com/stuttgart-things/dagger/commit/1e657670676477b95c1d3b84c67c520f5f5cd2f8))
+* feat/update-golang-version ([33ad62f](https://github.com/stuttgart-things/dagger/commit/33ad62f27526cb4755c93e40bf51a33cf39de4e2))
+* main ([83b7a7f](https://github.com/stuttgart-things/dagger/commit/83b7a7fc2b6b996a6172592474f31ba934a2ea9f))
+
 # [0.37.0](https://github.com/stuttgart-things/dagger/compare/v0.36.0...v0.37.0) (2025-10-28)
 
 
