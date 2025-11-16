@@ -1,3 +1,10 @@
+# [0.39.0](https://github.com/stuttgart-things/dagger/compare/v0.38.1...v0.39.0) (2025-11-16)
+
+
+### Features
+
+* feat/add-talk-with-k8s ([28f6663](https://github.com/stuttgart-things/dagger/commit/28f66632dc1f7bc1608e8b0e55654357130a718a))
+
 ## [0.38.1](https://github.com/stuttgart-things/dagger/compare/v0.38.0...v0.38.1) (2025-11-12)
 
 
