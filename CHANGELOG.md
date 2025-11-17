@@ -1,3 +1,10 @@
+# [0.40.0](https://github.com/stuttgart-things/dagger/compare/v0.39.0...v0.40.0) (2025-11-17)
+
+
+### Features
+
+* fix/enable-all-namespace-helm-config ([498942c](https://github.com/stuttgart-things/dagger/commit/498942c3f8a4d34fe048a5eb78dd9bad48e574fe))
+
 # [0.39.0](https://github.com/stuttgart-things/dagger/compare/v0.38.1...v0.39.0) (2025-11-16)
 
 
