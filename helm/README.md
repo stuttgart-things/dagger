@@ -58,28 +58,6 @@ dagger call -m helm push \
 task test-helm
 ```
 
-### Tak w/ Kubernetes
-
-```bash
-# GET NODES
-dagger call -m helm talk-with-kubernetes \
---operation get \
---resource-kind nodes \
---kube-config file://~/.kube/demo-infra \
---progress plain
-```
-
-```bash
-# GET PODS IN NAMESPACE + GREP
-agger call -m helm talk-with-kubernetes \
---operation get \
---resource-kind pods \
---namespace kube-system \
---additional-command="grep cilium" \
---kube-config file://~/.kube/demo-infra \
---progress plain
-```
-
 ## API Reference
 
 ### Chart Linting
