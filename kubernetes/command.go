@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"dagger/helm/internal/dagger"
+	"dagger/kubernetes/internal/dagger"
 	"fmt"
 	"strings"
 )
 
-func (m *Helm) TalkWithKubernetes(
+func (m *Kubernetes) Command(
 	ctx context.Context,
 	// src *dagger.Directory,
 	// +optional
@@ -29,9 +29,17 @@ func (m *Helm) TalkWithKubernetes(
 	// Build kubectl command arguments
 	args := []string{"kubectl", operation, resourceKind}
 
-	// Only add namespace flag if namespace is provided
+	// Handle namespace options:
+	// - Empty string: no namespace flag (for cluster-wide resources)
+	// - Specific namespace: use -n flag
+	// - Special values for all namespaces: use -A flag
 	if namespace != "" {
-		args = append(args, "-n", namespace)
+		// Check if user wants all namespaces
+		if namespace == "ALL" || namespace == "all" || namespace == "*" {
+			args = append(args, "-A")
+		} else {
+			args = append(args, "-n", namespace)
+		}
 	}
 
 	kubectlContainer := m.container().
