@@ -9,11 +9,11 @@ A Dagger module for running Redis services in your CI/CD pipelines and local dev
 dagger call -m homerun run-redis up
 
 # Start Redis with password (RECOMMENDED)
-dagger call -m homerun run-redis --password="mypass" up
+dagger call -m homerun run-redis --password="mypass" up # pragma: allowlist secret
 
 # Open interactive redis-cli shell
 dagger call -m homerun redis-cli terminal
-dagger call -m homerun redis-cli --password="mypass" terminal
+dagger call -m homerun redis-cli --password="mypass" terminal # pragma: allowlist secret
 
 # Quick test Redis is working
 dagger call -m homerun test-redis-connection
@@ -30,11 +30,11 @@ dagger call -m homerun generate-password --length=32
 | Command | Description |
 |---------|-------------|
 | `dagger call -m homerun run-redis up` | **Start Redis without password (insecure, for dev only)** |
-| `dagger call -m homerun run-redis --password="pass" up` | **Start Redis with password (recommended)** |
+| `dagger call -m homerun run-redis --password="pass" up` | **Start Redis with password (recommended)** | #pragma: allowlist secret
 | `dagger call -m homerun redis-cli terminal` | **Open interactive redis-cli shell** |
-| `dagger call -m homerun redis-cli --password="pass" terminal` | **Open redis-cli with password** |
+| `dagger call -m homerun redis-cli --password="pass" terminal` | **Open redis-cli with password** | # pragma: allowlist secret
 | `dagger call -m homerun test-redis-connection` | Quick test (no password) |
-| `dagger call -m homerun test-redis-connection --password="pass"` | Test with password |
+| `dagger call -m homerun test-redis-connection --password="pass"` | Test with password | # pragma: allowlist secret
 | `dagger call -m homerun redis-service` | Get Redis service object |
 | `dagger call -m homerun generate-password` | Generate secure password |
 | `dagger call -m homerun run-test-with-redis --source=./tests --test-path=.` | Full test runner |
@@ -56,7 +56,7 @@ Start Redis and access it from your host machine:
 
 ```bash
 # Start Redis with password
-dagger call -m homerun run-redis --password="dev" up
+dagger call -m homerun run-redis --password="dev"  # pragma: allowlist secret
 
 # In another terminal, connect from your machine
 redis-cli -p 6379 -a dev
@@ -144,7 +144,7 @@ Start a Redis service with port forwarding (use with `up`)
 **Examples:**
 ```bash
 # With password (recommended)
-dagger call -m homerun run-redis --password="test" up
+dagger call -m homerun run-redis --password="test" up # pragma: allowlist secret
 
 # Without password (insecure, dev only)
 dagger call -m homerun run-redis up
@@ -165,7 +165,7 @@ Open an interactive redis-cli shell connected to Redis (use with `terminal`)
 dagger call -m homerun redis-cli terminal
 
 # With password
-dagger call -m homerun redis-cli --password="mypass" terminal
+dagger call -m homerun redis-cli --password="mypass" terminal # pragma: allowlist secret
 ```
 
 **What you can do:**
@@ -206,7 +206,7 @@ Test if Redis is reachable and responding
 
 **Example:**
 ```bash
-dagger call -m homerun test-redis-connection --password="test"
+dagger call -m homerun test-redis-connection --password="test" # pragma: allowlist secret
 ```
 
 **Output:** Should return `PONG` if Redis is working correctly.
@@ -249,7 +249,7 @@ dagger call -m homerun run-test-with-redis \
 
 ```bash
 # Start Redis for your local app
-dagger call -m homerun run-redis --password="dev123" up
+dagger call -m homerun run-redis --password="dev123" up # pragma: allowlist secret
 
 # Your app can now connect to localhost:6379
 ```
@@ -320,7 +320,7 @@ Test compatibility across different Redis versions:
 ```bash
 for version in "6.2.0-v18" "7.0.0-v18" "7.2.0-v18"; do
   echo "Testing Redis $version..."
-  dagger call -m homerun test-redis-connection --version="$version" --password="test"
+  dagger call -m homerun test-redis-connection # pragma: allowlist secret --version="$version" --password="test"
 done
 ```
 
@@ -333,7 +333,7 @@ done
 
 ```bash
 # Start Redis in background
-dagger call -m homerun run-redis --password="test" up &
+dagger call -m homerun run-redis --password="test" up & # pragma: allowlist secret
 
 # Run your app
 REDIS_ADDR=localhost:6379 REDIS_PASSWORD=test go run main.go
@@ -392,7 +392,7 @@ echo "All versions passed!"
 ### Pattern 5: Interactive Shell with Redis
 
 ```bash
-dagger call -m homerun redis-service --password="testpass" \
+dagger call -m homerun redis-service --password="testpass" \ # pragma: allowlist secret
   | dagger call container \
     --from alpine:latest \
     with-service-binding --alias redis --service - \
@@ -420,13 +420,13 @@ redis-cli -h redis -a testpass
 dagger call -m homerun run-redis up
 
 # Start Redis with a password
-dagger call -m homerun run-redis --password="mySecurePass" up
+dagger call -m homerun run-redis --password="mySecurePass" up # pragma: allowlist secret
 
 # Start Redis on a custom port
-dagger call -m homerun run-redis --port=6380 --password="test123" up
+dagger call -m homerun run-redis --port=6380 --password="test123" up # pragma: allowlist secret
 
 # Start Redis with specific version
-dagger call -m homerun run-redis --version="7.0.0-v18" --password="pass" up
+dagger call -m homerun run-redis --version="7.0.0-v18" --password="pass" up # pragma: allowlist secret
 ```
 
 **What this does:**
@@ -438,7 +438,7 @@ dagger call -m homerun run-redis --version="7.0.0-v18" --password="pass" up
 **Example connecting from your local machine:**
 ```bash
 # Terminal 1: Start Redis
-dagger call -m homerun run-redis --password="test" up
+dagger call -m homerun run-redis --password="test" up # pragma: allowlist secret
 
 # Terminal 2: Connect to it
 redis-cli -p 6379 -a test
@@ -453,10 +453,10 @@ redis-cli -p 6379 -a test
 dagger call -m homerun test-redis-connection
 
 # Test with password
-dagger call -m homerun test-redis-connection --password="mySecretPass"
+dagger call -m homerun test-redis-connection --password="mySecretPass" # pragma: allowlist secret
 
 # Test with specific version
-dagger call -m homerun test-redis-connection --version="7.0.0-v18" --password="test123"
+dagger call -m homerun test-redis-connection --version="7.0.0-v18" --password="test123" # pragma: allowlist secret
 ```
 
 ### Use Redis Service in Pipelines
@@ -591,7 +591,7 @@ func (m *Ci) TestRedisCompatibility(ctx context.Context, source *dagger.Director
 ### "Connection refused"
 ```bash
 # Redis might still be starting, add retry logic or wait a bit
-dagger call -m homerun test-redis-connection --password="yourpass"
+dagger call -m homerun test-redis-connection --password="yourpass" # pragma: allowlist secret
 ```
 
 The service might still be starting. The test includes retry logic automatically.
@@ -600,7 +600,7 @@ The service might still be starting. The test includes retry logic automatically
 ```bash
 # You set a password but forgot to pass it
 # Add --password parameter
-dagger call -m homerun run-redis --password="yourpass" up
+dagger call -m homerun run-redis --password="yourpass" up # pragma: allowlist secret
 ```
 
 You're trying to connect without a password when one is set. Pass the password parameter.
