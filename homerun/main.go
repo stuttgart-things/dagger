@@ -170,7 +170,7 @@ func (m *Homerun) RunTestWithRedis(
 		WithEnvVariable("REDIS_STREAM", "messages").
 		WithEnvVariable("REDIS_PASSWORD", generatedRedisPassword).
 		WithExec([]string{"go", "mod", "download"}).
-		WithExec([]string{"go", "run", testPath}).
+		WithExec([]string{"go", "test", "-v", testPath}).
 		Stdout(ctx)
 }
 
