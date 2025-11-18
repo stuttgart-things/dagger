@@ -1,3 +1,10 @@
+# [0.42.0](https://github.com/stuttgart-things/dagger/compare/v0.41.0...v0.42.0) (2025-11-18)
+
+
+### Features
+
+* fix/homerun-test-func ([188c3f5](https://github.com/stuttgart-things/dagger/commit/188c3f5ff009e7fd762403661297af0b7f067f42))
+
 # [0.41.0](https://github.com/stuttgart-things/dagger/compare/v0.40.0...v0.41.0) (2025-11-18)
 
 
