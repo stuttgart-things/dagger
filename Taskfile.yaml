@@ -41,6 +41,7 @@ tasks:
       - task: test-docker
       - task: test-hugo
       - task: test-linting
+      - task: test-homerun
       - task: test-terraform
       - task: git:pr
       - semantic-release --dry-run
@@ -377,6 +378,62 @@ tasks:
       REPOSITORY_NAME: stuttgart-things/nginx-dagger
       REGISTRY_URL: ttl.sh
       VERSION: 1h
+
+  test-homerun:
+    desc: Test homerun module with Redis
+    cmds:
+      - |
+        dagger call -m {{ .MODULE }} \
+        run-test-with-redis \
+        --source {{ .TEST_SOURCE }} \
+        --test-path {{ .TEST_PATH }} \
+        --go-version {{ .GO_VERSION }} \
+        --redis-version {{ .REDIS_VERSION }} \
+        --progress plain
+    vars:
+      MODULE: homerun
+      TEST_SOURCE: tests/homerun/
+      TEST_PATH: .
+      GO_VERSION: "1.25.4"
+      REDIS_VERSION: "7.2.0-v18"
+
+  run-redis:
+    desc: Start Redis with dagger up (port forwarding)
+    cmds:
+      - |
+        echo "Starting Redis on port {{ .PORT }}..."
+        {{if .PASSWORD}}
+        echo "Password: {{ .PASSWORD }}"
+        dagger call -m {{ .MODULE }} \
+        run-redis \
+        --port {{ .PORT }} \
+        --password "{{ .PASSWORD }}" \
+        up --progress plain
+        {{else}}
+        echo "⚠️  WARNING: Starting Redis WITHOUT password (insecure!)"
+        dagger call -m {{ .MODULE }} \
+        run-redis \
+        --port {{ .PORT }} \
+        up --progress plain
+        {{end}}
+    vars:
+      MODULE: homerun
+      PORT: '{{.PORT | default "6379"}}'
+      PASSWORD: '{{.PASSWORD | default ""}}'
+
+  redis-cli:
+    desc: Connect to Redis using redis-cli
+    cmds:
+      - |
+        {{if .PASSWORD}}
+        redis-cli -h {{ .HOST }} -p {{ .PORT }} -a "{{ .PASSWORD }}"
+        {{else}}
+        redis-cli -h {{ .HOST }} -p {{ .PORT }}
+        {{end}}
+    vars:
+      HOST: '{{.HOST | default "localhost"}}'
+      PORT: '{{.PORT | default "6379"}}'
+      PASSWORD: '{{.PASSWORD | default ""}}'
 
   do:
     desc: Select a task to run

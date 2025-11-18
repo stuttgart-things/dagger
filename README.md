@@ -10,6 +10,7 @@ A modular collection of Dagger building blocks for infrastructure, containers, s
 | [Go](./go/README.md)               | Go Development                  | Linting, build, Ko containers, security scan |
 | [Helm](./helm/README.md)           | Kubernetes Package Management   | Chart operations, Helmfile, registry, validation |
 | [Kubernetes](./kubernetes/README.md)   | Kubernetes Management | Kubectl operations |
+| [Homerun](./homerun/README.md)     | Homerun Integration             | Event processing, workflow automation |
 | [Terraform](./terraform/README.md) | Infrastructure as Code          | Plan/apply, Vault, state management |
 | [Docker](./docker/README.md)       | Container Management            | Build, registry, multi-platform, linting |
 | [Hugo](./hugo/README.md)           | Static Websites                 | Build, MinIO, dev server, theme management |
