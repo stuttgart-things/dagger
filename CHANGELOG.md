@@ -1,3 +1,10 @@
+# [0.43.0](https://github.com/stuttgart-things/dagger/compare/v0.42.0...v0.43.0) (2025-11-22)
+
+
+### Features
+
+* feat/add-templating-module ([89704d8](https://github.com/stuttgart-things/dagger/commit/89704d847bcbcbefc8ac5e14abb3ebfbe495aeea))
+
 # [0.42.0](https://github.com/stuttgart-things/dagger/compare/v0.41.0...v0.42.0) (2025-11-18)
 
 
