@@ -1,3 +1,10 @@
+# [0.44.0](https://github.com/stuttgart-things/dagger/compare/v0.43.0...v0.44.0) (2025-11-22)
+
+
+### Features
+
+* feat/add-vmware-network-datastore-infor ([1866f9c](https://github.com/stuttgart-things/dagger/commit/1866f9ce186c7e9015f17b534b7a2bd5bd48f8f4))
+
 # [0.43.0](https://github.com/stuttgart-things/dagger/compare/v0.42.0...v0.43.0) (2025-11-22)
 
 
