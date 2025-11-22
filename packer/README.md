@@ -76,6 +76,30 @@ dagger call -m packer vcenteroperation \
   --progress plain
 ```
 
+```bash
+# CHECK DATASTORES AND EXPORT TO FILE
+dagger call -m packer \
+check-datastores \
+--vcenter env:VCENTER_FQDN \
+--username env:VCENTER_USER \
+--password env:VCENTER_PASSWORD \
+--datacenter="LabUL" \
+--progress plain -vv \
+export --path=./datastore-info.txt
+```
+
+```bash
+# CHECK NETORKS AND EXPORT TO FILE
+dagger call -m packer \
+check-netorks \
+--vcenter env:VCENTER_FQDN \
+--username env:VCENTER_USER \
+--password env:VCENTER_PASSWORD \
+--datacenter="LabUL" \
+--progress plain -vv \
+export --path=./network-info.txt
+```
+
 ### Test Module
 
 ```bash
