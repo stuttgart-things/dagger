@@ -87,3 +87,117 @@ func (m *Packer) Vcenteroperation(
 
 	fmt.Printf("govc %s succeeded:\n%s\n", operation, stdout)
 }
+
+// CheckDatastores retrieves information about available datastores and their size
+func (m *Packer) CheckDatastores(
+	ctx context.Context,
+	vcenter *dagger.Secret,
+	username *dagger.Secret,
+	password *dagger.Secret,
+	// The datacenter to query datastores from
+	// +optional
+	datacenter string,
+) (*dagger.File, error) {
+	ctr := m.container("1.13.1", "linux_amd64").
+		WithSecretVariable("GOVC_URL", vcenter).
+		WithSecretVariable("GOVC_USERNAME", username).
+		WithSecretVariable("GOVC_PASSWORD", password).
+		WithEnvVariable("GOVC_INSECURE", "true")
+
+	// Set datacenter if specified
+	if datacenter != "" {
+		ctr = ctr.WithEnvVariable("GOVC_DATACENTER", datacenter)
+	}
+
+	// Use govc datastore.info to get detailed information about datastores
+	// Redirect output to a file
+	cmd := []string{
+		"sh", "-c",
+		"govc datastore.info > /tmp/datastore-info.txt",
+	}
+
+	exec := ctr.WithExec(cmd)
+
+	// Check if command succeeded
+	_, err := exec.Sync(ctx)
+	if err != nil {
+		stderr, _ := exec.Stderr(ctx)
+		return nil, fmt.Errorf("govc datastore.info failed: %w\nstderr: %s", err, stderr)
+	}
+
+	// Return the file
+	file := exec.File("/tmp/datastore-info.txt")
+
+	// Also print to stdout for visibility
+	content, _ := file.Contents(ctx)
+	fmt.Printf("Datastore information:\n%s\n", content)
+
+	return file, nil
+}
+
+// CheckNetworks retrieves information about available networks
+func (m *Packer) CheckNetworks(
+	ctx context.Context,
+	vcenter *dagger.Secret,
+	username *dagger.Secret,
+	password *dagger.Secret,
+	// The datacenter to query networks from
+	// +optional
+	datacenter string,
+) (*dagger.File, error) {
+	ctr := m.container("1.13.1", "linux_amd64").
+		WithSecretVariable("GOVC_URL", vcenter).
+		WithSecretVariable("GOVC_USERNAME", username).
+		WithSecretVariable("GOVC_PASSWORD", password).
+		WithEnvVariable("GOVC_INSECURE", "true")
+
+	// Set datacenter if specified
+	if datacenter != "" {
+		ctr = ctr.WithEnvVariable("GOVC_DATACENTER", datacenter)
+	}
+
+	// Use govc to list networks with basic information
+	cmd := []string{
+		"sh", "-c",
+		`govc ls 'network/*' 2>/dev/null | while read net; do
+			echo "=== Network: $net ==="
+			echo "Network ID and Name:"
+			govc object.collect -s "$net" name summary.network 2>/dev/null || true
+			echo ""
+			echo "Network Type:"
+			govc object.collect -s "$net" summary 2>/dev/null | head -5 || true
+			echo ""
+			echo "---"
+			echo ""
+		done > /tmp/network-info.txt ||
+		govc ls '/*/network/*' 2>/dev/null | while read net; do
+			echo "=== Network: $net ==="
+			echo "Network ID and Name:"
+			govc object.collect -s "$net" name summary.network 2>/dev/null || true
+			echo ""
+			echo "Network Type:"
+			govc object.collect -s "$net" summary 2>/dev/null | head -5 || true
+			echo ""
+			echo "---"
+			echo ""
+		done > /tmp/network-info.txt`,
+	}
+
+	exec := ctr.WithExec(cmd)
+
+	// Check if command succeeded
+	_, err := exec.Sync(ctx)
+	if err != nil {
+		stderr, _ := exec.Stderr(ctx)
+		return nil, fmt.Errorf("govc network.info failed: %w\nstderr: %s", err, stderr)
+	}
+
+	// Return the file
+	file := exec.File("/tmp/network-info.txt")
+
+	// Also print to stdout for visibility
+	content, _ := file.Contents(ctx)
+	fmt.Printf("Network information:\n%s\n", content)
+
+	return file, nil
+}
