@@ -1,0 +1,8 @@
+# Example variables file for templating
+name: Alice
+env: int
+replicas: 3
+version: "1.0.0"
+features:
+  logging: true
+  monitoring: true
