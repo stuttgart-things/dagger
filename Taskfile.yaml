@@ -32,6 +32,15 @@ tasks:
         echo "Selected: ${totest}"
         task test-${totest}
 
+  install-cli:
+    desc: Install Dagger CLI
+    cmds:
+      - |
+        curl -fsSL https://dl.dagger.io/dagger/install.sh | BIN_DIR={{ .BIN_DIR }} sudo -E sh
+    vars:
+      BIN_DIR:
+        sh: gum choose "/usr/bin" "/usr/local/bin"
+
   release:
     desc: push new version
     cmds:
@@ -43,6 +52,7 @@ tasks:
       - task: test-linting
       - task: test-homerun
       - task: test-terraform
+      - task: test-templating
       - task: git:pr
       - semantic-release --dry-run
       - semantic-release --debug --no-ci
@@ -72,6 +82,24 @@ tasks:
       PRE_COMMIT_REPORT_PATH: /tmp/pre-commit-report.txt
       PRE_COMMIT_SKIP_HOOKS: hadolint-docker
       PRE_COMMIT_SRC: "./"
+
+  test-templating:
+    desc: Test templating functions
+    cmds:
+      - |
+        dagger call -m {{ .MODULE }} render \
+        --src={{ .TEST_TEMPLATING_SRC }} \
+        --templates="{{ .TEMPLATES }}" \
+        --variables="{{ .VARIABLES }}" \
+        --variables-file={{ .VARIABLES_FILE }} \
+        export --path={{ .OUTPUT_DIR }}
+    vars:
+      MODULE: templating
+      TEST_TEMPLATING_SRC: tests/templating
+      TEMPLATES: "config.yaml.tmpl,deployment.yaml.tmpl,service.yaml.tmpl"
+      VARIABLES: "name=myapp,namespace=default,version=1.0.0,replicas=3,image=nginx,port=8080,serviceType=ClusterIP,debug=false"
+      VARIABLES_FILE: example-vars.yaml
+      OUTPUT_DIR: /tmp/templating
 
   test-packer:
     desc: Test packer functions
@@ -286,6 +314,23 @@ tasks:
       OUTPUT_GO_DIR: /tmp/go
       #TEST_IMG_TAR: test.tar
       WORKFLOW_REPORT: /tmp/workflow.json
+
+  ko-build:
+    desc: Build and push container with Ko (interactive)
+    cmds:
+      - |
+        dagger call -m github.com/stuttgart-things/daggerverse/go@{{ .MODULE_VERSION }} ko-build \
+        --src {{ .SRC }} \
+        --token env:GITHUB_TOKEN \
+        --repo {{ .REPO }} \
+        --progress plain -vv
+    vars:
+      MODULE_VERSION:
+        sh: gum input --placeholder "Module version/commit (e.g., latest commit hash)" --value "3979dd70544adde24d336d5b605f4cf6f0ea9479"
+      SRC:
+        sh: gum file --directory
+      REPO:
+        sh: gum input --placeholder "Container repository (e.g., ghcr.io/stuttgart-things/myapp)" --value "ghcr.io/stuttgart-things/myapp"
 
   test-helm:
     desc: Test helm functions
