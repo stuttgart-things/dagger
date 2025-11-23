@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .appName }}-service
+  namespace: {{ if .namespace }}{{ .namespace }}{{ else }}default{{ end }}
+spec:
+  selector:
+    app: {{ .appName }}
+  ports:
+  - protocol: TCP
+    port: {{ if .port }}{{ .port }}{{ else }}8080{{ end }}
+    targetPort: {{ if .port }}{{ .port }}{{ else }}8080{{ end }}
+  type: {{ if .serviceType }}{{ .serviceType }}{{ else }}ClusterIP{{ end }}
