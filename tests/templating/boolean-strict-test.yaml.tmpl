@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: boolean-strict-test
+data:
+  # This will show if debug is properly parsed as boolean
+  {{- if eq .debug false }}
+  debug_is_boolean_false: "YES - properly parsed as boolean!"
+  {{- else }}
+  debug_is_boolean_true: "value is: {{ .debug }}"
+  {{- end }}
+
+  # Test with true
+  {{- if eq .enableLogging true }}
+  logging_is_boolean_true: "YES - properly parsed as boolean!"
+  {{- else }}
+  logging_is_boolean_false: "value is: {{ .enableLogging }}"
+  {{- end }}

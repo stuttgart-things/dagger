@@ -21,6 +21,7 @@ import (
 	"text/template"
 
 	"dagger/templating/internal/dagger"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -30,6 +31,7 @@ type Templating struct{}
 // templates: comma-separated list of template paths (local in src or HTTPS URLs)
 // variables: comma-separated list of key=value pairs (e.g., "name=John,age=30")
 // variablesFile: optional YAML file with variables (variables parameter has higher priority)
+// strictMode: if true, fail on missing variables; if false, render as "<no value>" (default: false)
 func (m *Templating) Render(
 	ctx context.Context,
 	src *dagger.Directory,
@@ -38,6 +40,8 @@ func (m *Templating) Render(
 	variables string,
 	// +optional
 	variablesFile string,
+	// +optional
+	strictMode bool,
 ) (*dagger.Directory, error) {
 	// Initialize vars map
 	vars := make(map[string]interface{})
@@ -71,8 +75,23 @@ func (m *Templating) Render(
 			if len(parts) != 2 {
 				return nil, fmt.Errorf("invalid variable format: %s (expected key=value)", pair)
 			}
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+
+			// Try to convert string value to appropriate type
+			var typedValue interface{}
+			switch value {
+			case "true":
+				typedValue = true
+			case "false":
+				typedValue = false
+			default:
+				// Keep as string
+				typedValue = value
+			}
+
 			// Override YAML variables if they exist
-			vars[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+			vars[key] = typedValue
 		}
 	}
 
@@ -125,8 +144,17 @@ func (m *Templating) Render(
 			}
 		}
 
-		// Verify template syntax
-		tmpl, err := template.New(tmplPath).Parse(tmplContent)
+		// Verify template syntax and configure missingkey behavior
+		tmpl := template.New(tmplPath)
+		if strictMode {
+			// In strict mode, fail on missing keys
+			tmpl = tmpl.Option("missingkey=error")
+		} else {
+			// Default: render missing keys as "<no value>"
+			tmpl = tmpl.Option("missingkey=default")
+		}
+
+		tmpl, err = tmpl.Parse(tmplContent)
 		if err != nil {
 			return nil, fmt.Errorf("template verification failed for %s: %w", tmplPath, err)
 		}

@@ -1,8 +1,12 @@
 # Example variables file for templating
 name: Alice
+namespace: default
 env: int
 replicas: 3
 version: "1.0.0"
+debug: false
+enableLogging: true
+productionMode: true
 features:
   logging: true
   monitoring: true
