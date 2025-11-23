@@ -1,3 +1,10 @@
+# [0.46.0](https://github.com/stuttgart-things/dagger/compare/v0.45.0...v0.46.0) (2025-11-23)
+
+
+### Features
+
+* fix/update-template-rendering ([d82c162](https://github.com/stuttgart-things/dagger/commit/d82c16228703e461e93e8c68bec8b7fe339a22c3))
+
 # [0.45.0](https://github.com/stuttgart-things/dagger/compare/v0.44.0...v0.45.0) (2025-11-23)
 
 
