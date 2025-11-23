@@ -1,3 +1,10 @@
+# [0.45.0](https://github.com/stuttgart-things/dagger/compare/v0.44.0...v0.45.0) (2025-11-23)
+
+
+### Features
+
+* feat/add-branch-creation ([d55c1d2](https://github.com/stuttgart-things/dagger/commit/d55c1d2c0de2e6213d2efd25836aaf0ecc94ac52))
+
 # [0.44.0](https://github.com/stuttgart-things/dagger/compare/v0.43.0...v0.44.0) (2025-11-22)
 
 
