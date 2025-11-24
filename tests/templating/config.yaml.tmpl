@@ -1,10 +1,29 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: app-config
-  namespace: {{ .namespace }}
+  name: {{.app.name | lower}}-config
+  labels:
+    app: {{.app.name}}
+    version: {{.app.version}}
+    environment: {{.app.environment}}
 data:
-  environment: {{ .env }}
-  version: {{ .version }}
-  app_name: {{ .name }}
-  debug: {{ .debug }}
+  app.yaml: |
+    name: {{.app.name}}
+    version: {{.app.version}}
+    environment: {{.app.environment}}
+
+    database:
+      host: {{.database.host}}
+      port: {{.database.port}}
+      name: {{.database.name}}
+      username: {{.database.username}}
+
+    features:
+    {{- range .features}}
+      - {{.}}
+    {{- end}}
+
+    config:
+      debug: {{.config.debug}}
+      max_connections: {{.config.max_connections}}
+      timeout: {{.config.timeout}}

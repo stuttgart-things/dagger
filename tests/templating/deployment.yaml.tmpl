@@ -1,27 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .name }}-deployment
-  namespace: {{ .namespace }}
+  name: {{ .appName }}
+  namespace: {{ if .namespace }}{{ .namespace }}{{ else }}default{{ end }}
   labels:
-    app: {{ .name }}
+    app: {{ .appName }}
     version: {{ .version }}
 spec:
-  replicas: {{ .replicas }}
+  replicas: {{ if .replicas }}{{ .replicas }}{{ else }}1{{ end }}
   selector:
     matchLabels:
-      app: {{ .name }}
+      app: {{ .appName }}
   template:
     metadata:
       labels:
-        app: {{ .name }}
+        app: {{ .appName }}
         version: {{ .version }}
     spec:
       containers:
-      - name: {{ .name }}
-        image: {{ .image }}:{{ .version }}
+      - name: {{ .appName }}
+        image: {{ .image }}
         ports:
-        - containerPort: {{ .port }}
+        - containerPort: {{ if .port }}{{ .port }}{{ else }}8080{{ end }}
+        {{- if .debug }}
         env:
-        - name: ENVIRONMENT
-          value: {{ .env }}
+        - name: DEBUG
+          value: "true"
+        - name: LOG_LEVEL
+          value: debug
+        {{- end }}

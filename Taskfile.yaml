@@ -93,13 +93,22 @@ tasks:
         --variables="{{ .VARIABLES }}" \
         --variables-file={{ .VARIABLES_FILE }} \
         export --path={{ .OUTPUT_DIR }}
+      - |
+        dagger call -m {{ .MODULE }} render-from-file \
+        --src {{ .TEST_TEMPLATING_SRC }} \
+        --templates {{ .RENDER_FROM_FILE_TEMPLATES }} \
+        --data-file {{ .RENDER_FROM_FILE_DATA }} \
+        export --path {{ .RENDER_FROM_FILE_OUTPUT }}
     vars:
       MODULE: templating
       TEST_TEMPLATING_SRC: tests/templating
-      TEMPLATES: "config.yaml.tmpl,deployment.yaml.tmpl,service.yaml.tmpl"
+      TEMPLATES: "config-string.yaml.tmpl,deployment.yaml.tmpl,service.yaml.tmpl"
       VARIABLES: "name=myapp,namespace=default,version=1.0.0,replicas=3,image=nginx,port=8080,serviceType=ClusterIP,debug=false"
       VARIABLES_FILE: example-vars.yaml
       OUTPUT_DIR: /tmp/templating
+      RENDER_FROM_FILE_TEMPLATES: config.yaml.tmpl
+      RENDER_FROM_FILE_DATA: data.yaml
+      RENDER_FROM_FILE_OUTPUT: ./output
 
   test-packer:
     desc: Test packer functions

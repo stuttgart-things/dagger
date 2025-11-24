@@ -35,6 +35,47 @@ dagger call -m templating render \
   export --path=./rendered
 ```
 
+## Render w/ complex structures
+
+```bash
+# data.yaml
+---
+database:
+  host: "db.example.com"
+  port: 5432
+  name: "myapp_db"
+  username: "admin"
+
+features:
+  - authentication
+  - logging
+  - monitoring
+```
+
+```bash
+# config.yaml.tmpl
+---
+data:
+  app.yaml: |
+    database:
+      host: {{.database.host}}
+      port: {{.database.port}}
+      name: {{.database.name}}
+      username: {{.database.username}}
+    features:
+    {{- range .features}}
+      - {{.}}
+    {{- end}}
+```
+
+```bash
+dagger call render-from-file \
+--src ../tests/templating \
+--templates config.yaml.tmpl \
+--data-file data.yaml \
+export --path ./output
+```
+
 ## Boolean Variables
 
 Booleans work from both CLI and YAML:

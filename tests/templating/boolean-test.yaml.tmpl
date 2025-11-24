@@ -2,12 +2,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: boolean-test-config
-  namespace: {{ .namespace }}
+  namespace: {{ if .namespace }}{{ .namespace }}{{ else }}default{{ end }}
 data:
   # Testing boolean values
   debug: "{{ .debug }}"
   enable_logging: "{{ .enableLogging }}"
-  production_mode: "{{ .productionMode }}"
+  production_mode: "{{ if .productionMode }}{{ .productionMode }}{{ else }}false{{ end }}"
 
   # Testing conditional logic with booleans
   {{- if .debug }}
@@ -15,18 +15,7 @@ data:
   {{- else }}
   log_level: info
   {{- end }}
+  logging_enabled: "{{ .enableLogging }}"
 
-  {{- if .enableLogging }}
-  logging_enabled: "true"
-  {{- else }}
-  logging_enabled: "false"
-  {{- end }}
-
-  # Testing nested boolean from YAML
-  {{- if .featuresMonitoring }}
-  monitoring_endpoint: "http://monitoring:9090"
-  {{- end }}
-
-  {{- if .featuresLogging }}
-  log_aggregator: "enabled"
-  {{- end }}
+  # Testing features
+  monitoring_enabled: "{{ .monitoring }}"
