@@ -1,3 +1,10 @@
+# [0.47.0](https://github.com/stuttgart-things/dagger/compare/v0.46.0...v0.47.0) (2025-11-24)
+
+
+### Features
+
+* feat/add-renovate-module ([0bf4d42](https://github.com/stuttgart-things/dagger/commit/0bf4d4209db9b4a611839dbebb5a19c2cd6bfa99))
+
 # [0.46.0](https://github.com/stuttgart-things/dagger/compare/v0.45.0...v0.46.0) (2025-11-23)
 
 
