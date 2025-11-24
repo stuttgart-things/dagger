@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: {{ .namespace }}
+data:
+  environment: {{ .env }}
+  version: {{ .version }}
+  app_name: {{ .name }}
+  debug: {{ .debug }}
