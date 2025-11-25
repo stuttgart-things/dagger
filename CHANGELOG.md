@@ -1,3 +1,10 @@
+## [0.49.2](https://github.com/stuttgart-things/dagger/compare/v0.49.1...v0.49.2) (2025-11-25)
+
+
+### Bug Fixes
+
+* fix/srx-nil-templating ([94c5fd7](https://github.com/stuttgart-things/dagger/commit/94c5fd7840b7a1b91e528f54369c7888c67db35b))
+
 ## [0.49.1](https://github.com/stuttgart-things/dagger/compare/v0.49.0...v0.49.1) (2025-11-25)
 
 
