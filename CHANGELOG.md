@@ -1,3 +1,10 @@
+# [0.49.0](https://github.com/stuttgart-things/dagger/compare/v0.48.0...v0.49.0) (2025-11-25)
+
+
+### Features
+
+* feat/add-hhtps-file-templating-download-func ([dde5f6e](https://github.com/stuttgart-things/dagger/commit/dde5f6e03c1bd349edc645f1ad69d6e07dfdb709))
+
 # [0.48.0](https://github.com/stuttgart-things/dagger/compare/v0.47.0...v0.48.0) (2025-11-24)
 
 
