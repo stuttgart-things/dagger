@@ -21,12 +21,30 @@ import (
 // strictMode: if true, fail on missing variables; if false, render as "<no value>" (default: false)
 func (m *Templating) RenderFromFile(
 	ctx context.Context,
+	// +optional
 	src *dagger.Directory,
 	templates string,
 	dataFile string,
 	// +optional
 	strictMode bool,
 ) (*dagger.Directory, error) {
+	// Check if src is required based on whether local files are used
+	dataFileIsHTTPS := strings.HasPrefix(dataFile, "https://")
+	templatePaths := strings.Split(templates, ",")
+	allTemplatesHTTPS := true
+	for _, tmplPath := range templatePaths {
+		tmplPath = strings.TrimSpace(tmplPath)
+		if tmplPath != "" && !strings.HasPrefix(tmplPath, "https://") {
+			allTemplatesHTTPS = false
+			break
+		}
+	}
+
+	// Validate src is provided if any local files are used
+	if src == nil && (!dataFileIsHTTPS || !allTemplatesHTTPS) {
+		return nil, fmt.Errorf("src directory is required when using local template or data files")
+	}
+
 	var fileContent string
 	var err error
 
@@ -74,8 +92,7 @@ func (m *Templating) RenderFromFile(
 		return nil, fmt.Errorf("unsupported data file format: %s (supported: .yaml, .yml, .json)", ext)
 	}
 
-	// Parse template paths
-	templatePaths := strings.Split(templates, ",")
+	// Validate template paths
 	if len(templatePaths) == 0 {
 		return nil, fmt.Errorf("no templates provided")
 	}
