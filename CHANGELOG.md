@@ -1,3 +1,10 @@
+## [0.49.1](https://github.com/stuttgart-things/dagger/compare/v0.49.0...v0.49.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* fix/remove-sry-mandatory-from-file-renderung ([c3cbd53](https://github.com/stuttgart-things/dagger/commit/c3cbd530a24fb4a4e888572ee955990e2951ad1e))
+
 # [0.49.0](https://github.com/stuttgart-things/dagger/compare/v0.48.0...v0.49.0) (2025-11-25)
 
 
