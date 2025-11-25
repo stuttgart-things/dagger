@@ -15,18 +15,14 @@ func (m *Ansible) container(
 	version string,
 ) *dagger.Container {
 
-	// if m.BaseImage == "" {
-	// 	m.BaseImage = baseImage
-	// }
-
-	// Ensure version has a default value
-	// if version == "" {
-	// 	version = "11.11.0"
-	// }
+	// Use provided baseImage or fall back to default
+	if baseImage == "" {
+		baseImage = "cgr.dev/chainguard/wolfi-base:latest"
+	}
 
 	ctr := dag.
 		Container().
-		From("cgr.dev/chainguard/wolfi-base:latest")
+		From(baseImage)
 
 	// INSTALL BASE PACKAGES + ANSIBLE DEPENDENCIES WITH WOLFI-COMPATIBLE NAMES
 	ctr = ctr.WithExec([]string{

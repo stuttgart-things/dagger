@@ -6,6 +6,11 @@ import (
 )
 
 func (m *Helm) container() *dagger.Container {
+	// Return cached container if available
+	if m.cachedContainer != nil {
+		return m.cachedContainer
+	}
+
 	arch := "linux_amd64"
 
 	// --- BASE IMAGE ---
@@ -13,6 +18,7 @@ func (m *Helm) container() *dagger.Container {
 		m.BaseImage = "cgr.dev/chainguard/wolfi-base:latest"
 	}
 
+	// Install all required packages in a single apk call for efficiency
 	ctr := dag.Container().
 		From(m.BaseImage).
 		WithExec([]string{"apk", "add", "--no-cache", "wget", "curl", "git", "kubectl"})
@@ -22,12 +28,13 @@ func (m *Helm) container() *dagger.Container {
 	// ======================================================
 	helmVersion := "v3.19.2"
 
+	// Removed duplicate apk add call - packages already installed above
 	ctr = ctr.
-		WithExec([]string{"apk", "add", "--no-cache", "wget", "curl", "git"}).
 		WithExec([]string{"sh", "-c", "wget https://get.helm.sh/helm-" + helmVersion + "-linux-amd64.tar.gz -O /tmp/helm.tar.gz"}).
 		WithExec([]string{"tar", "-xzvf", "/tmp/helm.tar.gz", "-C", "/tmp/"}).
 		WithExec([]string{"mv", "/tmp/linux-amd64/helm", "/usr/bin/helm"}).
-		WithExec([]string{"chmod", "+x", "/usr/bin/helm"})
+		WithExec([]string{"chmod", "+x", "/usr/bin/helm"}).
+		WithExec([]string{"rm", "-rf", "/tmp/helm.tar.gz", "/tmp/linux-amd64"}) // Cleanup temp files
 
 	// ======================================================
 	// INSTALL HELMFILE
@@ -43,6 +50,7 @@ func (m *Helm) container() *dagger.Container {
 		WithExec([]string{"tar", "-xzf", "/tmp/" + helmfileTar, "-C", "/tmp/"}).
 		WithExec([]string{"mv", "/tmp/" + helmfileBin, helmfileBinPath}).
 		WithExec([]string{"chmod", "+x", helmfileBinPath}).
+		WithExec([]string{"rm", "-f", "/tmp/" + helmfileTar}). // Cleanup temp file
 		WithExec([]string{"helmfile", "init", "--force"})
 
 	// ======================================================
@@ -57,7 +65,8 @@ func (m *Helm) container() *dagger.Container {
 		WithExec([]string{"wget", "-O", "/tmp/" + polarisTar, polarisURL}).
 		WithExec([]string{"tar", "-xzf", "/tmp/" + polarisTar, "-C", "/tmp/"}).
 		WithExec([]string{"mv", "/tmp/polaris", polarisBinPath}).
-		WithExec([]string{"chmod", "+x", polarisBinPath})
+		WithExec([]string{"chmod", "+x", polarisBinPath}).
+		WithExec([]string{"rm", "-f", "/tmp/" + polarisTar}) // Cleanup temp file
 
 	// ======================================================
 	// INSTALL VALS
@@ -72,7 +81,10 @@ func (m *Helm) container() *dagger.Container {
 		WithExec([]string{"wget", "-O", "/tmp/" + valsTar, valsURL}).
 		WithExec([]string{"tar", "-xzf", "/tmp/" + valsTar, "-C", "/tmp/"}).
 		WithExec([]string{"mv", "/tmp/" + valsBin, valsBinPath}).
-		WithExec([]string{"chmod", "+x", valsBinPath})
+		WithExec([]string{"chmod", "+x", valsBinPath}).
+		WithExec([]string{"rm", "-f", "/tmp/" + valsTar}) // Cleanup temp file
 
+	// Cache the container for reuse
+	m.cachedContainer = ctr
 	return ctr
 }

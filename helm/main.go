@@ -14,8 +14,15 @@
 
 package main
 
+import (
+	"dagger/helm/internal/dagger"
+)
+
 type Helm struct {
 	// +optional
 	// +default="cgr.dev/chainguard/wolfi-base:latest"
 	BaseImage string
+	// +private
+	// Cached container to avoid recreating for each operation
+	cachedContainer *dagger.Container
 }
