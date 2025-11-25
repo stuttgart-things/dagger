@@ -17,7 +17,7 @@ import (
 
 // RenderFromFile renders Go templates with data loaded from a YAML or JSON file
 // templates: comma-separated list of template paths (local in src or HTTPS URLs)
-// dataFile: path to YAML or JSON file containing template data (file extension determines format)
+// dataFile: path to YAML or JSON file containing template data (local in src or HTTPS URL, file extension determines format)
 // strictMode: if true, fail on missing variables; if false, render as "<no value>" (default: false)
 func (m *Templating) RenderFromFile(
 	ctx context.Context,
@@ -27,10 +27,34 @@ func (m *Templating) RenderFromFile(
 	// +optional
 	strictMode bool,
 ) (*dagger.Directory, error) {
-	// Read the data file
-	fileContent, err := src.File(dataFile).Contents(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read data file %s: %w", dataFile, err)
+	var fileContent string
+	var err error
+
+	// Check if dataFile is an HTTPS URL
+	if strings.HasPrefix(dataFile, "https://") {
+		// Download the data file from URL
+		resp, err := http.Get(dataFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to download data file from %s: %w", dataFile, err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("failed to download data file from %s: status %d", dataFile, resp.StatusCode)
+		}
+
+		// Read the content
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read data file from %s: %w", dataFile, err)
+		}
+		fileContent = string(bodyBytes)
+	} else {
+		// Read the data file from local directory
+		fileContent, err = src.File(dataFile).Contents(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read data file %s: %w", dataFile, err)
+		}
 	}
 
 	// Parse the file based on extension
