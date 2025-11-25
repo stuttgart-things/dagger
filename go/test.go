@@ -24,28 +24,20 @@ func (m *Go) Test(
 		WithDirectory("/src", src).
 		WithWorkdir("/src")
 
+	// Run tests with both verbose output AND coverage in a single pass
+	// This is more efficient than running tests twice
 	testOutput, err := container.
 		WithExec([]string{
 			"go",
 			"test",
 			"-v",
-			testArg}).
-		Stdout(ctx)
-
-	// RUN GO TESTS WITH COVERAGE
-	coverageOutput, err := container.
-		WithExec([]string{
-			"go",
-			"test",
 			"-cover",
 			testArg}).
 		Stdout(ctx)
-
-	output := testOutput + "\n" + coverageOutput
 
 	if err != nil {
 		return "", fmt.Errorf("error running tests: %w", err)
 	}
 
-	return output, nil
+	return testOutput, nil
 }

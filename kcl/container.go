@@ -12,9 +12,12 @@ func (m *Kcl) container() *dagger.Container {
 
 	ctr := dag.Container().From(m.BaseImage)
 
-	// Install required packages for KCL (same as container-use environment)
-	ctr = ctr.WithExec([]string{"apt-get", "update"})
-	ctr = ctr.WithExec([]string{"apt-get", "install", "-y", "curl", "wget", "git", "ca-certificates"})
+	// Combine apt-get update and install into a single command for efficiency
+	// This reduces container layers and speeds up container creation
+	ctr = ctr.WithExec([]string{
+		"sh", "-c",
+		"apt-get update && apt-get install -y --no-install-recommends curl wget git ca-certificates && rm -rf /var/lib/apt/lists/*",
+	})
 
 	// Install KCL CLI using official installation script (same as container-use)
 	ctr = ctr.WithExec([]string{"bash", "-c", "curl -fsSL https://kcl-lang.io/script/install-cli.sh | bash"})

@@ -4,8 +4,6 @@ import (
 	"context"
 	"dagger/templating/internal/dagger"
 	"fmt"
-	"io"
-	"net/http"
 	"strings"
 	"text/template"
 
@@ -105,23 +103,11 @@ func (m *Templating) Render(
 
 		// Check if it's an HTTPS URL
 		if strings.HasPrefix(tmplPath, "https://") {
-			// Download template from URL
-			resp, err := http.Get(tmplPath)
+			// Download template from URL using helper function to properly handle defer
+			tmplContent, err = downloadURLContent(tmplPath)
 			if err != nil {
 				return nil, fmt.Errorf("failed to download template from %s: %w", tmplPath, err)
 			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				return nil, fmt.Errorf("failed to download template from %s: status %d", tmplPath, resp.StatusCode)
-			}
-
-			// Read the content
-			bodyBytes, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read template from %s: %w", tmplPath, err)
-			}
-			tmplContent = string(bodyBytes)
 		} else {
 			// Read from local directory
 			tmplContent, err = src.File(tmplPath).Contents(ctx)

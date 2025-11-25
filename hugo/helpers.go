@@ -27,32 +27,42 @@ func extractImageLinks(markdown string) []string {
 // Download each image from the list and save it to destDir
 func downloadImages(urls []string, destDir string) error {
 	for _, url := range urls {
-		resp, err := http.Get(url)
-		if err != nil {
-			return fmt.Errorf("failed to download %s: %w", url, err)
+		// Use a helper function to properly handle defer inside loop
+		if err := downloadSingleImage(url, destDir); err != nil {
+			return err
 		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("bad response from %s: %s", url, resp.Status)
-		}
-
-		filename := path.Base(url)
-		outPath := filepath.Join(destDir, filename)
-
-		outFile, err := os.Create(outPath)
-		if err != nil {
-			return fmt.Errorf("failed to create file %s: %w", outPath, err)
-		}
-		defer outFile.Close()
-
-		_, err = io.Copy(outFile, resp.Body)
-		if err != nil {
-			return fmt.Errorf("failed to save file %s: %w", outPath, err)
-		}
-
-		fmt.Printf("✅ Downloaded: %s\n", outPath)
 	}
+	return nil
+}
+
+// downloadSingleImage downloads a single image to destDir
+// This fixes the defer inside loop issue in the original downloadImages
+func downloadSingleImage(url string, destDir string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("failed to download %s: %w", url, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad response from %s: %s", url, resp.Status)
+	}
+
+	filename := path.Base(url)
+	outPath := filepath.Join(destDir, filename)
+
+	outFile, err := os.Create(outPath)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", outPath, err)
+	}
+	defer outFile.Close()
+
+	_, err = io.Copy(outFile, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to save file %s: %w", outPath, err)
+	}
+
+	fmt.Printf("✅ Downloaded: %s\n", outPath)
 	return nil
 }
 

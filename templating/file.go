@@ -50,23 +50,11 @@ func (m *Templating) RenderFromFile(
 
 	// Check if dataFile is an HTTPS URL
 	if strings.HasPrefix(dataFile, "https://") {
-		// Download the data file from URL
-		resp, err := http.Get(dataFile)
+		// Download the data file from URL using helper function
+		fileContent, err = downloadURLContent(dataFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to download data file from %s: %w", dataFile, err)
 		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("failed to download data file from %s: status %d", dataFile, resp.StatusCode)
-		}
-
-		// Read the content
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read data file from %s: %w", dataFile, err)
-		}
-		fileContent = string(bodyBytes)
 	} else {
 		// Read the data file from local directory
 		fileContent, err = src.File(dataFile).Contents(ctx)
@@ -127,23 +115,11 @@ func (m *Templating) RenderFromFile(
 
 		// Check if it's an HTTPS URL
 		if strings.HasPrefix(tmplPath, "https://") {
-			// Download template from URL
-			resp, err := http.Get(tmplPath)
+			// Download template from URL using helper function to properly handle defer
+			tmplContent, err = downloadURLContent(tmplPath)
 			if err != nil {
 				return nil, fmt.Errorf("failed to download template from %s: %w", tmplPath, err)
 			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				return nil, fmt.Errorf("failed to download template from %s: status %d", tmplPath, resp.StatusCode)
-			}
-
-			// Read the content
-			bodyBytes, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read template from %s: %w", tmplPath, err)
-			}
-			tmplContent = string(bodyBytes)
 		} else {
 			// Read from local directory
 			tmplContent, err = src.File(tmplPath).Contents(ctx)
@@ -189,4 +165,26 @@ func (m *Templating) RenderFromFile(
 
 	// Return the directory with rendered templates
 	return container.Directory("/output"), nil
+}
+
+// downloadURLContent downloads content from a URL and returns it as a string.
+// This helper function properly handles defer for http.Response.Body.Close()
+// to avoid resource leaks when called from inside loops.
+func downloadURLContent(url string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("status %d", resp.StatusCode)
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bodyBytes), nil
 }

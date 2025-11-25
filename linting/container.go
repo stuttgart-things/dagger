@@ -26,19 +26,11 @@ func (m *Linting) container() *dagger.Container {
 		"docker-cli",
 	})
 
+	// Combine gem and pip installs into a single shell command for efficiency
+	// This reduces container layer overhead
 	ctr = ctr.WithExec([]string{
-		"gem",
-		"install",
-		"mdl",
-		"--no-document",
-	})
-
-	ctr = ctr.WithExec([]string{
-		"pip3",
-		"install",
-		"--break-system-packages",
-		"pre-commit",
-		"detect-secrets",
+		"sh", "-c",
+		"gem install mdl --no-document && pip3 install --break-system-packages --no-cache-dir pre-commit detect-secrets",
 	})
 
 	return ctr
