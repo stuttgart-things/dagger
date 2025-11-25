@@ -76,8 +76,15 @@ func (m *Templating) RenderFromFile(
 	}
 
 	// Parse the file based on extension
+	// Strip .tmpl extension first if present (e.g., requirements-data.yaml.tmpl -> requirements-data.yaml)
+	dataFileName := dataFile
+	if strings.HasSuffix(strings.ToLower(dataFileName), ".tmpl") {
+		dataFileName = strings.TrimSuffix(dataFileName, ".tmpl")
+		dataFileName = strings.TrimSuffix(dataFileName, ".TMPL")
+	}
+
 	var data map[string]interface{}
-	ext := strings.ToLower(filepath.Ext(dataFile))
+	ext := strings.ToLower(filepath.Ext(dataFileName))
 
 	switch ext {
 	case ".yaml", ".yml":
@@ -99,9 +106,14 @@ func (m *Templating) RenderFromFile(
 
 	// Create a container to work with templates
 	container := dag.Container().
-		From("golang:1.22-alpine").
-		WithMountedDirectory("/src", src).
-		WithWorkdir("/output")
+		From("golang:1.22-alpine")
+
+	// Only mount src directory if it's provided (not nil)
+	if src != nil {
+		container = container.WithMountedDirectory("/src", src)
+	}
+
+	container = container.WithWorkdir("/output")
 
 	// Process each template
 	for _, tmplPath := range templatePaths {
