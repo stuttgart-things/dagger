@@ -1,6 +1,6 @@
 {
   "name": "git",
-  "engineVersion": "v0.18.10",
+  "engineVersion": "v0.19.7",
   "sdk": {
     "source": "go"
   },
@@ -10,5 +10,6 @@
       "source": "github.com/sagikazarmark/daggerverse/gh@gh/v0.11.0",
       "pin": "c1be27189ce47d28f84014b715f78e47db9fbadc"
     }
-  ]
+  ],
+  "disableDefaultFunctionCaching": true
 }
