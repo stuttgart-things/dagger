@@ -272,19 +272,20 @@ func (m *Git) CloneGithub(
 	// SWITCH TO REF/BRANCH
 	ctr = ctr.WithDirectory(workDir, gitDir).WithWorkdir(workDir)
 
-	// Fetch all remote branches to ensure newly created branches are available
-	ctr = ctr.WithExec([]string{"git", "fetch", "origin"})
+	// Fetch all remote branches and refs to ensure newly created branches are available
+	ctr = ctr.WithExec([]string{"git", "fetch", "origin", "--force"})
 
-	// Checkout the branch - try multiple strategies to handle both local and remote-only branches
-	// First check if branch exists locally
-	checkLocal, err := ctr.WithExec([]string{"git", "rev-parse", "--verify", ref}).Sync(ctx)
-	if err != nil {
-		// Branch doesn't exist locally, try to check out from remote
-		ctr = ctr.WithExec([]string{"git", "checkout", "-b", ref, fmt.Sprintf("origin/%s", ref)})
-	} else {
-		// Branch exists locally, just check it out
-		ctr = checkLocal.WithExec([]string{"git", "checkout", ref})
-	}
+	// Verify remote branch exists before attempting checkout
+	ctr = ctr.WithExec([]string{"git", "ls-remote", "--heads", "origin", ref})
+
+	// Checkout the branch with fallback strategy:
+	// 1. Try to checkout if it exists locally
+	// 2. If not, create local branch tracking the remote branch
+	checkoutCmd := fmt.Sprintf(
+		"git show-ref --verify --quiet refs/heads/%s && git checkout %s || git checkout -b %s origin/%s",
+		ref, ref, ref, ref,
+	)
+	ctr = ctr.WithExec([]string{"sh", "-c", checkoutCmd})
 
 	return ctr.Directory(workDir)
 }
