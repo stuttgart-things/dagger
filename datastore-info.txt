@@ -1,0 +1,109 @@
+Name:        UL-ESX-SATA-10
+  Path:      /LabUL/datastore/UL-ESX-SATA-10
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/5db6f668-85fc8352-a439-5cf3fcdd86ec/
+  Capacity:  9925.8 GB
+  Free:      2291.2 GB
+Name:        ESX01-Local1
+  Path:      /LabUL/datastore/ESX01-Local1
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/5cdc2658-9ee1583a-1b15-5cf3fcdd86ec/
+  Capacity:  829.8 GB
+  Free:      822.9 GB
+Name:        UL-ESX-SAS-01
+  Path:      /LabUL/datastore/UL-ESX-SAS-01
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/5db6f04e-07cdcbb2-c79d-5cf3fcdd86ec/
+  Capacity:  4753.8 GB
+  Free:      421.5 GB
+Name:        ESX01-Local2
+  Path:      /LabUL/datastore/ESX01-Local2
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/5cdc306f-a45fca5f-eb1b-5cf3fcdd86ec/
+  Capacity:  3349.0 GB
+  Free:      3334.0 GB
+Name:        UL-V5010-02-LUN2
+  Path:      /LabUL/datastore/UL-V5010-02-LUN2
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/637df4fd-3fb427e2-6a05-5cf3fcdd86ec/
+  Capacity:  4095.8 GB
+  Free:      3410.0 GB
+Name:        UL-ESX-SAS-02
+  Path:      /LabUL/datastore/UL-ESX-SAS-02
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/5ea98a2c-7c46d9ce-bba2-5cf3fcdd86ec/
+  Capacity:  3071.8 GB
+  Free:      1114.7 GB
+Name:        ESX02-Local2
+  Path:      /LabUL/datastore/ESX02-Local2
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/5d07a2d8-d92aa114-1e49-5cf3fcdd6f7c/
+  Capacity:  3349.0 GB
+  Free:      3348.0 GB
+Name:        UL-ESX-SATA-11
+  Path:      /LabUL/datastore/UL-ESX-SATA-11
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/5ea98a08-6bac9800-0eea-5cf3fcdd86ec/
+  Capacity:  10239.8 GB
+  Free:      2302.4 GB
+Name:        UL-V5010-01-LUN3
+  Path:      /LabUL/datastore/UL-V5010-01-LUN3
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/637df434-78718850-3f89-5cf3fcdd6f7c/
+  Capacity:  4095.8 GB
+  Free:      3488.7 GB
+Name:        ESX05-Local
+  Path:      /LabUL/datastore/ESX05-Local
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/631f1dcf-24678020-f713-e0071b646d91/
+  Capacity:  439.5 GB
+  Free:      434.5 GB
+Name:        UL-V5010-02-LUN1
+  Path:      /LabUL/datastore/UL-V5010-02-LUN1
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/637df4e9-13cd3a55-b5ad-5cf3fcdd86ec/
+  Capacity:  4095.8 GB
+  Free:      3974.2 GB
+Name:        DD1
+  Path:      /LabUL/datastore/DD1
+  Type:      NFS
+  URL:       ds:///vmfs/volumes/1d9f3e01-b23d12f5/
+  Capacity:  8938.1 GB
+  Free:      6479.3 GB
+  Remote:    10.31.101.26:/data/col1/iso-images
+Name:        ESX02-Local1
+  Path:      /LabUL/datastore/ESX02-Local1
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/5d0779dd-ece894da-5f6b-5cf3fcdd6f7c/
+  Capacity:  829.8 GB
+  Free:      822.9 GB
+Name:        UL-V5010-01-LUN2
+  Path:      /LabUL/datastore/UL-V5010-01-LUN2
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/637df413-a30868ce-9c31-5cf3fcdd86ec/
+  Capacity:  4095.8 GB
+  Free:      883.2 GB
+Name:        ESX03-Local
+  Path:      /LabUL/datastore/ESX03-Local
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/631efe32-1e5ecf83-5d09-e0071b644d91/
+  Capacity:  439.5 GB
+  Free:      434.5 GB
+Name:        UL-V5010-01-LUN1
+  Path:      /LabUL/datastore/UL-V5010-01-LUN1
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/637df3a9-ba673160-160b-5cf3fcdd6f7c/
+  Capacity:  4095.8 GB
+  Free:      2495.1 GB
+Name:        UL-V5010-02-LUN3
+  Path:      /LabUL/datastore/UL-V5010-02-LUN3
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/637df51d-c46bd650-ae3e-5cf3fcdd86ec/
+  Capacity:  4095.8 GB
+  Free:      3475.3 GB
+Name:        ESX04-Local
+  Path:      /LabUL/datastore/ESX04-Local
+  Type:      VMFS
+  URL:       ds:///vmfs/volumes/631f03db-3c0561f8-c27e-e0071b641db1/
+  Capacity:  439.5 GB
+  Free:      434.5 GB

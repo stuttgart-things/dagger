@@ -271,7 +271,18 @@ func (m *Git) CloneGithub(
 
 	// SWITCH TO REF/BRANCH
 	ctr = ctr.WithDirectory(workDir, gitDir).WithWorkdir(workDir)
-	ctr = ctr.WithExec([]string{"git", "checkout", ref})
+
+	// Fetch all remote branches including the newly created one
+	ctr = ctr.WithExec([]string{"git", "fetch", "origin", ref})
+
+	// Try to checkout the ref
+	// If it exists locally, just check it out
+	// If it doesn't exist locally but exists on remote, create local branch tracking remote
+	// The || ensures we try the second command if the first fails
+	ctr = ctr.WithExec([]string{"sh", "-c", fmt.Sprintf(
+		"git checkout %s 2>/dev/null || git checkout -b %s origin/%s 2>/dev/null || git checkout -b %s",
+		ref, ref, ref, ref,
+	)})
 
 	return ctr.Directory(workDir)
 }
