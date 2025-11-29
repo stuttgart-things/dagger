@@ -1,3 +1,10 @@
+## [0.49.7](https://github.com/stuttgart-things/dagger/compare/v0.49.6...v0.49.7) (2025-11-29)
+
+
+### Bug Fixes
+
+* fix/clone-test-again ([be088d5](https://github.com/stuttgart-things/dagger/commit/be088d543aecd3aabddf2b99211e074e9cb6355d))
+
 ## [0.49.6](https://github.com/stuttgart-things/dagger/compare/v0.49.5...v0.49.6) (2025-11-29)
 
 
