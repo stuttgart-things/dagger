@@ -395,8 +395,8 @@ func (m *Git) AddFolderToGithubBranch(
 	// +default="bot@dagger.io"
 	authorEmail string) (string, error) {
 
-	// Clone the repository at main branch first
-	gitDir := m.CloneGithub(ctx, repository, "main", token)
+	// Clone the repository using gh CLI
+	gitDir := dag.Gh().Repo().Clone(repository, dagger.GhRepoCloneOpts{Token: token})
 
 	// Get the base container with git and gh
 	ctr, err := m.container(ctx)
@@ -404,28 +404,24 @@ func (m *Git) AddFolderToGithubBranch(
 		return "", fmt.Errorf("container init failed: %w", err)
 	}
 
-	// Configure git user
+	// Configure git user and authentication
 	ctr = ctr.
 		WithDirectory(workDir, gitDir).
 		WithWorkdir(workDir).
 		WithSecretVariable("GH_TOKEN", token).
 		WithExec([]string{"git", "config", "user.name", authorName}).
-		WithExec([]string{"git", "config", "user.email", authorEmail})
+		WithExec([]string{"git", "config", "user.email", authorEmail}).
+		WithExec([]string{"git", "config", "--global", "credential.helper", "!gh auth git-credential"})
 
-	// Configure git to use gh for authentication
-	ctr = ctr.WithExec([]string{"git", "config", "--global", "credential.helper", "!gh auth git-credential"})
+	// Fetch all branches to get the newly created branch
+	ctr = ctr.WithExec([]string{"git", "fetch", "origin", "--force"})
 
-	// Fetch all branches and checkout the target branch
-	ctr = ctr.WithExec([]string{"git", "fetch", "origin"})
-
-	// Checkout branch - try local first, then track remote
+	// Checkout the target branch (tracking remote)
 	checkoutCmd := fmt.Sprintf(
 		"git checkout %s 2>/dev/null || git checkout -b %s origin/%s",
 		branch, branch, branch,
 	)
-	ctr = ctr.WithExec([]string{"sh", "-c", checkoutCmd})
-
-	// Copy the source directory to the destination path
+	ctr = ctr.WithExec([]string{"sh", "-c", checkoutCmd}) // Copy the source directory to the destination path
 	targetPath := workDir + "/" + destinationPath
 	ctr = ctr.WithDirectory(targetPath, sourceDir, dagger.ContainerWithDirectoryOpts{
 		Exclude: []string{".git"},
