@@ -395,8 +395,8 @@ func (m *Git) AddFolderToGithubBranch(
 	// +default="bot@dagger.io"
 	authorEmail string) (string, error) {
 
-	// Clone the repository
-	gitDir := m.CloneGithub(ctx, repository, branch, token)
+	// Clone the repository at main branch first
+	gitDir := m.CloneGithub(ctx, repository, "main", token)
 
 	// Get the base container with git and gh
 	ctr, err := m.container(ctx)
@@ -414,6 +414,16 @@ func (m *Git) AddFolderToGithubBranch(
 
 	// Configure git to use gh for authentication
 	ctr = ctr.WithExec([]string{"git", "config", "--global", "credential.helper", "!gh auth git-credential"})
+
+	// Fetch all branches and checkout the target branch
+	ctr = ctr.WithExec([]string{"git", "fetch", "origin"})
+
+	// Checkout branch - try local first, then track remote
+	checkoutCmd := fmt.Sprintf(
+		"git checkout %s 2>/dev/null || git checkout -b %s origin/%s",
+		branch, branch, branch,
+	)
+	ctr = ctr.WithExec([]string{"sh", "-c", checkoutCmd})
 
 	// Copy the source directory to the destination path
 	targetPath := workDir + "/" + destinationPath
