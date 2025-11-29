@@ -1,3 +1,10 @@
+## [0.49.6](https://github.com/stuttgart-things/dagger/compare/v0.49.5...v0.49.6) (2025-11-29)
+
+
+### Bug Fixes
+
+* fix/update-add-folder-to-branch ([cf36ca8](https://github.com/stuttgart-things/dagger/commit/cf36ca8927c8954022f47a13b25b970aaa8224e2))
+
 ## [0.49.5](https://github.com/stuttgart-things/dagger/compare/v0.49.4...v0.49.5) (2025-11-29)
 
 
