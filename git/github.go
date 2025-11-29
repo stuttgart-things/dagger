@@ -140,23 +140,17 @@ func (m *Git) CreateGithubPullRequest(
 	// GitHub token for authentication
 	token *dagger.Secret) (string, error) {
 
-	// Clone the repository at head branch to establish context
-	gitDir := m.CloneGithub(ctx, repository, headBranch, token)
-
 	// Get the base container with git and gh
 	ctr, err := m.container(ctx)
 	if err != nil {
 		return "", fmt.Errorf("container init failed: %w", err)
 	}
 
-	// Mount the repository and set as working directory
-	ctr = ctr.
-		WithDirectory("/work", gitDir).
-		WithWorkdir("/work").
-		WithSecretVariable("GH_TOKEN", token)
+	// Set authentication
+	ctr = ctr.WithSecretVariable("GH_TOKEN", token)
 
-	// Build the gh pr create command
-	args := []string{"gh", "pr", "create", "--head", headBranch, "--base", baseBranch, "--title", title, "--body", body}
+	// Build the gh pr create command with --repo flag (no need to clone)
+	args := []string{"gh", "pr", "create", "--repo", repository, "--head", headBranch, "--base", baseBranch, "--title", title, "--body", body}
 
 	// Add labels if provided
 	for _, label := range labels {
