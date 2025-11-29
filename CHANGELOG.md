@@ -1,3 +1,10 @@
+## [0.49.4](https://github.com/stuttgart-things/dagger/compare/v0.49.3...v0.49.4) (2025-11-29)
+
+
+### Bug Fixes
+
+* fix/gitclonje ([68a55a4](https://github.com/stuttgart-things/dagger/commit/68a55a403c3e0cf6d2ae77cedd752316e9defda0))
+
 ## [0.49.3](https://github.com/stuttgart-things/dagger/compare/v0.49.2...v0.49.3) (2025-11-29)
 
 
