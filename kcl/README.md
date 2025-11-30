@@ -23,10 +23,13 @@ dagger call -m kcl test-kcl
 dagger call -m kcl kcl-version
 
 # Run KCL configuration from directory
-dagger call -m kcl run-kcl --source ./my-kcl-project --entrypoint main.k
+dagger call -m kcl run --oci-source=ghcr.io/stuttgart-things/kcl-flux-instance \
+--parameters="gitPath=clusters/vcluster,name=flux-vcluster" \
+export --path=/tmp/rendered.yaml
 
 # Validate KCL configuration
-dagger call -m kcl validate-kcl --source ./my-kcl-project
+dagger call -m kcl validate-kcl \
+--source ./my-kcl-project
 ```
 
 ### CRD to KCL Conversion
