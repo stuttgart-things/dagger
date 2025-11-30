@@ -1,3 +1,10 @@
+## [0.49.11](https://github.com/stuttgart-things/dagger/compare/v0.49.10...v0.49.11) (2025-11-30)
+
+
+### Bug Fixes
+
+* fix/branch-pr ([cffcab7](https://github.com/stuttgart-things/dagger/commit/cffcab797c82cb55421e46def3027e1f3620b04a))
+
 ## [0.49.8](https://github.com/stuttgart-things/dagger/compare/v0.49.7...v0.49.8) (2025-11-29)
 
 
