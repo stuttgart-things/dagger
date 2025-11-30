@@ -3,17 +3,92 @@ package main
 import (
 	"context"
 	"dagger/kcl/internal/dagger"
+	"strings"
 )
 
-// RunKcl executes KCL code from a provided directory
-func (m *Kcl) RunKcl(ctx context.Context, source *dagger.Directory, entrypoint string) (string, error) {
+// Run executes KCL code from a provided directory or OCI source with parameters
+// Returns a Dagger file containing the rendered output
+func (m *Kcl) Run(
+	ctx context.Context,
+	// Local source directory (optional if using OCI source)
+	// +optional
+	source *dagger.Directory,
+	// OCI source path (e.g., oci://ghcr.io/stuttgart-things/kcl-flux-instance)
+	// +optional
+	ociSource string,
+	// KCL parameters as comma-separated key=value pairs
+	// Example: "name=my-flux,namespace=flux-system,version=2.4"
+	// +optional
+	parameters string,
+	// Entry point file name
+	// +optional
+	// +default="main.k"
+	entrypoint string) (*dagger.File, error) {
+
 	if entrypoint == "" {
 		entrypoint = "main.k"
 	}
 
-	return m.container().
-		WithMountedDirectory("/src", source).
-		WithWorkdir("/src").
-		WithExec([]string{"kcl", "run", entrypoint}).
-		Stdout(ctx)
+	ctr := m.container()
+
+	// Handle OCI source or local source
+	if ociSource != "" {
+		// Use OCI source directly - kcl run will handle it
+		ctr = ctr.WithWorkdir("/work")
+	} else if source != nil {
+		// Mount local directory
+		ctr = ctr.
+			WithMountedDirectory("/src", source).
+			WithWorkdir("/src")
+	} else {
+		// Use current working directory
+		ctr = ctr.WithWorkdir("/work")
+	}
+
+	// Build the kcl run command with --quiet and -o options
+	cmd := "kcl run --quiet "
+
+	// Add source (OCI or local entrypoint)
+	if ociSource != "" {
+		// Normalize OCI source - add oci:// prefix if missing
+		if !strings.HasPrefix(ociSource, "oci://") {
+			ociSource = "oci://" + ociSource
+		}
+		cmd += ociSource
+	} else {
+		cmd += entrypoint
+	}
+
+	// Add parameters if provided
+	if parameters != "" {
+		// Split comma-separated parameters and add each as -D flag
+		params := splitParameters(parameters)
+		for _, param := range params {
+			cmd += " -D " + param
+		}
+	}
+
+	// Use -o option to write output to file
+	cmd += " -o /output.yaml"
+
+	// Execute and return file
+	ctr = ctr.WithExec([]string{"sh", "-c", cmd})
+
+	return ctr.File("/output.yaml"), nil
+}
+
+// Helper function to split comma-separated parameters
+func splitParameters(params string) []string {
+	if params == "" {
+		return []string{}
+	}
+
+	var result []string
+	for _, p := range strings.Split(params, ",") {
+		trimmed := strings.TrimSpace(p)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }
