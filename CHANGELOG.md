@@ -1,3 +1,10 @@
+## [0.50.1](https://github.com/stuttgart-things/dagger/compare/v0.50.0...v0.50.1) (2025-12-01)
+
+
+### Bug Fixes
+
+* fix/gh-clone ([eff18a1](https://github.com/stuttgart-things/dagger/commit/eff18a19cae8c0c1c1d5aad7a8cc495f445a6a2e))
+
 # [0.50.0](https://github.com/stuttgart-things/dagger/compare/v0.49.11...v0.50.0) (2025-12-01)
 
 
