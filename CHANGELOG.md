@@ -1,3 +1,10 @@
+# [0.50.0](https://github.com/stuttgart-things/dagger/compare/v0.49.11...v0.50.0) (2025-12-01)
+
+
+### Features
+
+* feat/update-kcl-run ([dc0f7fc](https://github.com/stuttgart-things/dagger/commit/dc0f7fc92fa3e9124337bca4f7a7144fd3dddee2))
+
 ## [0.49.11](https://github.com/stuttgart-things/dagger/compare/v0.49.10...v0.49.11) (2025-11-30)
 
 
