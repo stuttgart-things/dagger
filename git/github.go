@@ -20,15 +20,16 @@ func (m *Git) CreateGithubBranch(
 	repository string,
 	// Name of the new branch to create
 	newBranch string,
+	// GitHub token for authentication
+	token *dagger.Secret,
 	// Base ref/branch to create from (e.g., "main", "develop")
 	// +optional
 	// +default="main"
-	baseBranch string,
-	// GitHub token for authentication
-	token *dagger.Secret) (string, error) {
+	baseBranch string) (string, error) {
 
-	// Clone the repository at base branch
-	gitDir := m.CloneGithub(ctx, repository, baseBranch, token)
+	if baseBranch == "" {
+		baseBranch = "main"
+	}
 
 	// Get the base container with git and gh
 	ctr, err := m.container(ctx)
@@ -36,37 +37,30 @@ func (m *Git) CreateGithubBranch(
 		return "", fmt.Errorf("container init failed: %w", err)
 	}
 
-	// Mount the repository and configure
+	// Set up authentication and repository context
 	ctr = ctr.
-		WithDirectory(workDir, gitDir).
-		WithWorkdir(workDir).
-		WithSecretVariable("GH_TOKEN", token)
+		WithSecretVariable("GITHUB_TOKEN", token).
+		WithEnvVariable("GH_REPO", repository)
 
-	// Configure git to use gh for authentication
-	ctr = ctr.
-		WithExec([]string{"git", "config", "--global", "credential.helper", "!gh auth git-credential"})
+	// Create new branch using gh CLI directly (no cloning needed)
+	createCmd := fmt.Sprintf("gh api repos/%s/git/refs/heads/%s --jq .object.sha | xargs -I {} gh api repos/%s/git/refs -f ref=refs/heads/%s -f sha={}",
+		repository, baseBranch, repository, newBranch)
 
-	// Create and checkout new branch
-	ctr = ctr.WithExec([]string{"git", "checkout", "-b", newBranch})
+	output, err := ctr.
+		WithExec([]string{"sh", "-c", createCmd}).
+		Stdout(ctx)
 
-	// Push the new branch to remote using gh authenticated context
-	ctr = ctr.WithExec([]string{"git", "push", "-u", "origin", newBranch})
-
-	// Verify branch was created
-	output, err := ctr.WithExec([]string{"git", "branch", "-r"}).Stdout(ctx)
 	if err != nil {
-		return "", fmt.Errorf("failed to verify branch creation: %w", err)
+		return "", fmt.Errorf("failed to create branch: %w", err)
 	}
 
-	// Check if the branch appears in remote branches
-	if !strings.Contains(output, "origin/"+newBranch) {
-		return "", fmt.Errorf("branch %s was not created successfully", newBranch)
+	// Verify branch was created
+	if strings.Contains(output, newBranch) {
+		return newBranch, nil
 	}
 
 	return newBranch, nil
-}
-
-// DeleteGithubBranch deletes a branch from a GitHub repository.
+} // DeleteGithubBranch deletes a branch from a GitHub repository.
 // This will delete the branch from the remote repository.
 // Returns a success message with the deleted branch name.
 func (m *Git) DeleteGithubBranch(
@@ -252,34 +246,21 @@ func (m *Git) CloneGithub(
 	ref string,
 	token *dagger.Secret) *dagger.Directory {
 
-	gitDir := dag.
-		Gh().
-		Repo().
-		Clone(repository, dagger.GhRepoCloneOpts{Token: token})
+	if ref == "" {
+		ref = "main"
+	}
 
-	// GET THE BASE CONTAINER WITH GIT
+	// Get the base container with git and gh
 	ctr, err := m.container(ctx)
 	if err != nil {
 		fmt.Errorf("CONTAINER INIT FAILED: %w", err)
 	}
 
-	// SWITCH TO REF/BRANCH
-	ctr = ctr.WithDirectory(workDir, gitDir).WithWorkdir(workDir)
-
-	// Fetch all remote branches and refs to ensure newly created branches are available
-	ctr = ctr.WithExec([]string{"git", "fetch", "origin", "--force"})
-
-	// Verify remote branch exists before attempting checkout
-	ctr = ctr.WithExec([]string{"git", "ls-remote", "--heads", "origin", ref})
-
-	// Checkout the branch with fallback strategy:
-	// 1. Try to checkout if it exists locally
-	// 2. If not, create local branch tracking the remote branch
-	checkoutCmd := fmt.Sprintf(
-		"git show-ref --verify --quiet refs/heads/%s && git checkout %s || git checkout -b %s origin/%s",
-		ref, ref, ref, ref,
-	)
-	ctr = ctr.WithExec([]string{"sh", "-c", checkoutCmd})
+	// Use gh to clone with authentication and checkout the specific branch
+	ctr = ctr.
+		WithSecretVariable("GITHUB_TOKEN", token).
+		WithEnvVariable("GH_REPO", repository).
+		WithExec([]string{"gh", "repo", "clone", repository, workDir, "--", "--branch", ref})
 
 	return ctr.Directory(workDir)
 }
