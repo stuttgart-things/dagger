@@ -20,14 +20,13 @@ func (m *Kcl) Run(
 	// Example: "name=my-flux,namespace=flux-system,version=2.4"
 	// +optional
 	parameters string,
+	// +optional
+	// +default="true"
+	formatOutput bool,
 	// Entry point file name
 	// +optional
 	// +default="main.k"
 	entrypoint string) (*dagger.File, error) {
-
-	if entrypoint == "" {
-		entrypoint = "main.k"
-	}
 
 	ctr := m.container()
 
@@ -71,10 +70,24 @@ func (m *Kcl) Run(
 	// Use -o option to write output to file
 	cmd += " -o /output.yaml"
 
-	// Execute and return file
+	// Execute and write /output.yaml
 	ctr = ctr.WithExec([]string{"sh", "-c", cmd})
 
-	return ctr.File("/output.yaml"), nil
+	// Post-process into clean YAML
+	postProcess := `
+  cat /output.yaml \
+    | grep -v "^items:" \
+    | sed 's/^- /---\n/' \
+    | sed '1d' \
+    | sed 's/^  //' \
+    | awk 'NR==1{print "---"} {print}' \
+    > /output-processed.yaml
+`
+
+	ctr = ctr.WithExec([]string{"sh", "-c", postProcess})
+
+	// Return processed output
+	return ctr.File("/output-processed.yaml"), nil
 }
 
 // Helper function to split comma-separated parameters
