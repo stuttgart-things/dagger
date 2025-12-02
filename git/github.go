@@ -27,10 +27,6 @@ func (m *Git) CreateGithubBranch(
 	// +default="main"
 	baseBranch string) (string, error) {
 
-	if baseBranch == "" {
-		baseBranch = "main"
-	}
-
 	// Get the base container with git and gh
 	ctr, err := m.container(ctx)
 	if err != nil {

@@ -59,6 +59,34 @@ dagger call -m docker build-and-push \
   -vv --progress plain
 ```
 
+### Mirror APK Packages
+
+```bash
+# BY PACKAGE LIST AS INPUT STRING
+dagger call -m docker mirror-apk-packages \
+--image python:3.13.7-alpine \
+--apk-packages "curl,wget" \
+export --path=/tmp/apk3137.zip \
+-vv --progress plain
+```
+
+```bash
+# BY YAML PROFILE / PACKAGE LIST
+cat <<EOF > packages.yaml
+packages:
+  - curl
+  - wget
+  - git
+EOF
+
+dagger call -m docker mirror-apk-packages \
+--source "./" \
+--image=python:3.13.7-alpine \
+--packages-file=./packages.yaml \
+export --path=/tmp/apk3137.zip \
+-vv --progress plain
+```
+
 ### Test Module
 
 ```bash

@@ -65,3 +65,78 @@ func (m *Kubernetes) Command(
 
 	return out, nil
 }
+
+// Kubectl applies or manages Kubernetes manifests from files or URLs
+func (m *Kubernetes) Kubectl(
+	ctx context.Context,
+	// Kubectl operation (apply, delete, create, etc.)
+	// +optional
+	// +default="apply"
+	operation string,
+	// Source file (local file from Dagger)
+	// +optional
+	sourceFile *dagger.File,
+	// URL source (e.g., https://raw.githubusercontent.com/org/repo/main/manifest.yaml)
+	// +optional
+	urlSource string,
+	// Namespace for the operation
+	// +optional
+	namespace string,
+	// Kubeconfig secret for authentication
+	// +optional
+	kubeConfig *dagger.Secret,
+	// Additional kubectl flags (e.g., "--dry-run=client -o yaml")
+	// +optional
+	additionalFlags string,
+) (string, error) {
+
+	if operation == "" {
+		operation = "apply"
+	}
+
+	kubeConfigPath := "/root/.kube/config"
+	manifestPath := "/tmp/manifest.yaml"
+
+	kubectlContainer := m.container().
+		WithMountedSecret(kubeConfigPath, kubeConfig)
+
+	// Build kubectl command
+	var args []string
+
+	// Handle source: either local file or URL
+	if sourceFile != nil {
+		// Mount the file and use it
+		kubectlContainer = kubectlContainer.WithMountedFile(manifestPath, sourceFile)
+		args = []string{"kubectl", operation, "-f", manifestPath}
+	} else if urlSource != "" {
+		// Use URL directly - kubectl supports this natively
+		args = []string{"kubectl", operation, "-f", urlSource}
+	} else {
+		return "", fmt.Errorf("either sourceFile or urlSource must be provided")
+	}
+
+	// Add namespace if specified
+	if namespace != "" {
+		args = append(args, "-n", namespace)
+	}
+
+	// Add additional flags if provided
+	if additionalFlags != "" {
+		// Split additional flags and append them
+		flags := strings.Fields(additionalFlags)
+		args = append(args, flags...)
+	}
+
+	// Execute kubectl command
+	kubectlContainer = kubectlContainer.WithExec(args)
+
+	// Run the command and capture output
+	out, err := kubectlContainer.Stdout(ctx)
+	if err != nil {
+		// also capture stderr for debugging
+		stderr, _ := kubectlContainer.Stderr(ctx)
+		return "", fmt.Errorf("kubectl error: %w\nstderr: %s", err, stderr)
+	}
+
+	return out, nil
+}

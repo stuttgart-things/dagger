@@ -426,9 +426,16 @@ tasks:
         --registry-url {{ .REGISTRY_URL }} \
         --tag {{ .VERSION }} \
         --progress plain
+
+        # dagger call -m {{ .MODULE }} \
+        # mirror-apk-packages \
+        # --source {{ .SOURCE }} \
+        # --packages-file={{ .PACKAGES_FILE }} \
+        # --progress plain
     vars:
       MODULE: docker
       SOURCE: tests/docker/
+      PACKAGES_FILE: packages.yaml
       REPOSITORY_NAME: stuttgart-things/nginx-dagger
       REGISTRY_URL: ttl.sh
       VERSION: 1h
