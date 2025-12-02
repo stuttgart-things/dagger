@@ -1,3 +1,10 @@
+# [0.51.0](https://github.com/stuttgart-things/dagger/compare/v0.50.1...v0.51.0) (2025-12-02)
+
+
+### Features
+
+* feat/add-apk-image-mirror ([56af0cf](https://github.com/stuttgart-things/dagger/commit/56af0cf5b6acea7f8fe263c09eab96c8354e16c2))
+
 ## [0.50.1](https://github.com/stuttgart-things/dagger/compare/v0.50.0...v0.50.1) (2025-12-01)
 
 
