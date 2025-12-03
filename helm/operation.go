@@ -127,6 +127,9 @@ func (m *Helm) Execute(
 	// Repository name for traditional charts (e.g., "cilium")
 	// +optional
 	repoName string,
+	// Chart version (e.g., "1.2.3")
+	// +optional
+	version string,
 ) error {
 
 	projectDir := "/helm"
@@ -166,6 +169,11 @@ func (m *Helm) Execute(
 	switch operation {
 	case "install", "upgrade":
 		args = []string{"helm", "upgrade", "--install", releaseName, chartPath, "--namespace", namespace, "--create-namespace"}
+
+		// ADD VERSION IF PROVIDED
+		if version != "" {
+			args = append(args, "--version", version)
+		}
 
 		// ADD VALUES FILE IF PROVIDED
 		if valuesFile != nil {
