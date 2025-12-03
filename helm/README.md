@@ -38,6 +38,28 @@ dagger call -m helm package \
   export --path=/tmp/chart.tgz
 ```
 
+### INSTALL CHART
+
+```bash
+dagger call -m helm execute \
+--src "./" \
+--release-name nginx \
+--chart-path "oci://registry-1.docker.io/bitnamicharts/nginx" \
+--operation install \
+--namespace default \
+--values "service.type=ClusterIP" \
+--kube-config file://~/.kube/demo-infra
+```
+
+```bash
+dagger call -m helm execute \
+--src "./" \
+--release-name nginx \
+--operation uninstall \
+--namespace default \
+--kube-config file://~/.kube/demo-infra
+```
+
 ### Push to Registry
 
 ```bash
