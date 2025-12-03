@@ -1,3 +1,10 @@
+# [0.52.0](https://github.com/stuttgart-things/dagger/compare/v0.51.0...v0.52.0) (2025-12-03)
+
+
+### Features
+
+* feat/add-helm-apply ([bea4d0b](https://github.com/stuttgart-things/dagger/commit/bea4d0b5e559d319019d0e444098371ecaa6ce87))
+
 # [0.51.0](https://github.com/stuttgart-things/dagger/compare/v0.50.1...v0.51.0) (2025-12-02)
 
 
