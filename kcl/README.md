@@ -27,6 +27,47 @@ dagger call -m kcl run --oci-source=ghcr.io/stuttgart-things/kcl-flux-instance \
 --parameters="gitPath=clusters/vcluster,name=flux-vcluster" \
 export --path=/tmp/rendered.yaml
 
+# Run KCL configuration w/ variables.yaml
+CLOUDCFG_B64=$(cat <<'EOF' | base64 -w0
+#cloud-config
+hostname: dev5
+ssh_pwauth: true
+EOF
+)
+
+cat <<EOF > params.yaml
+enablePvc: true
+enableCloudConfig: true
+enableVm: true
+name: dev5-disk-0
+namespace: default
+imageNamespace: default
+imageId: image-t9w92
+storage: 20Gi
+storageClass: longhorn
+volumeMode: Block
+accessModes: '["ReadWriteMany"]'
+secretName: dev5-cloud-init
+vmName: dev5
+hostname: dev5
+description: dev5-complete-vm-setup
+osLabel: linux
+runStrategy: RerunOnFailure
+cpuCores: 4
+cpuSockets: 1
+cpuThreads: 1
+memory: 8Gi
+pvcName: dev5-disk-0
+networkName: vms
+evictionStrategy: LiveMigrateIfPossible
+terminationGracePeriod: 120
+EOF
+
+dagger call -m kcl run \
+--oci-source ghcr.io/stuttgart-things/harvester-vm:0.1.0 \ --parameters-file params.yaml \
+--parameters "userdata=${CLOUDCFG_B64}" \
+export --path /tmp/harvester-dev5.yaml
+
 # Validate KCL configuration
 dagger call -m kcl validate-kcl \
 --source ./my-kcl-project
