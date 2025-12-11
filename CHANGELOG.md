@@ -1,3 +1,10 @@
+# [0.54.0](https://github.com/stuttgart-things/dagger/compare/v0.53.0...v0.54.0) (2025-12-11)
+
+
+### Features
+
+* feat/add-varsfile-kcl ([0805bd3](https://github.com/stuttgart-things/dagger/commit/0805bd30ad1314bab86fae8c4463d7f27fd3cc6f))
+
 # [0.53.0](https://github.com/stuttgart-things/dagger/compare/v0.52.0...v0.53.0) (2025-12-03)
 
 
