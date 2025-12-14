@@ -7,10 +7,12 @@ import (
 
 func (m *Kcl) container() *dagger.Container {
 	if m.BaseImage == "" {
-		m.BaseImage = "kcllang/kcl:v0.12.0"
+		m.BaseImage = "kcllang/kcl:v0.12.3"
 	}
 
-	return dag.Container().From(m.BaseImage)
+	return dag.Container().
+		From(m.BaseImage).
+		WithExec([]string{"sh", "-c", "apt-get update && apt-get install -y --no-install-recommends yq jq curl && rm -rf /var/lib/apt/lists/*"})
 }
 
 // ValidateKcl validates KCL configuration files by compiling them

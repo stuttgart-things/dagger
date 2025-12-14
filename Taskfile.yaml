@@ -134,7 +134,7 @@ tasks:
       - |
         echo "Testing KCL with project files..."
         dagger call -m {{ .MODULE }} \
-        run-kcl \
+        run \
         --source {{ .TEST_KCL_PROJECT }} \
         --entrypoint {{ .TEST_KCL_ENTRYPOINT }} \
         --progress plain
