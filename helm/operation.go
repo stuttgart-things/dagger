@@ -8,16 +8,18 @@ import (
 
 func (m *Helm) HelmfileOperation(
 	ctx context.Context,
+	// +optional
 	src *dagger.Directory,
 	// +optional
-	// +default="./"
-	pathHelmfile string,
-	// +optional
 	// +default="helmfile.yaml"
-	helmfileName string,
+	helmfileRef string,
 	// +optional
 	// +default="apply"
 	operation string,
+	// Comma-separated key=value pairs for --state-values-set
+	// (e.g., "issuerName=cluster-issuer-approle,domain=demo.example.com")
+	// +optional
+	stateValues string,
 	// +optional
 	registrySecret *dagger.Secret,
 	// +optional
@@ -40,10 +42,20 @@ func (m *Helm) HelmfileOperation(
 	kubeConfigPath := "/root/.kube/config"
 
 	helmContainer := m.container().
-		WithDirectory(projectDir, src.Directory(pathHelmfile)).
-		WithWorkdir(projectDir).
 		WithEnvVariable("VAULT_SKIP_VERIFY", "TRUE").
-		WithEnvVariable("VAULT_AUTH_METHOD", "approle")
+		WithEnvVariable("VAULT_AUTH_METHOD", vaultAuthMethod).
+		WithEnvVariable("HELMFILE_INTERACTIVE", "false")
+
+	// CONDITIONALLY MOUNT SOURCE DIRECTORY IF PROVIDED
+	if src != nil {
+		helmContainer = helmContainer.
+			WithDirectory(projectDir, src).
+			WithWorkdir(projectDir)
+	} else {
+		helmContainer = helmContainer.
+			WithExec([]string{"mkdir", "-p", projectDir}).
+			WithWorkdir(projectDir)
+	}
 
 	// CONDITIONALLY MOUNT THE SECRET IF PROVIDED
 	if registrySecret != nil { // pragma: allowlist secret
@@ -86,14 +98,27 @@ func (m *Helm) HelmfileOperation(
 		helmContainer = helmContainer.WithMountedSecret(kubeConfigPath, kubeConfig)
 	}
 
-	args := []string{
-		"helmfile",
-		"-f",
-		helmfileName,
-		operation}
+	// BUILD HELMFILE COMMAND
+	args := []string{"helmfile", "-f", helmfileRef, operation}
 
-	if _, err := helmContainer.WithExec(args).Sync(ctx); err != nil {
-		return err
+	// ADD STATE VALUES IF PROVIDED
+	if stateValues != "" {
+		statePairs := splitValues(stateValues)
+		for _, pair := range statePairs {
+			args = append(args, "--state-values-set", pair)
+		}
+	}
+
+	// FOR DESTROY, USE YES PIPING WITH DEBUG
+	if operation == "destroy" {
+		cmdString := "yes | " + strings.Join(args, " ") + " --debug"
+		if _, err := helmContainer.WithExec([]string{"sh", "-c", cmdString}).Sync(ctx); err != nil {
+			return err
+		}
+	} else {
+		if _, err := helmContainer.WithExec(args).Sync(ctx); err != nil {
+			return err
+		}
 	}
 
 	return nil

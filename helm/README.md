@@ -121,17 +121,27 @@ dagger call -m helm push \
 ### Helmfile Operations
 
 ```bash
-# Apply Helmfile with kubeconfig
+# Apply Helmfile with local helmfile.yaml
 dagger call -m helm helmfile-operation \
   --src tests/helm/ \
+  --helmfile-ref helmfile.yaml \
   --kube-config file://~/.kube/config \
   --progress plain
 
-# Destroy releases
+# Apply from Git with state values
 dagger call -m helm helmfile-operation \
+  --helmfile-ref "git::https://github.com/stuttgart-things/helm.git@apps/nginx.yaml.gotmpl" \
+  --operation apply \
+  --state-values "replicas=3,namespace=webserver" \
+  --kube-config file://~/.kube/kind-dev2 \
+  --progress plain
+
+# Destroy releases (use same state-values as apply)
+dagger call -m helm helmfile-operation \
+  --helmfile-ref "git::https://github.com/stuttgart-things/helm.git@apps/nginx.yaml.gotmpl" \
   --operation destroy \
-  --src tests/helm/ \
-  --kube-config file://~/.kube/config \
+  --state-values "namespace=webserver" \
+  --kube-config file://~/.kube/kind-dev2 \
   --progress plain
 ```
 
