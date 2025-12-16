@@ -1,3 +1,10 @@
+# [0.55.0](https://github.com/stuttgart-things/dagger/compare/v0.54.1...v0.55.0) (2025-12-16)
+
+
+### Features
+
+* feat/add-helmfile-params ([2900d8f](https://github.com/stuttgart-things/dagger/commit/2900d8f8246d3e35e5a2311b0167eaac3475f8cf))
+
 ## [0.54.1](https://github.com/stuttgart-things/dagger/compare/v0.54.0...v0.54.1) (2025-12-14)
 
 
