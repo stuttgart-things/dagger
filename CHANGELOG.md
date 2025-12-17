@@ -1,3 +1,10 @@
+# [0.56.0](https://github.com/stuttgart-things/dagger/compare/v0.55.0...v0.56.0) (2025-12-17)
+
+
+### Features
+
+* feat/add-kcl-format-option ([52828fd](https://github.com/stuttgart-things/dagger/commit/52828fdd0fc4bcfb0d315579e5db0ebf440ab93a))
+
 # [0.55.0](https://github.com/stuttgart-things/dagger/compare/v0.54.1...v0.55.0) (2025-12-16)
 
 
