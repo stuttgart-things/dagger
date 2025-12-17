@@ -23,9 +23,17 @@ dagger call -m kcl test-kcl
 dagger call -m kcl kcl-version
 
 # Run KCL configuration from directory
-dagger call -m kcl run --oci-source=ghcr.io/stuttgart-things/kcl-flux-instance \
+dagger call -m kcl run \
+--oci-source=ghcr.io/stuttgart-things/kcl-flux-instance \
 --parameters="gitPath=clusters/vcluster,name=flux-vcluster" \
 export --path=/tmp/rendered.yaml
+
+# Dont format output
+dagger call -m kcl run \
+--format-output=false \
+--oci-source=ghcr.io/stuttgart-things/kind-cluster:0.1.0 \
+--parameters "portRangeStart=32100,portRangeCount=2,clusterName=gitea,apiServerAddress=$(hostname -f),registryMirrors=[\"https://docker.harbor.idp.kubermatic.sva.dev\"]" \
+export --path=/tmp/kind.yaml
 
 # Run KCL configuration w/ variables.yaml
 CLOUDCFG_B64=$(cat <<'EOF' | base64 -w0
