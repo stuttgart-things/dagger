@@ -79,6 +79,9 @@ func (m *Kubernetes) Kubectl(
 	// URL source (e.g., https://raw.githubusercontent.com/org/repo/main/manifest.yaml)
 	// +optional
 	urlSource string,
+	// Kustomize directory URL (e.g., https://github.com/org/repo/path/to/kustomize)
+	// +optional
+	kustomizeSource string,
 	// Namespace for the operation
 	// +optional
 	namespace string,
@@ -103,16 +106,19 @@ func (m *Kubernetes) Kubectl(
 	// Build kubectl command
 	var args []string
 
-	// Handle source: either local file or URL
+	// Handle source: either local file, URL, or kustomize source
 	if sourceFile != nil {
 		// Mount the file and use it
 		kubectlContainer = kubectlContainer.WithMountedFile(manifestPath, sourceFile)
 		args = []string{"kubectl", operation, "-f", manifestPath}
+	} else if kustomizeSource != "" {
+		// Use kustomize source with -k flag
+		args = []string{"kubectl", operation, "-k", kustomizeSource}
 	} else if urlSource != "" {
 		// Use URL directly - kubectl supports this natively
 		args = []string{"kubectl", operation, "-f", urlSource}
 	} else {
-		return "", fmt.Errorf("either sourceFile or urlSource must be provided")
+		return "", fmt.Errorf("either sourceFile, urlSource, or kustomizeSource must be provided")
 	}
 
 	// Add namespace if specified
