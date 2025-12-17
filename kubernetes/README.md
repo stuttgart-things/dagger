@@ -43,6 +43,16 @@ dagger call -m kubernetes command \
   --progress plain
 ```
 
+#### Apply kustomize resources
+
+```bash
+dagger call -m kubernetes kubectl \
+  --operation apply \
+  --kustomize-source https://github.com/stuttgart-things/helm/infra/crds/cilium \
+  --namespace kube-system \
+  --kube-config file://~/.kube/config
+```
+
 ### Filtering with Additional Commands
 
 #### Find pods with "ingress" in the name
