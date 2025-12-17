@@ -1,3 +1,10 @@
+# [0.57.0](https://github.com/stuttgart-things/dagger/compare/v0.56.0...v0.57.0) (2025-12-17)
+
+
+### Features
+
+* feat/add-kubectl-kustomize ([9271c36](https://github.com/stuttgart-things/dagger/commit/9271c367a234156dc3e18fdb8a0e19425d404dd2))
+
 # [0.56.0](https://github.com/stuttgart-things/dagger/compare/v0.55.0...v0.56.0) (2025-12-17)
 
 
