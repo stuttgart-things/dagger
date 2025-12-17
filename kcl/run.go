@@ -107,6 +107,10 @@ func (m *Kcl) Run(
 	// +optional
 	// +default="true"
 	formatOutput bool,
+	// Output format: yaml or json
+	// +optional
+	// +default="yaml"
+	outputFormat string,
 	// Entry point file name
 	// +optional
 	// +default="main.k"
@@ -193,8 +197,9 @@ func (m *Kcl) Run(
 	// Execute and write /output.yaml
 	ctr = ctr.WithExec([]string{"sh", "-c", cmd})
 
-	// Post-process into clean YAML
-	postProcess := `
+	// Post-process into clean YAML if formatOutput is enabled
+	if formatOutput {
+		postProcess := `
   cat /output.yaml \
     | grep -v "^items:" \
     | sed 's/^- /---\n/' \
@@ -203,9 +208,19 @@ func (m *Kcl) Run(
     | awk 'NR==1{print "---"} {print}' \
     > /output-processed.yaml
 `
+		ctr = ctr.WithExec([]string{"sh", "-c", postProcess})
+		// Return processed output
+		return ctr.File("/output-processed.yaml"), nil
+	}
 
-	ctr = ctr.WithExec([]string{"sh", "-c", postProcess})
+	// Return raw output if formatOutput is disabled
+	if outputFormat == "json" {
+		// Convert YAML to JSON
+		convertCmd := "yq eval -o=json /output.yaml > /output.json"
+		ctr = ctr.WithExec([]string{"sh", "-c", convertCmd})
+		return ctr.File("/output.json"), nil
+	}
 
-	// Return processed output
-	return ctr.File("/output-processed.yaml"), nil
+	// Return raw YAML
+	return ctr.File("/output.yaml"), nil
 }
