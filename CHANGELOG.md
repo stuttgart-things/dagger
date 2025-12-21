@@ -1,3 +1,10 @@
+# [0.59.0](https://github.com/stuttgart-things/dagger/compare/v0.58.0...v0.59.0) (2025-12-21)
+
+
+### Features
+
+* feat/add-push ([48bfdae](https://github.com/stuttgart-things/dagger/commit/48bfdae50fd079a5d920cd9c663cb774ed00c1e1))
+
 # [0.58.0](https://github.com/stuttgart-things/dagger/compare/v0.57.0...v0.58.0) (2025-12-21)
 
 
