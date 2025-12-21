@@ -4,26 +4,33 @@ import (
 	"context"
 	"dagger/crossplane/internal/dagger"
 	reg "dagger/crossplane/registry"
-	"fmt"
 )
 
 // Push Crossplane Package
 func (m *Crossplane) Push(
 	ctx context.Context,
 	src *dagger.Directory,
-	// +default="ghcr.io"
 	registry string,
 	username string,
 	password *dagger.Secret,
-	destination string) string {
+	destination string,
+) string {
+
+	// ✅ Ensure container is initialized
+	if m.XplaneContainer == nil {
+		m.XplaneContainer = m.GetXplaneContainer(ctx)
+	}
 
 	dirWithPackage := m.Package(ctx, src)
 
 	passwordPlaintext, err := password.Plaintext(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	configJSON, err := reg.CreateDockerConfigJSON(username, passwordPlaintext, registry)
 	if err != nil {
-		fmt.Printf("ERROR CREATING DOCKER config.json: %v\n", err)
+		panic(err)
 	}
 
 	status, err := m.XplaneContainer.
@@ -34,10 +41,8 @@ func (m *Crossplane) Push(
 		Stdout(ctx)
 
 	if err != nil {
-		fmt.Println("ERROR PUSHING PACKAGE: ", err)
+		panic(err)
 	}
-
-	fmt.Println("PACKAGE STATUS: ", status)
 
 	return status
 }
