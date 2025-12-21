@@ -89,14 +89,6 @@ dagger call -m crossplane push \
   --progress plain
 ```
 
-### Custom Package Creation
-
-```bash
-dagger call -m crossplane init-custom-package \
-  --name mycustompackage \
-  export --path=/tmp/crossplane/custom/
-```
-
 ## Package Structure
 
 A typical Crossplane package structure:
