@@ -1,3 +1,10 @@
+# [0.58.0](https://github.com/stuttgart-things/dagger/compare/v0.57.0...v0.58.0) (2025-12-21)
+
+
+### Features
+
+* feat/update-crossplane-base ([d384cf5](https://github.com/stuttgart-things/dagger/commit/d384cf59efeff918b2a69b5162508813c94242c7))
+
 # [0.57.0](https://github.com/stuttgart-things/dagger/compare/v0.56.0...v0.57.0) (2025-12-17)
 
 
