@@ -1,3 +1,10 @@
+# [0.60.0](https://github.com/stuttgart-things/dagger/compare/v0.59.0...v0.60.0) (2025-12-22)
+
+
+### Features
+
+* feat/add-xrd-creation ([2c709e3](https://github.com/stuttgart-things/dagger/commit/2c709e3d92e458e56e482a8d63e3299bc7f0faf8))
+
 # [0.59.0](https://github.com/stuttgart-things/dagger/compare/v0.58.0...v0.59.0) (2025-12-21)
 
 
