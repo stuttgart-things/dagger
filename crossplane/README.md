@@ -61,6 +61,27 @@ task test-crossplane
 
 ## API Reference
 
+### Create Definition
+
+```bash
+# Initialize new defintion by kcl file
+dagger call -m crossplane init-package \
+  --name mypackage \
+  --progress plain \
+  export --path=/tmp/crossplane
+```
+
+### Modify Definition
+
+```bash
+# Modify xrd for api version2
+dagger call -m crossplane modify-definition \
+  --xrd /tmp/schema.yaml \
+  --singular-name=cloudinit \
+  --progress plain \
+  export --path=/tmp/xrd-v2.yaml
+```
+
 ### Package Initialization
 
 ```bash
