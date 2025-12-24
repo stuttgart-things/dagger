@@ -1,3 +1,10 @@
+# [0.61.0](https://github.com/stuttgart-things/dagger/compare/v0.60.0...v0.61.0) (2025-12-24)
+
+
+### Features
+
+* feat/add-inline-templating ([fb29c85](https://github.com/stuttgart-things/dagger/commit/fb29c8507c815fe2dd5d8668e13acee755218402))
+
 # [0.60.0](https://github.com/stuttgart-things/dagger/compare/v0.59.0...v0.60.0) (2025-12-22)
 
 
