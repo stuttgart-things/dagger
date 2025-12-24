@@ -78,7 +78,7 @@ dagger call -m crossplane init-package \
 dagger call -m crossplane modify-definition \
   --xrd /tmp/schema.yaml \
   --singular-name=cloudinit \
-  --progress plain \
+  --progress plain -vv \
   export --path=/tmp/xrd-v2.yaml
 ```
 
