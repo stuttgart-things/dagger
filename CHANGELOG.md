@@ -1,3 +1,10 @@
+# [0.63.0](https://github.com/stuttgart-things/dagger/compare/v0.62.0...v0.63.0) (2025-12-25)
+
+
+### Features
+
+* fix/fix-render-include ([8ab4f1f](https://github.com/stuttgart-things/dagger/commit/8ab4f1ff08f8118b79ebe8d1f2097b7e676f4638))
+
 # [0.62.0](https://github.com/stuttgart-things/dagger/compare/v0.61.0...v0.62.0) (2025-12-25)
 
 
