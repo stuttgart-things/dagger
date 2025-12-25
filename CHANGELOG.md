@@ -1,3 +1,10 @@
+# [0.62.0](https://github.com/stuttgart-things/dagger/compare/v0.61.0...v0.62.0) (2025-12-25)
+
+
+### Features
+
+* feat/add-goreleaser-go ([b0082f1](https://github.com/stuttgart-things/dagger/commit/b0082f1fc34bce00a5e8a9b7afa80116b59fb5f5))
+
 # [0.61.0](https://github.com/stuttgart-things/dagger/compare/v0.60.0...v0.61.0) (2025-12-24)
 
 
