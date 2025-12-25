@@ -22,18 +22,18 @@ dagger call -m templating render \
   export --path=./rendered
 ```
 
-## Strict Mode (Recommended for Production)
-
-Fail fast when variables are missing:
-
 ```bash
 dagger call -m templating render \
   --src=tests/templating \
-  --templates="config.yaml.tmpl" \
-  --variables-file=vars.yaml \
-  --strict-mode=true \
-  export --path=./rendered
+  --templates="config-string.yaml.tmpl,deployment.yaml.tmpl,service.yaml.tmpl" \
+  --variables="name=myapp,namespace=default,version=1.0.0,replicas=3,image=nginx,port=8080,serviceType=ClusterIP,debug=false" \
+  --variables-file=example-vars.yaml \
+  export --path=/tmp/templating
 ```
+
+## Strict Mode (Recommended for Production)
+
+Fail fast when variables are missing:
 
 ## Render w/ complex structures
 
