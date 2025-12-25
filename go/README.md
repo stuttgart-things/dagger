@@ -53,6 +53,29 @@ dagger call -m go ko-build \
   --progress plain -vv
 ```
 
+### Release Binaries to GitHub
+
+```bash
+# CHECK ONLY + EXPORT RELEASER LOG
+dagger call -m go release \
+--src ~/projects/k2n \
+--token=env:GITHUB_TOKEN \
+--check-only=true \
+--progress plain \
+-vv export \
+--path=/tmp/goreleaser.log
+```
+
+```bash
+# RELEASE + EXPORT RELEASER LOG
+dagger call -m go release \
+--src ~/projects/k2n \
+--token=env:GITHUB_TOKEN \
+--progress plain \
+-vv export \
+--path=/tmp/goreleaser.log
+```
+
 ### Test Module
 
 ```bash

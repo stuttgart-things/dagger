@@ -169,3 +169,12 @@ func (m *Go) GetKoContainer(
 	return dag.Container().
 		From("ghcr.io/ko-build/ko:" + koVersion)
 }
+
+func (m *Go) GetReleaserContainer(
+	// +optional
+	// +default="v2.13.2"
+	releaserVersion string,
+) *dagger.Container {
+	return dag.Container().
+		From("goreleaser/goreleaser:" + releaserVersion)
+}
