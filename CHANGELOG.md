@@ -1,3 +1,10 @@
+# [0.64.0](https://github.com/stuttgart-things/dagger/compare/v0.63.0...v0.64.0) (2025-12-29)
+
+
+### Features
+
+* feat/enable-server-side-apply ([ec8f672](https://github.com/stuttgart-things/dagger/commit/ec8f672ae38e9a763fe84b8d97ebcff26437ab20))
+
 # [0.63.0](https://github.com/stuttgart-things/dagger/compare/v0.62.0...v0.63.0) (2025-12-25)
 
 
