@@ -88,6 +88,10 @@ func (m *Kubernetes) Kubectl(
 	// Kubeconfig secret for authentication
 	// +optional
 	kubeConfig *dagger.Secret,
+	// Use server-side apply (only valid with apply operation)
+	// +optional
+	// +default=false
+	serverSide bool,
 	// Additional kubectl flags (e.g., "--dry-run=client -o yaml")
 	// +optional
 	additionalFlags string,
@@ -119,6 +123,11 @@ func (m *Kubernetes) Kubectl(
 		args = []string{"kubectl", operation, "-f", urlSource}
 	} else {
 		return "", fmt.Errorf("either sourceFile, urlSource, or kustomizeSource must be provided")
+	}
+
+	// Add server-side flag if specified (only valid with apply operation)
+	if serverSide && operation == "apply" {
+		args = append(args, "--server-side")
 	}
 
 	// Add namespace if specified
