@@ -21,7 +21,7 @@ dagger call -m kubernetes command \
   --resource-kind pods \
   --namespace ALL \
   --kube-config file://~/.kube/config \
-  --progress plain
+  --progress plain -vv
 ```
 
 #### Get pods in a specific namespace
@@ -31,7 +31,7 @@ dagger call -m kubernetes command \
   --resource-kind pods \
   --namespace default \
   --kube-config file://~/.kube/config \
-  --progress plain
+  --progress plain -vv
 ```
 
 #### Get cluster-wide resources (nodes, persistent volumes, etc.)
@@ -40,7 +40,7 @@ dagger call -m kubernetes command \
   --operation get \
   --resource-kind nodes \
   --kube-config file://~/.kube/config \
-  --progress plain
+  --progress plain -vv
 ```
 
 #### Apply kustomize resources
@@ -49,8 +49,18 @@ dagger call -m kubernetes command \
 dagger call -m kubernetes kubectl \
   --operation apply \
   --kustomize-source https://github.com/stuttgart-things/helm/infra/crds/cilium \
+  --server-side=true \
   --namespace kube-system \
-  --kube-config file://~/.kube/config
+  --kube-config file://~/.kube/config -vv
+```
+
+```bash
+# ServerSide Apply
+dagger call -m kubernetes kubectl \
+--operation apply \
+--kustomize-source https://github.com/stuttgart-things/helm/infra/crds/cert-manager \
+--server-side=true \
+--kube-config file://~/.kube/ana-config -vv
 ```
 
 ### Filtering with Additional Commands
