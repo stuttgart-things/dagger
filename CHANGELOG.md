@@ -1,3 +1,10 @@
+# [0.66.0](https://github.com/stuttgart-things/dagger/compare/v0.65.0...v0.66.0) (2026-01-02)
+
+
+### Features
+
+* feat/add-kubeconfig-file-creation ([ef93898](https://github.com/stuttgart-things/dagger/commit/ef938987163f4b4905399ff9c39eee9d241e256f))
+
 # [0.65.0](https://github.com/stuttgart-things/dagger/compare/v0.64.0...v0.65.0) (2026-01-02)
 
 
