@@ -1,3 +1,10 @@
+# [0.67.0](https://github.com/stuttgart-things/dagger/compare/v0.66.0...v0.67.0) (2026-01-02)
+
+
+### Features
+
+* feat/add-jq-yq-kubernetes ([4d9409f](https://github.com/stuttgart-things/dagger/commit/4d9409f750782c54978b87515d4800f4d909b6ee))
+
 # [0.66.0](https://github.com/stuttgart-things/dagger/compare/v0.65.0...v0.66.0) (2026-01-02)
 
 
