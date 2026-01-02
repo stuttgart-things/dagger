@@ -1,3 +1,10 @@
+# [0.68.0](https://github.com/stuttgart-things/dagger/compare/v0.67.0...v0.68.0) (2026-01-02)
+
+
+### Features
+
+* feat/add-get-resource-status ([5ebaecd](https://github.com/stuttgart-things/dagger/commit/5ebaecd82889dc072149c9401924f04c18a34aca))
+
 # [0.67.0](https://github.com/stuttgart-things/dagger/compare/v0.66.0...v0.67.0) (2026-01-02)
 
 
