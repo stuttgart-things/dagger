@@ -72,7 +72,8 @@ terminationGracePeriod: 120
 EOF
 
 dagger call -m kcl run \
---oci-source ghcr.io/stuttgart-things/harvester-vm:0.1.0 \ --parameters-file params.yaml \
+--oci-source ghcr.io/stuttgart-things/harvester-vm:0.1.0 \
+--parameters-file params.yaml \
 --parameters "userdata=${CLOUDCFG_B64}" \
 export --path /tmp/harvester-dev5.yaml
 
@@ -100,7 +101,8 @@ dagger call -m kcl convert-crd \
 ```bash
 # Push package to ghcr
 dagger call -m kcl push-module \
---src /home/sthings/projects/kcl/models/flux-source \ --module-name flux-source  \
+--src /home/sthings/projects/kcl/models/flux-source \
+--module-name flux-source  \
 --user env:GITHUB_USER  \
 --password env:GITHUB_TOKEN  \
 --address oci://ghcr.io/stuttgart-things

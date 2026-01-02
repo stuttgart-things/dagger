@@ -86,7 +86,28 @@ func mapToParameterString(params map[string]string) string {
 }
 
 // Run executes KCL code from a provided directory or OCI source with parameters
-// Returns a Dagger file containing the rendered output
+// Supports three methods of passing parameters (in order of precedence):
+// 1. CLI parameters (--parameters flag) - highest priority
+// 2. Parameters file (--parametersFile) - middle priority
+// 3. Default values in KCL code - lowest priority
+//
+// Example usage with inline parameters:
+//
+//	dagger call -m kcl run --ociSource ghcr.io/stuttgart-things/kcl-ansible \
+//	  --parameters 'pipelineRunName=run-test,namespace=tekton-ci'
+//
+// Example usage with parameters file:
+//
+//	dagger call -m kcl run --ociSource ghcr.io/stuttgart-things/kcl-ansible \
+//	  --parametersFile ./params.yaml
+//
+// Example usage with both (CLI parameters override file values):
+//
+//	dagger call -m kcl run --ociSource ghcr.io/stuttgart-things/kcl-ansible \
+//	  --parametersFile ./params.yaml \
+//	  --parameters 'namespace=custom-namespace'
+//
+// Returns a Dagger file containing the rendered output (YAML by default)
 func (m *Kcl) Run(
 	ctx context.Context,
 	// Local source directory (optional if using OCI source)
@@ -96,11 +117,17 @@ func (m *Kcl) Run(
 	// +optional
 	ociSource string,
 	// KCL parameters as comma-separated key=value pairs
-	// Example: "name=my-flux,namespace=flux-system,version=2.4"
+	// For complex JSON structures, you can use JSON syntax
+	// Example: "name=my-flux,namespace=flux-system,storage={size:20Mi,mode:ReadWriteOnce}"
 	// Takes precedence over parametersFile
 	// +optional
 	parameters string,
-	// YAML file containing KCL parameters as key-value pairs
+	// YAML/JSON file containing KCL parameters as key-value pairs
+	// File format example:
+	//   pipelineRunName: run-ansible-test-6
+	//   namespace: tekton-ci
+	//   ansiblePlaybooks:
+	//     - sthings.baseos.setup
 	// Parameters from --parameters flag override values from this file
 	// +optional
 	parametersFile *dagger.File,
@@ -205,7 +232,8 @@ func (m *Kcl) Run(
     | sed 's/^- /---\n/' \
     | sed '1d' \
     | sed 's/^  //' \
-    | awk 'NR==1{print "---"} {print}' \
+    | sed '/^[[:space:]]*$/d' \
+    | awk 'NR==1{print "---"} NR>1' \
     > /output-processed.yaml
 `
 		ctr = ctr.WithExec([]string{"sh", "-c", postProcess})
