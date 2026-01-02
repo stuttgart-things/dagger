@@ -18,6 +18,8 @@ func (m *Kubernetes) container() *dagger.Container {
 			"add",
 			"--no-cache",
 			"wget",
+			"yq",
+			"jq",
 			"curl",
 			"git",
 			"kubectl",
