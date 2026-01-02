@@ -14,6 +14,17 @@ A Dagger module for executing kubectl commands in a containerized environment wi
 
 ### Basic Operations
 
+#### CREATE KUBECONFIG FILE AS SECRET ON A CLUSTER
+
+```bash
+# USECASE = CROSSPLANE
+dagger call -m kubernetes create-kubeconfig-secret \
+--namespace crossplane-system \
+--secret-name dev \
+--to-be-created-kubeconfig-secret file:///home/sthings/.kube/kind-dev \
+--kube-config-cluster file:///home/sthings/.kube/xplane
+```
+
 #### Get all pods across all namespaces
 ```bash
 dagger call -m kubernetes command \
