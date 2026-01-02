@@ -27,7 +27,8 @@ func (m *Kubernetes) Command(
 	kubeConfigPath := "/root/.kube/config"
 
 	// Build kubectl command arguments
-	args := []string{"kubectl", operation, resourceKind}
+	parts := strings.Fields(resourceKind)
+	args := append([]string{"kubectl", operation}, parts...)
 
 	// Handle namespace options:
 	// - Empty string: no namespace flag (for cluster-wide resources)
