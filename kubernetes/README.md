@@ -17,6 +17,15 @@ A Dagger module for executing kubectl commands in a containerized environment wi
 #### CREATE KUBECONFIG FILE AS SECRET ON A CLUSTER
 
 ```bash
+dagger call -m kubernetes check-resource-status \
+--kind="secret" \
+--name="pat" \
+--namespace="crossplane-system" \
+--kube-config file:///home/sthings/.kube/ana-dev \
+--progress plain -vv
+```
+
+```bash
 # USECASE = CROSSPLANE
 dagger call -m kubernetes create-kubeconfig-secret \
 --namespace crossplane-system \
