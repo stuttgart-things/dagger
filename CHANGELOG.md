@@ -1,3 +1,10 @@
+# [0.65.0](https://github.com/stuttgart-things/dagger/compare/v0.64.0...v0.65.0) (2026-01-02)
+
+
+### Features
+
+* fix/kcl-run-format ([3aae30c](https://github.com/stuttgart-things/dagger/commit/3aae30c38b6d9a51f41717c839c7f13a075324cf))
+
 # [0.64.0](https://github.com/stuttgart-things/dagger/compare/v0.63.0...v0.64.0) (2025-12-29)
 
 
