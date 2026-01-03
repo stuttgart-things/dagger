@@ -281,13 +281,25 @@ tasks:
         --content {{ .TEST_HUGO_CONTENT }} \
         export \
         --path {{ .OUTPUT_HUGO_STATIC_CONTENT }}  -vvv
+      - |
+        # TEST MARKDOWN MERGE
+        dagger call -m {{ .MODULE }} \
+        merge-markdowns \
+        --src={{ .TEST_HUGO_MERGE_DIR }} \
+        --presentation-file={{ .TEST_HUGO_MERGE_PRESENTATION }} \
+        export --path={{ .OUTPUT_HUGO_MERGE }}
+        echo "✅ Merged markdown: {{ .OUTPUT_HUGO_MERGE }}"
+        cat {{ .OUTPUT_HUGO_MERGE }}
     vars:
       NAME: presentation
       MODULE: hugo
       TEST_HUGO_CONFIG: tests/hugo/hugo.toml
       TEST_HUGO_CONTENT: tests/hugo/content
+      TEST_HUGO_MERGE_DIR: tests/hugo/merge
+      TEST_HUGO_MERGE_PRESENTATION: tests/hugo/merge/presentation.yaml
       OUTPUT_HUGO_FOLDER: /tmp/dagger/hugo
       OUTPUT_HUGO_STATIC_CONTENT: /tmp/dagger/hugo/{{ .NAME }}/static
+      OUTPUT_HUGO_MERGE: /tmp/merged.md
 
   test-crossplane:
     desc: Test crossplame functions

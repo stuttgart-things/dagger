@@ -1,0 +1,8 @@
+---
+slides:
+  agenda:
+    order: 00
+    file: 01_agenda.md
+  intro:
+    order: 01
+    file: https://raw.githubusercontent.com/stuttgart-things/docs/refs/heads/main/presentations/idp/home/intro.md
