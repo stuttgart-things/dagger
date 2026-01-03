@@ -22,6 +22,9 @@ func (m *Kubernetes) Command(
 	kubeConfig *dagger.Secret,
 	// +optional
 	additionalCommand string,
+	// +optional
+	// +default=false
+	ignoreErrors bool,
 ) (string, error) {
 
 	kubeConfigPath := "/root/.kube/config"
@@ -49,19 +52,30 @@ func (m *Kubernetes) Command(
 	// If additional command is provided, pipe kubectl output through it
 	if additionalCommand != "" {
 		// Build a shell command that pipes kubectl through the additional command
-		fullCommand := fmt.Sprintf("%s | %s", strings.Join(args, " "), additionalCommand)
+		// Redirect stderr to stdout so we capture error messages
+		// Use '|| true' to ignore exit codes and still get the output
+		fullCommand := fmt.Sprintf("(%s 2>&1) || true; %s", strings.Join(args, " "), additionalCommand)
 		kubectlContainer = kubectlContainer.WithExec([]string{"sh", "-c", fullCommand})
 	} else {
-		// Execute kubectl command directly
-		kubectlContainer = kubectlContainer.WithExec(args)
+		// Execute kubectl command directly through sh to capture stderr in stdout
+		// Use '|| true' to ignore exit codes, so we can always capture the output
+		fullCommand := fmt.Sprintf("(%s 2>&1) || true", strings.Join(args, " "))
+		kubectlContainer = kubectlContainer.WithExec([]string{"sh", "-c", fullCommand})
 	}
 
 	// Run the command and capture output
 	out, err := kubectlContainer.Stdout(ctx)
+
 	if err != nil {
-		// also capture stderr for debugging
-		stderr, _ := kubectlContainer.Stderr(ctx)
-		return "", fmt.Errorf("kubectl error: %w\nstderr: %s", err, stderr)
+		if ignoreErrors {
+			// If ignoring errors, return output with no error
+			fmt.Printf("kubectl warning (ignoring error): %v\n", err)
+			return out, nil
+		}
+
+		// Return the error but include the output for the caller to inspect
+		// (The CheckResourceStatus function needs to check for "not found" in the output)
+		return out, fmt.Errorf("kubectl error: %w", err)
 	}
 
 	return out, nil

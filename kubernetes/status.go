@@ -17,24 +17,26 @@ func (m *Kubernetes) CheckResourceStatus(
 	// Combine kind and name as kubectl expects
 	resource := fmt.Sprintf("%s %s", kind, name)
 
-	_, err := m.Command(
+	out, err := m.Command(
 		ctx,
 		"get",
 		resource,
 		namespace,
 		kubeConfig,
-		"", // no additionalCommand needed
+		"",
+		false, // Don't ignore errors, we need to detect if resource doesn't exist
 	)
 
+	// Check if the output contains "not found" - this means the resource doesn't exist
+	if strings.Contains(out, "not found") || strings.Contains(out, "NotFound") {
+		return false, nil
+	}
+
+	// If there's an error but no "not found" message, it's a different kind of error
 	if err != nil {
-		// kubectl returns an error if resource does not exist
-		// we can check stderr or simply treat any error as "not found"
-		// optional: you could inspect err to differentiate "not found" vs other errors
-		if strings.Contains(err.Error(), "not found") {
-			return false, nil
-		}
 		return false, err
 	}
 
+	// If we got here with no error and no "not found", the resource exists
 	return true, nil
 }
