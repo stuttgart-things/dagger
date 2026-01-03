@@ -91,6 +91,37 @@ dagger call -m hugo serve \
   up --progress plain
 ```
 
+### Merge Markdowns
+
+```bash
+dagger call -m hugo merge-markdowns \
+  --src presentations/ \
+  --presentation-file presentation.yaml \
+  export --path /tmp/merged.md
+```
+
+This function reads a YAML presentation structure and merges multiple markdown files into a single output file. The YAML format should be:
+
+```yaml
+---
+slides:
+  agenda:
+    order: 00
+    file: 01_agenda.md
+  intro:
+    order: 01
+    file: https://raw.githubusercontent.com/example/docs/main/intro.md
+  content:
+    order: 02
+    file: 02_content.md
+```
+
+Features:
+- Supports both local files and remote URLs (http/https)
+- Local files are resolved relative to the `--src` directory
+- Slides are automatically sorted by `order` field
+- Output is a single merged markdown file with `---` separators between slides
+
 ### MinIO Integration
 
 ```bash
