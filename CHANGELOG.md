@@ -1,3 +1,10 @@
+# [0.69.0](https://github.com/stuttgart-things/dagger/compare/v0.68.0...v0.69.0) (2026-01-03)
+
+
+### Features
+
+* feat/add-mardown-merge ([d69e6db](https://github.com/stuttgart-things/dagger/commit/d69e6dbebdc3af06842add829117ea27236a4f9f))
+
 # [0.68.0](https://github.com/stuttgart-things/dagger/compare/v0.67.0...v0.68.0) (2026-01-02)
 
 
