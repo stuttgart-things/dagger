@@ -1,3 +1,10 @@
+# [0.70.0](https://github.com/stuttgart-things/dagger/compare/v0.69.0...v0.70.0) (2026-01-03)
+
+
+### Features
+
+* fix/kubernetes-command-failed ([ab4cbd4](https://github.com/stuttgart-things/dagger/commit/ab4cbd438cc94fac3855072864cb188cf5ec4344))
+
 # [0.69.0](https://github.com/stuttgart-things/dagger/compare/v0.68.0...v0.69.0) (2026-01-03)
 
 
