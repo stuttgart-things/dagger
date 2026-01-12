@@ -20,8 +20,9 @@ type GoBuildOpts struct {
 	Arch        string
 	GoMainFile  string
 	BinName     string
-	Ldflags     string // Add this field for linker flags
+	Ldflags     string
 	PackageName string
+	Variant     string
 }
 
 func New(
@@ -32,8 +33,11 @@ func New(
 	// +optional
 	koContainer *dagger.Container,
 	// +optional
-	// +default="1.23.6"
+	// +default="1.25.5"
 	goLangVersion string,
+	// +optional
+	// +default="alpine"
+	variant string,
 	// +defaultPath="/"
 	src *dagger.Directory,
 
@@ -43,7 +47,7 @@ func New(
 	if goLangContainer != nil {
 		golang.GoLangContainer = goLangContainer
 	} else {
-		golang.GoLangContainer = golang.GetGoLangContainer(goLangVersion)
+		golang.GoLangContainer = golang.GetGoLangContainer(goLangVersion, variant)
 	}
 
 	if koContainer != nil {
