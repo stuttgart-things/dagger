@@ -1,3 +1,10 @@
+# [0.71.0](https://github.com/stuttgart-things/dagger/compare/v0.70.0...v0.71.0) (2026-01-12)
+
+
+### Features
+
+* feat/update-go-,odule ([b542aeb](https://github.com/stuttgart-things/dagger/commit/b542aebebc1879cfcc433524862fc8ea869cc61c))
+
 # [0.70.0](https://github.com/stuttgart-things/dagger/compare/v0.69.0...v0.70.0) (2026-01-03)
 
 
