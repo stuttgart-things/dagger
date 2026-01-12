@@ -4,6 +4,7 @@ import (
 	"context"
 	"dagger/go/internal/dagger"
 	"fmt"
+	"path/filepath"
 	"strings"
 )
 
@@ -14,14 +15,16 @@ func (m *Go) build(
 ) *dagger.Directory {
 	// MOUNT CLONED REPOSITORY INTO `GOLANG` IMAGE
 	golang := m.
-		GetGoLangContainer(opts.GoVersion).
+		GetGoLangContainer(opts.GoVersion, opts.Variant).
 		WithDirectory("/src", src).
-		WithWorkdir("/src")
+		WithWorkdir("/src").
+		WithEnvVariable("CGO_ENABLED", "0")
 
 	fmt.Println("DIR", src)
 
 	// DEFINE THE APPLICATION BUILD COMMAND
-	path := "build/"
+	path := "build"
+	output := filepath.Join(path, opts.BinName)
 	buildCmd := []string{
 		"env",
 		"GOOS=" + opts.Os,
@@ -29,9 +32,8 @@ func (m *Go) build(
 		"go",
 		"build",
 		"-o",
-		path + "/" + opts.BinName,
+		output,
 	}
-
 	// Add ldflags if provided
 	if opts.Ldflags != "" {
 		buildCmd = append(buildCmd, "-ldflags", formatLdflags(opts.Ldflags, opts.PackageName))
@@ -41,6 +43,7 @@ func (m *Go) build(
 	buildCmd = append(buildCmd, opts.GoMainFile)
 
 	// Execute the build command
+	golang = golang.WithExec([]string{"mkdir", "-p", "build"})
 	golang = golang.WithExec(buildCmd)
 
 	// GET REFERENCE TO BUILD OUTPUT DIRECTORY IN CONTAINER
@@ -53,7 +56,7 @@ func (m *Go) BuildBinary(
 	ctx context.Context,
 	src *dagger.Directory,
 	// +optional
-	// +default="1.25.4"
+	// +default="1.25.5"
 	goVersion string,
 	// +optional
 	// +default="linux"
@@ -72,6 +75,9 @@ func (m *Go) BuildBinary(
 	// +optional
 	// +default=""
 	packageName string,
+	// +optional
+	// +default="alpine"
+	variant string,
 ) *dagger.Directory {
 	// Call the core build function with the struct
 	return m.build(ctx, src, GoBuildOpts{
@@ -82,6 +88,7 @@ func (m *Go) BuildBinary(
 		BinName:     binName,
 		Ldflags:     ldflags,
 		PackageName: packageName,
+		Variant:     variant,
 	})
 }
 
