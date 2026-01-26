@@ -53,6 +53,15 @@ dagger call -m go ko-build \
   --progress plain -vv
 ```
 
+```bash
+# Build and push w/o auth
+dagger call -m go ko-build \
+  --src tests/go/calculator/ \
+  --push=true \
+  --repo=ttl.sh/test-calc:1h \
+  --progress plain
+```
+
 ### Release Binaries to GitHub
 
 ```bash
