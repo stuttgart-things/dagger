@@ -1,3 +1,10 @@
+# [0.72.0](https://github.com/stuttgart-things/dagger/compare/v0.71.0...v0.72.0) (2026-01-26)
+
+
+### Features
+
+* feat/add-slide-ordering ([aa33935](https://github.com/stuttgart-things/dagger/commit/aa3393593f04d4ad49010751abd7097d5b701608))
+
 # [0.71.0](https://github.com/stuttgart-things/dagger/compare/v0.70.0...v0.71.0) (2026-01-12)
 
 
