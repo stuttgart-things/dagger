@@ -37,9 +37,11 @@ func (m *Go) KoBuild(
 		WithEnvVariable("GIT_COMMIT", "dev")
 
 	if push == "true" {
-		ctr = ctr.
-			WithEnvVariable("KO_DOCKER_REPO", repo).
-			WithSecretVariable(tokenName, token)
+		ctr = ctr.WithEnvVariable("KO_DOCKER_REPO", repo)
+		// Only add secret if provided (for authenticated registries)
+		if token != nil {
+			ctr = ctr.WithSecretVariable(tokenName, token)
+		}
 	}
 
 	// Add OCI layout path when not pushing
