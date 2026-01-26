@@ -6,23 +6,27 @@ import (
 	"fmt"
 )
 
-func (m *Sops) DecryptSops(
+// Decrypt decrypts a SOPS-encrypted file using an AGE key.
+// Returns the decrypted file.
+func (m *Sops) Decrypt(
 	ctx context.Context,
 	sopsKey *dagger.Secret,
 	encryptedFile *dagger.File,
-) (string, error) {
+) (*dagger.File, error) {
 	ctr, err := m.container(ctx)
 	if err != nil {
-		return "", fmt.Errorf("container init failed: %w", err)
+		return nil, fmt.Errorf("container init failed: %w", err)
 	}
 
 	workDir := "/src"
 	fileName, err := encryptedFile.Name(ctx)
 	if err != nil {
-		return "", fmt.Errorf("failed to get file name: %w", err)
+		return nil, fmt.Errorf("failed to get file name: %w", err)
 	}
 
-	// Mount encrypted file into container using string concatenation
+	decryptedFile := "decrypted-" + fileName
+
+	// Mount encrypted file into container
 	ctr = ctr.
 		WithMountedFile(workDir+"/"+fileName, encryptedFile).
 		WithWorkdir(workDir)
@@ -32,14 +36,10 @@ func (m *Sops) DecryptSops(
 		ctr = ctr.WithSecretVariable("SOPS_AGE_KEY", sopsKey)
 	}
 
-	// Decrypt file
-	out, err := ctr.
-		WithEntrypoint([]string{}). // Clear terraform entrypoint
-		WithExec([]string{"sops", "-d", fileName}).
-		Stdout(ctx)
-	if err != nil {
-		return "", fmt.Errorf("sops decryption failed: %w", err)
-	}
+	// Decrypt file to output file
+	ctr = ctr.
+		WithEntrypoint([]string{}).
+		WithExec([]string{"sops", "-d", "--output", decryptedFile, fileName})
 
-	return out, nil
+	return ctr.File(decryptedFile), nil
 }

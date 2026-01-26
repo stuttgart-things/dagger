@@ -1,36 +1,50 @@
 # SOPS Dagger Module
 
-This module provides Dagger functions for SOPS (Secrets OPerationS) encryption and decryption operations with age, GPG, and cloud KMS support.
+This module provides Dagger functions for SOPS (Secrets OPerationS) encryption and decryption operations with AGE key support.
 
 ## Features
 
+- ✅ AGE key generation
+- ✅ SOPS config generation
 - ✅ Secret encryption/decryption
-- ✅ Age key support
-- ✅ GPG key integration
-- ✅ Cloud KMS support (AWS, GCP, Azure)
-- ✅ Kubernetes secrets management
+- ✅ AGE key support
 - ✅ Multiple file format support (YAML, JSON, ENV)
 
 ## Prerequisites
 
 - Dagger CLI installed
-- SOPS CLI available
-- Age keys or GPG keys configured
-- Cloud credentials (for KMS operations)
+- AGE keys configured (or generate with this module)
 
 ## Quick Start
 
-### Encrypt File with Age
+### Generate AGE Key
 
 ```bash
-# Generate age key first
-age-keygen -o age-key.txt
+# Generate age key pair
+dagger call -m sops generate-age-key \
+  export --path=./age-key.txt
+```
 
+### Generate SOPS Config
+
+```bash
+# Generate .sops.yaml config
+export AGE_KEY=$(grep "public key" age-key.txt | awk '{print $NF}')
+dagger call -m sops generate-sops-config \
+  --age-public-key "$AGE_KEY" \
+  --file-extensions "yaml,json,log" \
+  export --path=./.sops.yaml
+```
+
+### Encrypt File with AGE
+
+```bash
 # Encrypt file with age
-export AGE_KEY=$(cat age-key.txt)
-dagger call -m sops encrypt-file \
-  --src ./secrets.yaml \
+export AGE_KEY=$(grep "public key" age-key.txt | awk '{print $NF}')
+dagger call -m sops encrypt \
   --age-key env:AGE_KEY \
+  --plaintext-file ./secrets.yaml \
+  --file-extension yaml \
   export --path=./secrets.enc.yaml
 ```
 
@@ -38,71 +52,78 @@ dagger call -m sops encrypt-file \
 
 ```bash
 # Decrypt with age key
-export AGE_KEY=$(cat age-key.txt)
-dagger call -m sops decrypt-file \
-  --src ./secrets.enc.yaml \
-  --age-key env:AGE_KEY \
+export SOPS_KEY=$(cat age-key.txt)
+dagger call -m sops decrypt \
+  --sops-key env:SOPS_KEY \
+  --encrypted-file ./secrets.enc.yaml \
   export --path=./secrets.dec.yaml
-```
-
-### Kubernetes Secrets
-
-```bash
-# Encrypt Kubernetes secret
-dagger call -m sops encrypt-k8s-secret \
-  --secret-name my-secret \
-  --namespace default \
-  --data-file ./secret-data.yaml \
-  --age-key env:AGE_KEY \
-  export --path=./secret.enc.yaml
 ```
 
 ## API Reference
 
-### File Operations
+### GenerateAgeKey
+
+Generates a new AGE key pair using age-keygen.
 
 ```bash
-# Encrypt file with multiple keys
-dagger call -m sops encrypt-file \
-  --src ./config.yaml \
-  --age-key env:AGE_KEY \
-  --gpg-fingerprint "1234567890ABCDEF" \ # pragma: allowlist secret
-  export --path=./config.enc.yaml
+dagger call -m sops generate-age-key \
+  export --path=./age-key.txt
+```
 
-# Decrypt file
-dagger call -m sops decrypt-file \
-  --src ./config.enc.yaml \
+### GenerateSopsConfig
+
+Generates a .sops.yaml configuration file with creation rules for the given AGE key.
+
+```bash
+# Generate config for yaml and json files (default)
+dagger call -m sops generate-sops-config \
+  --age-public-key "age19vgzvmpt9tdlcsu8rzaacj397yz8gguz38nsmuy6eeelt5vjsyms542xtm" \ # pragma: allowlist secret
+  export --path=./.sops.yaml
+
+# Generate config with custom file extensions
+dagger call -m sops generate-sops-config \
+  --age-public-key "age19vgzvmpt9tdlcsu8rzaacj397yz8gguz38nsmuy6eeelt5vjsyms542xtm" \ # pragma: allowlist secret
+  --file-extensions "yaml,json,env,log" \
+  export --path=./.sops.yaml
+```
+
+**Parameters:**
+- `--age-public-key`: AGE public key (required)
+- `--file-extensions`: Comma-separated list of extensions (default: "yaml,json")
+
+### Encrypt
+
+Encrypts a plaintext file using SOPS with an AGE key.
+
+```bash
+dagger call -m sops encrypt \
   --age-key env:AGE_KEY \
+  --plaintext-file ./config.yaml \
+  --file-extension yaml \
+  --sops-config ./.sops.yaml \
+  export --path=./config.enc.yaml
+```
+
+**Parameters:**
+- `--age-key`: AGE public key (required)
+- `--plaintext-file`: File to encrypt (required)
+- `--file-extension`: Format - yaml, json, env (default: yaml)
+- `--sops-config`: Optional .sops.yaml config file
+
+### Decrypt
+
+Decrypts a SOPS-encrypted file using an AGE key.
+
+```bash
+dagger call -m sops decrypt \
+  --sops-key env:SOPS_KEY \
+  --encrypted-file ./config.enc.yaml \
   export --path=./config.dec.yaml
 ```
 
-### Key Management
-
-```bash
-# Generate age key pair
-dagger call -m sops generate-age-key \
-  export --path=./age-key.txt
-
-# Import GPG key
-dagger call -m sops import-gpg-key \
-  --gpg-key-file ./my-key.asc
-```
-
-### Cloud KMS Integration
-
-```bash
-# Encrypt with AWS KMS
-dagger call -m sops encrypt-file \
-  --src ./secrets.yaml \
-  --aws-kms-key "arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012" \
-  export --path=./secrets.enc.yaml
-
-# Encrypt with GCP KMS
-dagger call -m sops encrypt-file \
-  --src ./secrets.yaml \
-  --gcp-kms-key "projects/my-project/locations/global/keyRings/my-ring/cryptoKeys/my-key" \
-  export --path=./secrets.enc.yaml
-```
+**Parameters:**
+- `--sops-key`: AGE private key (required)
+- `--encrypted-file`: Encrypted file to decrypt (required)
 
 ## Configuration
 
@@ -110,49 +131,24 @@ SOPS uses `.sops.yaml` configuration files for encryption rules:
 
 ```yaml
 creation_rules:
-  - path_regex: \.dev\.yaml$
+  - path_regex: \.yaml$
     age: age1234567890abcdef...
-  - path_regex: \.prod\.yaml$
-    kms: arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012
-  - path_regex: \.json$
-    pgp: "1234567890ABCDEF1234567890ABCDEF12345678" # pragma: allowlist secret
 ```
 
-## Key Types
+## AGE Keys
 
-### Age Keys
 - **Pros**: Modern, simple, fast
 - **Use Case**: Local development, CI/CD
 - **Format**: `age1234567890abcdef...`
-
-### GPG Keys
-- **Pros**: Established, web of trust
-- **Use Case**: Team environments, existing GPG infrastructure
-- **Format**: Fingerprint `1234567890ABCDEF`
-
-### Cloud KMS
-- **Pros**: Centralized, auditable, HSM-backed
-- **Use Case**: Production, compliance requirements
-- **Providers**: AWS KMS, GCP KMS, Azure Key Vault
 
 ## Security Best Practices
 
 1. **Key Rotation**: Regularly rotate encryption keys
 2. **Access Control**: Limit key access to necessary personnel
 3. **Backup**: Securely backup decryption keys
-4. **Audit**: Monitor key usage and file access
-5. **Environment Separation**: Use different keys per environment
-
-## Examples
-
-See the [main README](../README.md#sops) for detailed usage examples.
+4. **Environment Separation**: Use different keys per environment
 
 ## Resources
 
-- [SOPS Documentation](https://github.com/mozilla/sops)
+- [SOPS Documentation](https://github.com/getsops/sops)
 - [Age Encryption](https://age-encryption.org/)
-- [GPG Guide](https://gnupg.org/documentation/)
-- [AWS KMS](https://aws.amazon.com/kms/)
-- [GCP KMS](https://cloud.google.com/kms)
-
-<!-- pragma: allowlist secret -->
