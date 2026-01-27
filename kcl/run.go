@@ -8,6 +8,7 @@ import (
 
 // Helper function to split comma-separated parameters
 // Handles array literals like accessModes=["ReadWriteMany"]
+// and object literals like extraEnvVars={"KEY":"value"}
 func splitParameters(params string) []string {
 	if params == "" {
 		return []string{}
@@ -15,18 +16,18 @@ func splitParameters(params string) []string {
 
 	var result []string
 	var current strings.Builder
-	inBrackets := 0
+	depth := 0 // Track nested brackets and braces
 
 	for i, ch := range params {
 		switch ch {
-		case '[':
-			inBrackets++
+		case '[', '{':
+			depth++
 			current.WriteRune(ch)
-		case ']':
-			inBrackets--
+		case ']', '}':
+			depth--
 			current.WriteRune(ch)
 		case ',':
-			if inBrackets == 0 {
+			if depth == 0 {
 				// Split here
 				trimmed := strings.TrimSpace(current.String())
 				if trimmed != "" {
@@ -34,7 +35,7 @@ func splitParameters(params string) []string {
 				}
 				current.Reset()
 			} else {
-				// Keep comma inside brackets
+				// Keep comma inside brackets/braces
 				current.WriteRune(ch)
 			}
 		default:
@@ -182,7 +183,8 @@ func (m *Kcl) Run(
 	mergedParams := ""
 	if parametersFile != nil {
 		// Read parameters from file and convert to comma-separated format
-		readParamsCmd := `yq eval -o=json /params.yaml | jq -r 'to_entries | map("\(.key)=\(.value)") | join(",")'`
+		// Use tostring for values and gsub to escape newlines in multiline strings
+		readParamsCmd := `yq eval -o=json /params.yaml | jq -r 'to_entries | map(.key + "=" + ((.value | tostring) | gsub("\n"; "\\n"))) | join(",")'`
 		mergedParams, _ = ctr.WithExec([]string{"sh", "-c", readParamsCmd}).Stdout(ctx)
 		mergedParams = strings.TrimSpace(mergedParams)
 	}

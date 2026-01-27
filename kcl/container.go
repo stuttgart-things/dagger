@@ -12,7 +12,8 @@ func (m *Kcl) container() *dagger.Container {
 
 	return dag.Container().
 		From(m.BaseImage).
-		WithExec([]string{"sh", "-c", "apt-get update && apt-get install -y --no-install-recommends yq jq curl && rm -rf /var/lib/apt/lists/*"})
+		WithExec([]string{"sh", "-c", "apt-get update && apt-get install -y --no-install-recommends jq curl && rm -rf /var/lib/apt/lists/*"}).
+		WithExec([]string{"sh", "-c", "curl -sL https://github.com/mikefarah/yq/releases/download/v4.44.1/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq"})
 }
 
 // ValidateKcl validates KCL configuration files by compiling them
