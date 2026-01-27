@@ -1,3 +1,10 @@
+# [0.74.0](https://github.com/stuttgart-things/dagger/compare/v0.73.0...v0.74.0) (2026-01-27)
+
+
+### Features
+
+* fix/repair-kcl-params ([a77ebf6](https://github.com/stuttgart-things/dagger/commit/a77ebf640c296e47f89d426e9ac2c294690c6fe7))
+
 # [0.73.0](https://github.com/stuttgart-things/dagger/compare/v0.72.0...v0.73.0) (2026-01-26)
 
 
