@@ -1,0 +1,16 @@
+apiVersion: resources.stuttgart-things.com/v1alpha1
+kind: VolumeClaim
+metadata:
+  name: simple-storage
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  annotations:
+    description: A simple persistent volume claim for application data
+  namespace: default
+  providerConfigRef: default-k8s
+  pvcName: app-data
+  storage: '20Gi'
+  storageClassName: standard
+  volumeMode: Filesystem
