@@ -235,7 +235,7 @@ func (m *Kcl) Run(
     | sed '1d' \
     | sed 's/^  //' \
     | sed '/^[[:space:]]*$/d' \
-    | awk 'NR==1{print "---"} NR>1' \
+    | awk 'NR==1{print "---"} 1' \
     > /output-processed.yaml
 `
 		ctr = ctr.WithExec([]string{"sh", "-c", postProcess})
