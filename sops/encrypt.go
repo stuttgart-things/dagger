@@ -11,8 +11,11 @@ func (m *Sops) Encrypt(
 	ctx context.Context,
 	ageKey *dagger.Secret,
 	plaintextFile *dagger.File,
+	// +optional
+	// +default="yaml"
 	fileExtension string, // e.g., "yaml", "json", "env"
-	sopsConfig *dagger.File, // Optional: ~/.sops.yaml config file
+	// +optional
+	sopsConfig *dagger.File, // ~/.sops.yaml config file
 ) (*dagger.File, error) {
 	// Set default file extension to "yaml" if none provided
 	if fileExtension == "" {
