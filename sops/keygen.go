@@ -16,10 +16,18 @@ func (m *Sops) GenerateAgeKey(
 		return nil, fmt.Errorf("container init failed: %w", err)
 	}
 
-	ctr = ctr.
-		WithExec([]string{"apk", "add", "--no-cache", "age"}).
-		WithEntrypoint([]string{}).
-		WithExec([]string{"age-keygen", "-o", "/tmp/age-key.txt"})
+	keyFile := "/tmp/age-key.txt"
 
-	return ctr.File("/tmp/age-key.txt"), nil
+	ctr = ctr.
+		WithEntrypoint([]string{}).
+		WithExec([]string{"apk", "add", "--no-cache", "age"}).
+		WithExec([]string{"age-keygen", "-o", keyFile})
+
+	// Sync to validate execution succeeded
+	_, err = ctr.Sync(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate age key: %w", err)
+	}
+
+	return ctr.File(keyFile), nil
 }
