@@ -1,3 +1,10 @@
+# [0.75.0](https://github.com/stuttgart-things/dagger/compare/v0.74.0...v0.75.0) (2026-01-30)
+
+
+### Features
+
+* fix/update-sops-module ([ea1913b](https://github.com/stuttgart-things/dagger/commit/ea1913b06608c4d87eb8256b3166b4ff7153d9eb))
+
 # [0.74.0](https://github.com/stuttgart-things/dagger/compare/v0.73.0...v0.74.0) (2026-01-27)
 
 
