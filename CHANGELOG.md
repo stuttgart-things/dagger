@@ -1,3 +1,10 @@
+# [0.76.0](https://github.com/stuttgart-things/dagger/compare/v0.75.0...v0.76.0) (2026-01-30)
+
+
+### Features
+
+* feat/fix-kcl-render ([16d36e3](https://github.com/stuttgart-things/dagger/commit/16d36e334c099f8afa9a9bb6bcd8601191eba885))
+
 # [0.75.0](https://github.com/stuttgart-things/dagger/compare/v0.74.0...v0.75.0) (2026-01-30)
 
 
