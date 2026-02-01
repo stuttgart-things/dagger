@@ -1,3 +1,10 @@
+# [0.77.0](https://github.com/stuttgart-things/dagger/compare/v0.76.0...v0.77.0) (2026-02-01)
+
+
+### Features
+
+* feat/rework-crane-readme ([ce83a19](https://github.com/stuttgart-things/dagger/commit/ce83a19daa6aa731a09bcff38f3b7ffd449288ad))
+
 # [0.76.0](https://github.com/stuttgart-things/dagger/compare/v0.75.0...v0.76.0) (2026-01-30)
 
 
