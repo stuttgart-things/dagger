@@ -1,252 +1,162 @@
 # Crane Dagger Module
 
-This module provides Dagger functions for container registry operations using Google's crane CLI tool for efficient image management and manipulation.
+A Dagger module for copying container images between registries using Google's [crane](https://github.com/google/go-containerregistry/tree/main/cmd/crane) CLI.
 
 ## Features
 
-- ✅ Container image copying between registries
-- ✅ Image manifest inspection and manipulation
-- ✅ Multi-architecture image handling
-- ✅ Registry authentication support
-- ✅ Image layer analysis
-- ✅ Efficient image operations (no local Docker required)
+- Copy container images between registries
+- Support for source and target registry authentication
+- Platform-specific image copying
+- Insecure registry support (for self-hosted/air-gapped setups)
+- Docker config.json authentication support
+- No local Docker daemon required
 
 ## Prerequisites
 
 - Dagger CLI installed
 - Registry credentials (for private registries)
-- Network access to source and destination registries
 
-## Quick Start
+## Module Configuration
 
-### Copy Image Between Registries
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `base-image` | string | `cgr.dev/chainguard/wolfi-base:latest` | Base image for crane container |
+| `version` | string | `latest` | Crane version to install |
 
-```bash
-# Copy public image to private registry
-dagger call -m crane copy-image \
-  --source-image docker.io/nginx:latest \
-  --destination-image myregistry.com/nginx:latest \
-  --destination-auth env:REGISTRY_AUTH
-```
+## Copy Function
 
-### Inspect Image Manifest
+The `copy` function copies an image from a source registry to a target registry.
 
-```bash
-# Get image manifest
-dagger call -m crane inspect-image \
-  --image-ref alpine:latest \
-  export --path=./manifest.json
+### Parameters
 
-cat manifest.json | jq .
-```
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `source` | string | Yes | - | Source image reference (e.g., `nginx:latest`) |
+| `target` | string | Yes | - | Target image reference (e.g., `ghcr.io/user/nginx:latest`) |
+| `source-registry` | string | No | Auto-detected | Source registry URL |
+| `source-username` | string | No | - | Source registry username |
+| `source-password` | Secret | No | - | Source registry password |
+| `target-registry` | string | No | Auto-detected | Target registry URL |
+| `target-username` | string | No | - | Target registry username |
+| `target-password` | Secret | No | - | Target registry password |
+| `insecure` | bool | No | `false` | Allow insecure registries |
+| `platform` | string | No | `linux/amd64` | Target platform |
+| `docker-config-secret` | Secret | No | - | Docker config.json for authentication |
 
-### List Image Tags
+## Usage Examples
 
-```bash
-# List all tags for an image
-dagger call -m crane list-tags \
-  --repository docker.io/library/nginx \
-  export --path=./tags.txt
-
-cat tags.txt
-```
-
-## API Reference
-
-### Image Operations
+### Copy Public Image to Private Registry
 
 ```bash
-# Copy image with authentication
-dagger call -m crane copy-image \
-  --source-image source.registry.com/app:v1.0 \
-  --destination-image dest.registry.com/app:v1.0 \
-  --source-auth env:SOURCE_REGISTRY_AUTH \
-  --destination-auth env:DEST_REGISTRY_AUTH
-
-# Copy multi-arch image
-dagger call -m crane copy-image \
-  --source-image docker.io/library/golang:1.21 \
-  --destination-image myregistry.com/golang:1.21 \
-  --all-platforms true \
-  --destination-auth env:REGISTRY_AUTH
+# Copy nginx from Docker Hub to GitHub Container Registry
+dagger call -m crane copy \
+  --source nginx:latest \
+  --target ghcr.io/myorg/nginx:latest \
+  --target-username myusername \
+  --target-password env:GITHUB_TOKEN
 ```
 
-### Manifest Operations
+### Copy Between Private Registries
 
 ```bash
-# Get raw manifest
-dagger call -m crane get-manifest \
-  --image-ref nginx:alpine \
-  export --path=./manifest.json
-
-# Get config blob
-dagger call -m crane get-config \
-  --image-ref nginx:alpine \
-  export --path=./config.json
-
-# Get image digest
-dagger call -m crane get-digest \
-  --image-ref nginx:alpine
+# Copy with authentication on both ends
+dagger call -m crane copy \
+  --source harbor.internal.com/project/app:v1.0 \
+  --target ghcr.io/myorg/app:v1.0 \
+  --source-username admin \
+  --source-password env:HARBOR_PASSWORD \
+  --target-username myusername \
+  --target-password env:GITHUB_TOKEN
 ```
 
-### Registry Operations
+### Copy with Platform Selection
 
 ```bash
-# List repository tags
-dagger call -m crane list-tags \
-  --repository gcr.io/my-project/my-app \
-  --auth env:REGISTRY_AUTH \
-  export --path=./all-tags.txt
-
-# Delete image by tag
-dagger call -m crane delete-image \
-  --image-ref myregistry.com/app:old-version \
-  --auth env:REGISTRY_AUTH
-
-# Delete image by digest
-dagger call -m crane delete-image \
-  --image-ref myregistry.com/app@sha256:abc123... \
-  --auth env:REGISTRY_AUTH
+# Copy ARM64 variant
+dagger call -m crane copy \
+  --source nginx:latest \
+  --target ghcr.io/myorg/nginx:latest-arm64 \
+  --target-username myusername \
+  --target-password env:GITHUB_TOKEN \
+  --platform linux/arm64
 ```
 
-### Image Analysis
+### Copy with Insecure Registry
 
 ```bash
-# Analyze image layers
-dagger call -m crane analyze-layers \
-  --image-ref node:18-alpine \
-  export --path=./layers.json
-
-# Get image size
-dagger call -m crane image-size \
-  --image-ref python:3.11-slim
-
-# Compare image manifests
-dagger call -m crane compare-images \
-  --image-a ubuntu:20.04 \
-  --image-b ubuntu:22.04 \
-  export --path=./comparison.json
+# For self-signed certificates or HTTP registries
+dagger call -m crane copy \
+  --source my-internal-registry:5000/app:latest \
+  --target ghcr.io/myorg/app:latest \
+  --target-username myusername \
+  --target-password env:GITHUB_TOKEN \
+  --insecure
 ```
 
-## Authentication
-
-### Registry Authentication Methods
-
-**Docker Config JSON:**
-```bash
-# Use existing Docker config
-export REGISTRY_AUTH=$(cat ~/.docker/config.json | base64 -w 0)
-```
-
-**Username/Password:**
-```bash
-# Basic auth (base64 encoded)
-export REGISTRY_AUTH=$(echo -n "username:password" | base64)
-```
-
-**Token-based:**
-```bash
-# For registries like GitHub Container Registry
-export REGISTRY_AUTH="Bearer ghp_token123"
-```
-
-### Registry-specific Examples
-
-**Docker Hub:**
-```bash
-export DOCKER_AUTH=$(echo -n "$DOCKER_USERNAME:$DOCKER_PASSWORD" | base64)
-dagger call -m crane copy-image \
-  --source-image nginx:latest \
-  --destination-image $DOCKER_USERNAME/nginx:latest \
-  --destination-auth env:DOCKER_AUTH
-```
-
-**GitHub Container Registry:**
-```bash
-export GHCR_AUTH="Bearer $GITHUB_TOKEN"
-dagger call -m crane copy-image \
-  --source-image nginx:latest \
-  --destination-image ghcr.io/$GITHUB_USERNAME/nginx:latest \
-  --destination-auth env:GHCR_AUTH
-```
-
-**Google Container Registry:**
-```bash
-# Use service account key
-export GCR_AUTH="_json_key:$(cat service-account.json | base64 -w 0)"
-dagger call -m crane copy-image \
-  --source-image nginx:latest \
-  --destination-image gcr.io/my-project/nginx:latest \
-  --destination-auth env:GCR_AUTH
-```
-
-## Multi-Architecture Support
+### Copy Using Docker Config
 
 ```bash
-# Copy all platform variants
-dagger call -m crane copy-image \
-  --source-image docker.io/library/redis:7-alpine \
-  --destination-image myregistry.com/redis:7-alpine \
-  --all-platforms true \
-  --destination-auth env:REGISTRY_AUTH
-
-# List available platforms
-dagger call -m crane list-platforms \
-  --image-ref golang:1.21 \
-  export --path=./platforms.txt
+# Use existing Docker config.json for authentication
+dagger call -m crane copy \
+  --source private-registry.com/app:latest \
+  --target ghcr.io/myorg/app:latest \
+  --docker-config-secret file:~/.docker/config.json
 ```
 
-## Efficient Image Operations
+## Registry-Specific Examples
 
-Crane operates directly on registry APIs without requiring local Docker daemon:
+### GitHub Container Registry (ghcr.io)
 
-- **No Local Storage**: Operations don't download images locally
-- **Fast Transfers**: Direct registry-to-registry copying
-- **Bandwidth Efficient**: Only transfers necessary layers
-- **Concurrent**: Parallel layer operations
-
-## Image Migration Workflows
-
-### Registry Migration
 ```bash
-#!/bin/bash
-# Migrate all images from old registry to new one
-
-# List all repositories
-dagger call -m crane list-repositories \
-  --registry old-registry.com \
-  --auth env:OLD_REGISTRY_AUTH \
-  export --path=./repositories.txt
-
-# Copy each repository
-while read repo; do
-  echo "Migrating $repo..."
-
-  # List tags for repository
-  dagger call -m crane list-tags \
-    --repository old-registry.com/$repo \
-    --auth env:OLD_REGISTRY_AUTH \
-    export --path=./tags-$repo.txt
-
-  # Copy each tag
-  while read tag; do
-    dagger call -m crane copy-image \
-      --source-image old-registry.com/$repo:$tag \
-      --destination-image new-registry.com/$repo:$tag \
-      --source-auth env:OLD_REGISTRY_AUTH \
-      --destination-auth env:NEW_REGISTRY_AUTH \
-      --all-platforms true
-  done < ./tags-$repo.txt
-done < ./repositories.txt
+dagger call -m crane copy \
+  --source nginx:latest \
+  --target ghcr.io/USERNAME/nginx:latest \
+  --target-username USERNAME \
+  --target-password env:GITHUB_TOKEN
 ```
 
-## Examples
+### Docker Hub
 
-See the [main README](../README.md#crane) for detailed usage examples.
+```bash
+dagger call -m crane copy \
+  --source alpine:latest \
+  --target docker.io/USERNAME/alpine:latest \
+  --target-username USERNAME \
+  --target-password env:DOCKER_PASSWORD
+```
+
+### Harbor
+
+```bash
+dagger call -m crane copy \
+  --source nginx:latest \
+  --target harbor.example.com/library/nginx:latest \
+  --target-username admin \
+  --target-password env:HARBOR_PASSWORD
+```
+
+### ttl.sh (Ephemeral Registry)
+
+```bash
+# ttl.sh is public, no source auth needed
+dagger call -m crane copy \
+  --source ttl.sh/my-temp-image:1h \
+  --target ghcr.io/myorg/my-image:latest \
+  --target-username myusername \
+  --target-password env:GITHUB_TOKEN
+```
+
+## How It Works
+
+1. Creates a Wolfi-based container with crane CLI installed
+2. Authenticates to source/target registries (if credentials provided)
+3. Executes `crane copy` with the specified parameters
+4. Returns the command output
+
+Crane operates directly on registry APIs without requiring a local Docker daemon, making it efficient for CI/CD pipelines.
 
 ## Resources
 
 - [Crane Documentation](https://github.com/google/go-containerregistry/tree/main/cmd/crane)
-- [Container Registry API](https://docs.docker.com/registry/spec/api/)
+- [Dagger Documentation](https://docs.dagger.io/)
 - [OCI Distribution Spec](https://github.com/opencontainers/distribution-spec)
-- [Multi-Platform Images](https://docs.docker.com/build/building/multi-platform/)
