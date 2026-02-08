@@ -1,3 +1,10 @@
+# [0.78.0](https://github.com/stuttgart-things/dagger/compare/v0.77.0...v0.78.0) (2026-02-08)
+
+
+### Features
+
+* feat/add-tf-s3-vars ([b90d322](https://github.com/stuttgart-things/dagger/commit/b90d32257357cf465a1b3a65465813ca0199638d))
+
 # [0.77.0](https://github.com/stuttgart-things/dagger/compare/v0.76.0...v0.77.0) (2026-02-01)
 
 
