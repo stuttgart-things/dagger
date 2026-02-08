@@ -17,6 +17,11 @@ func (m *Terraform) Execute(
 	// +optional
 	// e.g., "name=patrick,food=schnitzel"
 	variables string,
+	// AWS S3/MinIO credentials
+	// +optional
+	awsAccessKeyID *dagger.Secret,
+	// +optional
+	awsSecretAccessKey *dagger.Secret,
 	// +optional
 	secretJsonVariables *dagger.Secret,
 	// vaultRoleID
@@ -37,6 +42,15 @@ func (m *Terraform) Execute(
 	ctr, err := m.container(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("container init failed: %w", err)
+	}
+
+	// INJECT VAULT SECRETS AS ENVIRONMENT VARIABLES
+	// INJECT AWS SECRETS AS ENVIRONMENT VARIABLES FOR S3 BACKEND
+	if awsAccessKeyID != nil { // pragma: allowlist secret
+		ctr = ctr.WithSecretVariable("AWS_ACCESS_KEY_ID", awsAccessKeyID)
+	}
+	if awsSecretAccessKey != nil { // pragma: allowlist secret
+		ctr = ctr.WithSecretVariable("AWS_SECRET_ACCESS_KEY", awsSecretAccessKey)
 	}
 
 	// INJECT VAULT SECRETS AS ENVIRONMENT VARIABLES
