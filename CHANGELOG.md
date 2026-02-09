@@ -1,3 +1,10 @@
+# [0.79.0](https://github.com/stuttgart-things/dagger/compare/v0.78.0...v0.79.0) (2026-02-09)
+
+
+### Features
+
+* feat/update-tf-module ([30226f9](https://github.com/stuttgart-things/dagger/commit/30226f9a1d8f664921f58e6bf83c283af22b28be))
+
 # [0.78.0](https://github.com/stuttgart-things/dagger/compare/v0.77.0...v0.78.0) (2026-02-08)
 
 
