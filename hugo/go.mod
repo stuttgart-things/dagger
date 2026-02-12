@@ -1,6 +1,6 @@
 module dagger/hugo
 
-go 1.23.8
+go 1.24.0
 
 require (
 	github.com/99designs/gqlgen v0.17.70
@@ -20,7 +20,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.34.0
 	go.opentelemetry.io/otel/trace v1.34.0
 	go.opentelemetry.io/proto/otlp v1.3.1
-	golang.org/x/sync v0.12.0
+	golang.org/x/sync v0.19.0
 	google.golang.org/grpc v1.71.0
 )
 
