@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	emperror.dev/errors v0.8.1
-	github.com/99designs/gqlgen v0.17.80
+	github.com/99designs/gqlgen v0.17.86
 	github.com/Khan/genqlient v0.8.1
 	github.com/coreos/go-semver v0.3.1
 	github.com/creasty/defaults v1.8.0
