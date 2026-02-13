@@ -17,7 +17,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.32.0
 	go.opentelemetry.io/proto/otlp v1.3.1
 	golang.org/x/sync v0.11.0
-	google.golang.org/grpc v1.70.0
+	google.golang.org/grpc v1.79.1
 )
 
 require (
