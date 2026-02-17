@@ -1,8 +1,7 @@
 {
   "name": "linting",
-  "engineVersion": "v0.18.19",
+  "engineVersion": "v0.19.11",
   "sdk": {
     "source": "go"
-  },
-  "source": "."
+  }
 }
