@@ -57,6 +57,34 @@ Skip multiple hooks:
 dagger call -m linting lint-pre-commit --src . --skip-hooks hadolint-docker --skip-hooks another-hook export --path=/tmp/precommit-findings.txt
 ```
 
+### Secret Scanning Example
+
+Scan for secrets in your repository and export the JSON findings:
+```bash
+dagger call -m linting scan-secrets --src . export --path=/tmp/secret-findings.json
+```
+
+- `--src .` scans the current directory
+- `export --path=/tmp/secret-findings.json` saves the detect-secrets JSON report
+
+#### Exclude Files
+
+Exclude files matching a regex pattern:
+```bash
+dagger call -m linting scan-secrets --src . --exclude-files "\.git|node_modules" export --path=/tmp/secret-findings.json
+```
+
+### AI-Powered Secret Auto-Fix
+
+Use the AI agent to automatically add `pragma: allowlist secret` comments to flagged lines:
+```bash
+dagger call -m linting auto-fix-secrets --src . export --path=/tmp/fixed/
+```
+
+- Analyzes detect-secrets findings and adds inline pragma comments
+- Uses correct comment syntax per file type (`//` for Go, `#` for YAML/Python/Shell/Terraform)
+- Skips `.json` files and lines that already have the pragma
+
 ## 📂 Test Data
 
 Example test data can be found in:
