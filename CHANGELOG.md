@@ -1,3 +1,10 @@
+# [0.80.0](https://github.com/stuttgart-things/dagger/compare/v0.79.0...v0.80.0) (2026-02-17)
+
+
+### Features
+
+* feat/add-auto-lint ([8a149b3](https://github.com/stuttgart-things/dagger/commit/8a149b33c0716dbca10169dc538830de4824d0d8))
+
 # [0.79.0](https://github.com/stuttgart-things/dagger/compare/v0.78.0...v0.79.0) (2026-02-09)
 
 
