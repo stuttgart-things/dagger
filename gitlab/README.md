@@ -138,6 +138,43 @@ dagger call -m gitlab clone \
   export --path /tmp/repo
 ```
 
+### Pipeline Operations
+
+```bash
+# List pipelines for a project
+dagger call -m gitlab list-gitlab-pipelines \
+  --repository="group/project" \
+  --token=env:GITLAB_TOKEN
+
+# List pipelines on a custom GitLab instance
+dagger call -m gitlab list-gitlab-pipelines \
+  --repository="group/subgroup/project" \
+  --token=env:GITLAB_TOKEN \
+  --gitlab-host="gitlab.example.com"
+
+# Filter by branch and status
+dagger call -m gitlab list-gitlab-pipelines \
+  --repository="group/project" \
+  --token=env:GITLAB_TOKEN \
+  --ref="main" \
+  --status="success"
+
+# Wait for a pipeline to complete
+dagger call -m gitlab wait-for-gitlab-pipeline \
+  --repository="group/project" \
+  --pipeline-id="123456" \
+  --token=env:GITLAB_TOKEN
+
+# Wait with custom interval and timeout
+dagger call -m gitlab wait-for-gitlab-pipeline \
+  --repository="group/project" \
+  --pipeline-id="123456" \
+  --token=env:GITLAB_TOKEN \
+  --gitlab-host="gitlab.example.com" \
+  --interval=15 \
+  --timeout=900
+```
+
 ## Examples
 
 See the [main README](../README.md#gitlab) for detailed usage examples.

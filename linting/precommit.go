@@ -5,10 +5,10 @@ import (
 	"dagger/linting/internal/dagger"
 )
 
+// LintPreCommit runs pre-commit hooks on the provided directory
 func (m *Linting) RunPreCommit(
 	ctx context.Context,
 	src *dagger.Directory,
-	// LintPreCommit runs pre-commit hooks on the provided directory
 	// +optional
 	// +default=".pre-commit-config.yaml"
 	configPath string,

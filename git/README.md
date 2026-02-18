@@ -94,6 +94,49 @@ dagger call -m git create-github-pull-request \
 --token=env:GITHUB_TOKEN
 ```
 
+### LIST GITHUB WORKFLOW RUNS
+
+Returns a formatted table with columns: ID, WORKFLOW, STATUS, CONCLUSION, BRANCH, EVENT, TITLE, CREATED.
+
+```bash
+# LIST ALL WORKFLOW RUNS
+dagger call -m git list-github-workflow-runs \
+--repository="stuttgart-things/dagger" \
+--token=env:GITHUB_TOKEN
+
+# FILTER BY BRANCH AND STATUS
+dagger call -m git list-github-workflow-runs \
+--repository="stuttgart-things/dagger" \
+--token=env:GITHUB_TOKEN \
+--branch="main" \
+--status="completed" \
+--limit=5
+
+# FILTER BY WORKFLOW NAME
+dagger call -m git list-github-workflow-runs \
+--repository="stuttgart-things/dagger" \
+--token=env:GITHUB_TOKEN \
+--workflow="ci.yaml"
+```
+
+Example output:
+
+```
+ID          WORKFLOW          STATUS     CONCLUSION  BRANCH  EVENT  TITLE                             CREATED
+123456789   Release Pipeline  completed  success     main    push   chore(release): 0.80.0 [skip ci]  2026-02-18T12:34:56
+123456788   Lint & Test       completed  failure     feat/x  push   feat: add new feature             2026-02-18T10:20:30
+```
+
+### Wait for GitHub Workflow Run
+
+```bash
+# WAIT FOR A SPECIFIC WORKFLOW RUN TO COMPLETE
+dagger call -m git wait-for-github-workflow-run \
+--repository="stuttgart-things/dagger" \
+--run-id="1234567890" \
+--token=env:GITHUB_TOKEN
+```
+
 ## Examples
 
 See the [main README](../README.md#git) for detailed usage examples.
