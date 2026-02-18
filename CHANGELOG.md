@@ -1,3 +1,10 @@
+# [0.81.0](https://github.com/stuttgart-things/dagger/compare/v0.80.0...v0.81.0) (2026-02-18)
+
+
+### Features
+
+* feat/add-gh-pr-list ([a507722](https://github.com/stuttgart-things/dagger/commit/a5077228d69434ffaef979b487fb8605bb45b9c0))
+
 # [0.80.0](https://github.com/stuttgart-things/dagger/compare/v0.79.0...v0.80.0) (2026-02-17)
 
 
