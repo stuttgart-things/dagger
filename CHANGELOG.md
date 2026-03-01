@@ -1,3 +1,10 @@
+# [0.82.0](https://github.com/stuttgart-things/dagger/compare/v0.81.0...v0.82.0) (2026-03-01)
+
+
+### Features
+
+* feat/add-kustomize-kcl ([c8d2a01](https://github.com/stuttgart-things/dagger/commit/c8d2a01521d4869b796aad524083b8632913162f))
+
 # [0.81.0](https://github.com/stuttgart-things/dagger/compare/v0.80.0...v0.81.0) (2026-02-18)
 
 
