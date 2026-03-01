@@ -1,3 +1,10 @@
+## [0.82.1](https://github.com/stuttgart-things/dagger/compare/v0.82.0...v0.82.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* configure git remote with token for semantic-release push ([e3ddf12](https://github.com/stuttgart-things/dagger/commit/e3ddf128b6ba91e74c1fcd1ad53227444cf2bca7))
+
 # [0.82.0](https://github.com/stuttgart-things/dagger/compare/v0.81.0...v0.82.0) (2026-03-01)
 
 
