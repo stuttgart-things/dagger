@@ -34,6 +34,13 @@ func (m *Hugo) ExportStaticContent(
 		"vendor", // Fixed quote escaping
 	})
 
+	// Patch vendored theme to fix Hugo v0.157+ compatibility (.Site.Author removed)
+	headPath := fmt.Sprintf("_vendor/%s/layouts/partials/layout/head.html", theme)
+	ctr = ctr.WithExec([]string{
+		"sh", "-c",
+		fmt.Sprintf(`[ -f "%s" ] && sed -i 's/\.Site\.Author\.name/site.Title/g' "%s" || true`, headPath, headPath),
+	})
+
 	// Run Hugo build command with proper arguments
 	ctr = ctr.WithExec([]string{
 		"hugo",

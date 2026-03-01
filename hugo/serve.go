@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"dagger/hugo/internal/dagger"
+	"fmt"
 	"strconv"
 )
 
@@ -40,9 +41,20 @@ func (m *Hugo) Serve(
 		return nil, err
 	}
 
+	// Patch vendored theme to fix Hugo v0.157+ compatibility (.Site.Author removed)
+	headPath := fmt.Sprintf("_vendor/%s/layouts/partials/layout/head.html", theme)
+	patchedDir := m.container().
+		WithMountedDirectory("/src", siteDir).
+		WithWorkdir("/src").
+		WithExec([]string{
+			"sh", "-c",
+			fmt.Sprintf(`[ -f "%s" ] && sed -i 's/\.Site\.Author\.name/site.Title/g' "%s" || true`, headPath, headPath),
+		}).
+		Directory("/src")
+
 	// STEP 2: START HUGO SERVER FROM GENERATED SITE
 	svc := m.container().
-		WithMountedDirectory("/src", siteDir).
+		WithMountedDirectory("/src", patchedDir).
 		WithWorkdir("/src").
 		WithExposedPort(portNumber).
 		AsService(dagger.ContainerAsServiceOpts{

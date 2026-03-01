@@ -1,0 +1,5 @@
+name: test-app
+namespace: test-ns
+image: nginx:1.25
+port: "8080"
+replicas: "3"
