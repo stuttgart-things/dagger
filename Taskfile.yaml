@@ -153,12 +153,87 @@ tasks:
         export --path={{ .OUTPUT_MODELS_DIR }}
         echo "Generated CRD models:"
         find {{ .OUTPUT_MODELS_DIR }} -name "*.k" -exec basename {} \;
+      - |
+        echo "Testing kustomize base rendering..."
+        dagger call -m {{ .MODULE }} \
+        render-kustomize-base \
+        --source {{ .TEST_KUSTOMIZE_PROJECT }} \
+        --parameters-file {{ .TEST_KUSTOMIZE_PARAMS }} \
+        --progress plain \
+        export --path={{ .OUTPUT_KUSTOMIZE_DIR }}
+        echo "Generated kustomize base:"
+        ls {{ .OUTPUT_KUSTOMIZE_DIR }}/
     vars:
       MODULE: kcl
       TEST_KCL_PROJECT: tests/kcl/test-kcl-project
       TEST_KCL_ENTRYPOINT: main.k
       TEST_CRD_FILE: tests/kcl/test-crd.yaml
       OUTPUT_MODELS_DIR: /tmp/dagger/kcl-test-models
+      TEST_KUSTOMIZE_PROJECT: tests/kcl/test-kustomize-project
+      TEST_KUSTOMIZE_PARAMS: tests/kcl/test-kustomize-project/params.yaml
+      OUTPUT_KUSTOMIZE_DIR: /tmp/dagger/kcl-test-kustomize-base
+
+  test-kcl-kustomize:
+    desc: Test KCL kustomize base rendering
+    cmds:
+      - |
+        echo "Testing kustomize base rendering..."
+        dagger call -m {{ .MODULE }} \
+        render-kustomize-base \
+        --source {{ .TEST_KUSTOMIZE_PROJECT }} \
+        --parameters-file {{ .TEST_KUSTOMIZE_PARAMS }} \
+        --progress plain \
+        export --path={{ .OUTPUT_KUSTOMIZE_DIR }}
+
+        echo ""
+        echo "Generated kustomize base:"
+        ls -la {{ .OUTPUT_KUSTOMIZE_DIR }}/
+
+        echo ""
+        echo "kustomization.yaml:"
+        cat {{ .OUTPUT_KUSTOMIZE_DIR }}/kustomization.yaml
+
+        echo ""
+        echo "All resource files:"
+        for f in {{ .OUTPUT_KUSTOMIZE_DIR }}/*.yaml; do
+          BASENAME=$(basename "$f")
+          if [ "$BASENAME" != "kustomization.yaml" ]; then
+            echo "--- $BASENAME ---"
+            cat "$f"
+            echo ""
+          fi
+        done
+    vars:
+      MODULE: kcl
+      TEST_KUSTOMIZE_PROJECT: tests/kcl/test-kustomize-project
+      TEST_KUSTOMIZE_PARAMS: tests/kcl/test-kustomize-project/params.yaml
+      OUTPUT_KUSTOMIZE_DIR: /tmp/dagger/kcl-test-kustomize-base
+
+  render-kustomize-base:
+    desc: Render kustomize base from KCL source
+    cmds:
+      - |
+        echo "Rendering kustomize base..."
+        echo "Source: {{ .SOURCE }}"
+        echo "Profile: {{ .PROFILE }}"
+        echo "Output: {{ .OUTPUT }}"
+        echo ""
+
+        dagger call -m {{ .MODULE }} \
+        render-kustomize-base \
+        --source "{{ .SOURCE }}" \
+        --parameters-file="{{ .PROFILE }}" \
+        --progress plain \
+        export --path="{{ .OUTPUT }}"
+
+        echo ""
+        echo "Kustomize base rendered:"
+        ls -la "{{ .OUTPUT }}/"
+    vars:
+      MODULE: kcl
+      SOURCE: '{{ .SOURCE | default "tests/kcl/test-kustomize-project" }}'
+      PROFILE: '{{ .PROFILE | default "tests/kcl/test-kustomize-project/params.yaml" }}'
+      OUTPUT: '{{ .OUTPUT | default "/tmp/dagger/kcl-kustomize-base" }}'
 
   convert-crd:
     desc: Convert CRD to KCL models using web source or local file

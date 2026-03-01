@@ -28,6 +28,10 @@ func (m *Packer) Bake(
 	// +optional
 	// +default=false
 	initOnly bool,
+	// If true, force overwrite of existing template
+	// +optional
+	// +default=false
+	force bool,
 	// vaultAddr
 	// +optional
 	vaultAddr string,
@@ -80,11 +84,18 @@ func (m *Packer) Bake(
 	// RUN `PACKER BUILD` UNLESS INITONLY IS TRUE
 	var buildContainer *dagger.Container
 	if !initOnly {
-		buildContainer = initContainer.WithExec([]string{
-			"packer",
-			"build",
-			packerFile,
-		})
+		buildArgs := []string{"packer", "build"}
+		if force {
+			buildArgs = append(buildArgs, "-force")
+		}
+		buildArgs = append(buildArgs, packerFile)
+
+		buildContainer = initContainer.WithExec(
+			buildArgs,
+			dagger.ContainerWithExecOpts{
+				Expect: dagger.ReturnTypeAny,
+			},
+		)
 	} else {
 		buildContainer = initContainer
 	}
@@ -95,6 +106,16 @@ func (m *Packer) Bake(
 		Contents(ctx)
 	if err != nil {
 		panic(fmt.Errorf("failed to read packer log: %w", err))
+	}
+
+	// CHECK EXIT CODE AND INCLUDE IT IN OUTPUT IF FAILED
+	exitCode, err := buildContainer.ExitCode(ctx)
+	if err != nil {
+		panic(fmt.Errorf("failed to get exit code: %w", err))
+	}
+
+	if exitCode != 0 {
+		return fmt.Sprintf("BUILD FAILED (exit code: %d)\n\n%s", exitCode, logContents)
 	}
 
 	return logContents

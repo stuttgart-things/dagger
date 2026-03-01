@@ -109,6 +109,40 @@ dagger call -m kcl push-module \
 -vv
 ```
 
+### Kustomize Base
+
+```bash
+# Render KCL output into a kustomize base directory
+# Splits multi-document YAML into individual kind-name.yaml files
+# and generates a kustomization.yaml listing all resources
+dagger call -m kcl render-kustomize-base \
+  --source ./deployment \
+  --parameters-file ./tests/kcl-deploy-profile.yaml \
+  export --path=/tmp/kustomize-base
+
+# Verify the output
+ls /tmp/kustomize-base/
+# deployment-myapp.yaml  service-myapp.yaml  kustomization.yaml
+
+kubectl kustomize /tmp/kustomize-base/
+
+# Render and push kustomize base as OCI artifact
+dagger call -m kcl push-kustomize-base \
+  --source ./deployment \
+  --parameters-file ./tests/kcl-deploy-profile.yaml \
+  --address ghcr.io/stuttgart-things/my-app-kustomize \
+  --tag v1.0.0 \
+  --user env:GITHUB_USER \
+  --password env:GITHUB_TOKEN
+
+# Push to ttl.sh for testing (no auth needed)
+dagger call -m kcl push-kustomize-base \
+  --source ./deployment \
+  --parameters-file ./tests/kcl-deploy-profile.yaml \
+  --address ttl.sh/my-app-kustomize-test \
+  --tag latest
+```
+
 ## Functions
 
 ### Core KCL Functions
@@ -120,6 +154,13 @@ dagger call -m kcl push-module \
 | `RunKcl()`       | Execute KCL configuration   | `source`, `entrypoint`    | KCL output     |
 | `ValidateKcl()`  | Validate KCL syntax         | `source`                  | Validation result |
 | `PushModule()`   | Push KCL module to registry | `src`, `moduleName`, `user`, `password`, `address` | Push result |
+
+### Kustomize Functions
+
+| Function                  | Purpose                              | Parameters                                 | Returns                  |
+|---------------------------|--------------------------------------|--------------------------------------------|--------------------------|
+| `RenderKustomizeBase()`   | Render KCL output into a kustomize base directory | `source?`, `ociSource?`, `parameters?`, `parametersFile?`, `entrypoint?` | Directory with split YAML files + `kustomization.yaml` |
+| `PushKustomizeBase()`     | Render kustomize base and push as OCI artifact | `source?`, `ociSource?`, `parameters?`, `parametersFile?`, `entrypoint?`, `address`, `tag`, `user?`, `password?` | OCI reference string |
 
 ### CRD Conversion Functions
 
@@ -245,6 +286,12 @@ Use the convenient Taskfile tasks for common operations:
 # Test all KCL functionality
 task test-kcl
 
+# Test kustomize base rendering
+task test-kcl-kustomize
+
+# Render kustomize base from a KCL project
+task render-kustomize-base SOURCE=./deployment PROFILE=./tests/kcl-deploy-profile.yaml
+
 # Convert CRD from web source
 task convert-crd CRD_URL=https://raw.githubusercontent.com/crossplane-contrib/provider-terraform/main/package/crds/tf.upbound.io_workspaces.yaml
 
@@ -259,14 +306,23 @@ kcl/                             # Main KCL Dagger module
 ├── README.md                    # This documentation
 ├── main.go                      # Main Dagger module implementation
 ├── container.go                 # Container configuration
+├── run.go                       # KCL execution engine
+├── kustomize.go                 # Kustomize base rendering and OCI push
+├── push.go                      # Module publishing
+├── crd_convert.go               # CRD to KCL conversion
+├── secret.go                    # Kubernetes secret management
+├── validate.go                  # Basic testing
 ├── dagger.json                  # Dagger module configuration
 └── internal/                    # Generated Dagger types
 
 tests/kcl/                       # Test files and examples
 ├── README.md                    # Test documentation
 ├── test-crd.yaml               # Example CRD for testing
-└── test-kcl-project/           # Example KCL project
-    └── main.k                  # Sample KCL configuration
+├── test-kcl-project/           # Example KCL project
+│   └── main.k                  # Sample KCL configuration
+└── test-kustomize-project/     # KCL project for kustomize base testing
+    ├── main.k                  # Produces Deployment + Service YAML
+    └── params.yaml             # Test parameters file
 ```
 
 ## Use Cases
