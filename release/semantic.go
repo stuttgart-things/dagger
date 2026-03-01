@@ -31,7 +31,14 @@ func (m *Release) Semantic(
 	releaseContainer := m.container(semanticReleaseVersion).
 		WithMountedDirectory("/src", src).
 		WithWorkdir("/src").
-		WithSecretVariable(tokenName, token)
+		WithSecretVariable(tokenName, token).
+		// Configure git to use the token for push operations
+		WithExec([]string{"sh", "-c",
+			"REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo ''); " +
+				"if echo \"$REMOTE_URL\" | grep -q 'github.com'; then " +
+				"REPO_PATH=$(echo \"$REMOTE_URL\" | sed -E 's#https?://[^/]*/#github.com/#' | sed 's#\\.git$##'); " +
+				"git remote set-url origin \"https://x-access-token:$" + tokenName + "@${REPO_PATH}.git\"; " +
+				"fi"})
 
 	// Dry-run semantic-release
 	dryRun, err := releaseContainer.
