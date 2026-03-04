@@ -42,7 +42,7 @@ dagger call -m sops generate-sops-config \
 # Encrypt file with age
 export AGE_KEY=$(grep "public key" age-key.txt | awk '{print $NF}')
 dagger call -m sops encrypt \
-  --age-key env:AGE_KEY \
+  --age-key env:AGE_PUB \
   --plaintext-file ./secrets.yaml \
   --file-extension yaml \
   export --path=./secrets.enc.yaml
@@ -54,7 +54,7 @@ dagger call -m sops encrypt \
 # Decrypt with age key
 export SOPS_KEY=$(cat age-key.txt)
 dagger call -m sops decrypt \
-  --sops-key env:SOPS_KEY \
+  --age-key env:SOPS_AGE_KEY \
   --encrypted-file ./secrets.enc.yaml \
   export --path=./secrets.dec.yaml
 ```
