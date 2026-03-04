@@ -47,7 +47,8 @@ func (m *Ansible) container(
 		"--no-cache-dir",
 		"ansible==" + version,
 		"hvac",
-		"passlib"})
+		"passlib",
+		"jmespath"})
 
 	// Create ansible.cfg with proper settings
 	ctr = ctr.WithNewFile("/etc/ansible/ansible.cfg", `[defaults]
