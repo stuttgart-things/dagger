@@ -1,3 +1,10 @@
+# [0.84.0](https://github.com/stuttgart-things/dagger/compare/v0.83.0...v0.84.0) (2026-03-04)
+
+
+### Features
+
+* ffeat/add-jmspath ([218fa11](https://github.com/stuttgart-things/dagger/commit/218fa111396d827fb1384bd722ef1cdc2d00fc5b))
+
 ## [0.82.1](https://github.com/stuttgart-things/dagger/compare/v0.82.0...v0.82.1) (2026-03-01)
 
 
