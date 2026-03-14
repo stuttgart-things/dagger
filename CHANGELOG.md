@@ -1,3 +1,10 @@
+# [0.85.0](https://github.com/stuttgart-things/dagger/compare/v0.84.0...v0.85.0) (2026-03-14)
+
+
+### Features
+
+* feat/add-clusterbook ([ee59857](https://github.com/stuttgart-things/dagger/commit/ee59857c367764124e1979a9781fead7592de575))
+
 # [0.84.0](https://github.com/stuttgart-things/dagger/compare/v0.83.0...v0.84.0) (2026-03-04)
 
 
