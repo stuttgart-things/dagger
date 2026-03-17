@@ -53,6 +53,7 @@ tasks:
       - task: test-homerun
       - task: test-terraform
       - task: test-templating
+      - task: test-python
       - task: git:pr
       - semantic-release --dry-run
       - semantic-release --debug --no-ci
@@ -544,6 +545,26 @@ tasks:
       TEST_PATH: .
       GO_VERSION: "1.25.4"
       REDIS_VERSION: "7.2.0-v18"
+
+  test-python:
+    desc: Test python functions
+    cmds:
+      - |
+        dagger call -m {{ .MODULE }} \
+        lint --src {{ .TEST_PYTHON_CODE }} \
+        --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        test --src {{ .TEST_PYTHON_CODE }} \
+        --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        security-scan --src {{ .TEST_PYTHON_CODE }} \
+        --scan-path src/ \
+        --progress plain
+    vars:
+      MODULE: python
+      TEST_PYTHON_CODE: tests/python/
 
   run-redis:
     desc: Start Redis with dagger up (port forwarding)
