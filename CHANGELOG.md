@@ -1,3 +1,11 @@
+# [0.86.0](https://github.com/stuttgart-things/dagger/compare/v0.85.0...v0.86.0) (2026-03-17)
+
+
+### Features
+
+* add reusable Python Dagger module ([36e93d7](https://github.com/stuttgart-things/dagger/commit/36e93d79d2959c632b60ef95a5ccf5a14c1d5af4))
+* feat/add-pythin-module ([3985651](https://github.com/stuttgart-things/dagger/commit/39856514a57df01d7c25bb932f7443716a5b9b4e))
+
 # [0.85.0](https://github.com/stuttgart-things/dagger/compare/v0.84.0...v0.85.0) (2026-03-14)
 
 
