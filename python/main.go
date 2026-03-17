@@ -9,6 +9,7 @@ package main
 import (
 	"context"
 	"dagger/python/internal/dagger"
+	"strings"
 )
 
 type Python struct{}
@@ -19,18 +20,24 @@ func (m *Python) Lint(
 	// Python source directory
 	src *dagger.Directory,
 	// +optional
+	// +default="3.12-slim"
+	pythonVersion string,
+	// +optional
 	// +default="0.8.6"
 	ruffVersion string,
 	// +optional
-	// +default="src/ tests/"
-	// Space-separated list of paths to lint
+	// +default="src/,tests/"
+	// Comma-separated list of paths to lint
 	paths string,
 ) (string, error) {
+	args := append([]string{"ruff", "check"}, strings.Split(paths, ",")...)
 	return dag.Container().
-		From("ghcr.io/astral-sh/ruff:"+ruffVersion).
+		From("python:"+pythonVersion).
 		WithMountedDirectory("/src", src).
 		WithWorkdir("/src").
-		WithExec([]string{"sh", "-c", "ruff check " + paths}).
+		WithMountedCache("/root/.cache/pip", dag.CacheVolume("python-pip-cache")).
+		WithExec([]string{"pip", "install", "-q", "ruff==" + ruffVersion}).
+		WithExec(args).
 		Stdout(ctx)
 }
 
@@ -40,18 +47,24 @@ func (m *Python) FormatCheck(
 	// Python source directory
 	src *dagger.Directory,
 	// +optional
+	// +default="3.12-slim"
+	pythonVersion string,
+	// +optional
 	// +default="0.8.6"
 	ruffVersion string,
 	// +optional
-	// +default="src/ tests/"
-	// Space-separated list of paths to check
+	// +default="src/,tests/"
+	// Comma-separated list of paths to check
 	paths string,
 ) (string, error) {
+	args := append([]string{"ruff", "format", "--check"}, strings.Split(paths, ",")...)
 	return dag.Container().
-		From("ghcr.io/astral-sh/ruff:"+ruffVersion).
+		From("python:"+pythonVersion).
 		WithMountedDirectory("/src", src).
 		WithWorkdir("/src").
-		WithExec([]string{"sh", "-c", "ruff format --check " + paths}).
+		WithMountedCache("/root/.cache/pip", dag.CacheVolume("python-pip-cache")).
+		WithExec([]string{"pip", "install", "-q", "ruff==" + ruffVersion}).
+		WithExec(args).
 		Stdout(ctx)
 }
 
@@ -168,15 +181,14 @@ func (m *Python) BuildImage(
 	// +default="unknown"
 	date string,
 ) *dagger.Container {
-	return dag.Container().
-		Build(src, dagger.ContainerBuildOpts{
-			Dockerfile: dockerfile,
-			BuildArgs: []dagger.BuildArg{
-				{Name: "VERSION", Value: version},
-				{Name: "COMMIT", Value: commit},
-				{Name: "DATE", Value: date},
-			},
-		})
+	return src.DockerBuild(dagger.DirectoryDockerBuildOpts{
+		Dockerfile: dockerfile,
+		BuildArgs: []dagger.BuildArg{
+			{Name: "VERSION", Value: version},
+			{Name: "COMMIT", Value: commit},
+			{Name: "DATE", Value: date},
+		},
+	})
 }
 
 // BuildAndPushImage builds and pushes a Docker image to a registry
