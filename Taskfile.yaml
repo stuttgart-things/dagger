@@ -555,12 +555,25 @@ tasks:
         --progress plain
       - |
         dagger call -m {{ .MODULE }} \
+        format-check --src {{ .TEST_PYTHON_CODE }} \
+        --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
         test --src {{ .TEST_PYTHON_CODE }} \
+        --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        test-with-coverage --src {{ .TEST_PYTHON_CODE }} \
+        --coverage-path src/ \
         --progress plain
       - |
         dagger call -m {{ .MODULE }} \
         security-scan --src {{ .TEST_PYTHON_CODE }} \
         --scan-path src/ \
+        --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        build-image --src {{ .TEST_PYTHON_CODE }} \
         --progress plain
     vars:
       MODULE: python
