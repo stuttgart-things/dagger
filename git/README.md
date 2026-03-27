@@ -1,27 +1,99 @@
 # Git Dagger Module
 
-This module provides comprehensive Git operations including repository management, branch operations, commit handling, and remote synchronization.
+Git and GitHub operations: clone, branch, commit, PR, issues, and workflow management.
 
-## Features
-
-- ✅ Repository cloning and initialization
-
-## Prerequisites
-
-- Dagger CLI installed
-- Git credentials configured
-- SSH keys or personal access tokens (for private repositories)
-
-## Quick Start
-
-### Clone GitHUB Repository
+## Setup
 
 ```bash
-# CLONE PRIVATE REPOSITORY WITH TOKEN
+export GITHUB_TOKEN="ghp_your_token_here"
+```
+
+## Functions
+
+### Clone GitHub Repository
+
+```bash
 dagger call -m git clone-github \
 --repository stuttgart-things/stuttgart-things \
 --token env:GITHUB_TOKEN \
-export --path=/tmp/private-repo
+export --path=/tmp/cloned-repo
+
+# Clone specific branch
+dagger call -m git clone-github \
+--repository stuttgart-things/stuttgart-things \
+--ref feature-branch \
+--token env:GITHUB_TOKEN \
+export --path=/tmp/cloned-repo
+```
+
+### Create GitHub Branch
+
+```bash
+dagger call -m git create-github-branch \
+--repository stuttgart-things/dagger \
+--new-branch feature-branch \
+--base-branch main \
+--token env:GITHUB_TOKEN
+```
+
+### Delete GitHub Branch
+
+```bash
+dagger call -m git delete-github-branch \
+--repository stuttgart-things/dagger \
+--branch feature-branch \
+--token env:GITHUB_TOKEN
+```
+
+### Add File to GitHub Branch
+
+```bash
+# Branch must exist
+dagger call -m git add-file-to-github-branch \
+--repository stuttgart-things/dagger \
+--branch feature-branch \
+--commit-message "Update README" \
+--token env:GITHUB_TOKEN \
+--source-file ./README.md \
+--destination-path "README-updated.md"
+```
+
+### Add Folder to GitHub Branch
+
+```bash
+dagger call -m git add-folder-to-github-branch \
+--repository stuttgart-things/dagger \
+--branch feature-branch \
+--commit-message "Update docs" \
+--token env:GITHUB_TOKEN \
+--source-dir ./docs \
+--destination-path "docs/"
+```
+
+### Add Multiple Files to GitHub Branch
+
+```bash
+dagger call -m git add-files-to-github-branch \
+--repository stuttgart-things/dagger \
+--branch feature-branch \
+--commit-message "Add config files" \
+--token env:GITHUB_TOKEN \
+--source-dir ./k8s-configs \
+--destination-path "deploy/kubernetes/"
+```
+
+### Create GitHub Pull Request
+
+```bash
+dagger call -m git create-github-pull-request \
+--repository stuttgart-things/dagger \
+--head-branch feature-branch \
+--title "Add new feature" \
+--body "This PR adds a new feature" \
+--labels enhancement \
+--labels documentation \
+--reviewers patrick-hermann-sva \
+--token env:GITHUB_TOKEN
 ```
 
 ### Create GitHub Issue
@@ -30,93 +102,33 @@ export --path=/tmp/private-repo
 dagger call -m git create-github-issue \
 --repository stuttgart-things/stuttgart-things \
 --token env:GITHUB_TOKEN \
---title "🧪 Test Issue from Dagger" \
---body "This issue was automatically created using Dagger!" \
---label automation \
---label test
+--title "Bug: Application crashes on startup" \
+--body "The application crashes when started with empty config" \
+--label bug \
+--label automation
 ```
 
-### Delete GitHub Branch
+### List GitHub Workflow Runs
 
 ```bash
-dagger call -m git delete-github-branch \
---repository="stuttgart-things/dagger" \
---branch="feature-branch2" \
---token=env:GITHUB_TOKEN
-```
-
-### Create GitHub Branch
-
-```bash
-dagger call -m git create-github-branch \
---repository="stuttgart-things/dagger" \
---new-branch="feature-branch" \
---base-branch="main" \
---token=env:GITHUB_TOKEN
-```
-
-### Add file to GitHub Branch
-
-```bash
-# BRANCH MUST EXISTS
-dagger call -m git add-file-to-github-branch \
---repository="stuttgart-things/dagger" \
---branch="feature-branch" \
---commit-message="Update README" \
---token=env:GITHUB_TOKEN \
---source-file=./README.md \
---destination-path="README-updated.md"
-```
-
-### Add folder to GitHub Branch
-
-```bash
-dagger call -m git add-folder-to-github-branch \
---repository="stuttgart-things/dagger" \
---branch="feature-branch2" \
---commit-message="Update docs" \
---token=env:GITHUB_TOKEN \
---source-dir=./git/internal \
---destination-path="whatever"
-```
-
-### Create github PullRequest
-
-```bash
-dagger call -m git create-github-pull-request \
---repository="stuttgart-things/dagger" \
---head-branch="feature-branch2" \
---title="Add new feature" \
---body="This PR adds a new feature" \
---labels="enhancement" \
---labels="documentation" \
---reviewers="patrick-hermann-sva" \
---token=env:GITHUB_TOKEN
-```
-
-### LIST GITHUB WORKFLOW RUNS
-
-Returns a formatted table with columns: ID, WORKFLOW, STATUS, CONCLUSION, BRANCH, EVENT, TITLE, CREATED.
-
-```bash
-# LIST ALL WORKFLOW RUNS
+# List all runs
 dagger call -m git list-github-workflow-runs \
---repository="stuttgart-things/dagger" \
---token=env:GITHUB_TOKEN
+--repository stuttgart-things/dagger \
+--token env:GITHUB_TOKEN
 
-# FILTER BY BRANCH AND STATUS
+# Filter by branch, status, and limit
 dagger call -m git list-github-workflow-runs \
---repository="stuttgart-things/dagger" \
---token=env:GITHUB_TOKEN \
---branch="main" \
---status="completed" \
---limit=5
+--repository stuttgart-things/dagger \
+--token env:GITHUB_TOKEN \
+--branch main \
+--status completed \
+--limit 5
 
-# FILTER BY WORKFLOW NAME
+# Filter by workflow name
 dagger call -m git list-github-workflow-runs \
---repository="stuttgart-things/dagger" \
---token=env:GITHUB_TOKEN \
---workflow="ci.yaml"
+--repository stuttgart-things/dagger \
+--token env:GITHUB_TOKEN \
+--workflow ci.yaml
 ```
 
 Example output:
@@ -130,21 +142,44 @@ ID          WORKFLOW          STATUS     CONCLUSION  BRANCH  EVENT  TITLE       
 ### Wait for GitHub Workflow Run
 
 ```bash
-# WAIT FOR A SPECIFIC WORKFLOW RUN TO COMPLETE
 dagger call -m git wait-for-github-workflow-run \
---repository="stuttgart-things/dagger" \
---run-id="1234567890" \
---token=env:GITHUB_TOKEN
+--repository stuttgart-things/dagger \
+--run-id 1234567890 \
+--token env:GITHUB_TOKEN
 ```
 
-## Examples
+## Complete Workflow Example
 
-See the [main README](../README.md#git) for detailed usage examples.
+Create a branch, add files, and open a PR:
 
-## Resources
+```bash
+# 1. Create a new branch
+dagger call -m git create-github-branch \
+--repository stuttgart-things/stuttgart-things \
+--new-branch feat/new-config \
+--base-branch main \
+--token env:GITHUB_TOKEN
 
-- [Git Documentation](https://git-scm.com/doc)
-- [GitHub CLI](https://cli.github.com/)
-- [GitLab CLI](https://gitlab.com/gitlab-org/cli)
-- [Conventional Commits](https://conventionalcommits.org/)
-- [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/)
+# 2. Add rendered config files
+dagger call -m git add-folder-to-github-branch \
+--repository stuttgart-things/stuttgart-things \
+--branch feat/new-config \
+--commit-message "feat: add rendered config" \
+--token env:GITHUB_TOKEN \
+--source-dir ./rendered-output \
+--destination-path "config/"
+
+# 3. Create a PR
+dagger call -m git create-github-pull-request \
+--repository stuttgart-things/stuttgart-things \
+--head-branch feat/new-config \
+--title "feat: add rendered config" \
+--body "This PR adds rendered configuration files" \
+--token env:GITHUB_TOKEN
+```
+
+## Notes
+
+- Default author: "Dagger Bot" / "bot@dagger.io" (override with `--author-name` / `--author-email`)
+- Branch must exist before adding files (create it first with `create-github-branch`)
+- Each `add-*` call creates a separate commit
