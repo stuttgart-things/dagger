@@ -35,7 +35,7 @@ func (m *Git) CreateGithubBranch(
 
 	// Set up authentication and repository context
 	ctr = ctr.
-		WithSecretVariable("GITHUB_TOKEN", token).
+		WithSecretVariable("GH_TOKEN", token).
 		WithEnvVariable("GH_REPO", repository)
 
 	// Create new branch using gh CLI directly (no cloning needed)
@@ -254,7 +254,7 @@ func (m *Git) CloneGithub(
 
 	// Use gh to clone with authentication and checkout the specific branch
 	ctr = ctr.
-		WithSecretVariable("GITHUB_TOKEN", token).
+		WithSecretVariable("GH_TOKEN", token).
 		WithEnvVariable("GH_REPO", repository).
 		WithExec([]string{"gh", "repo", "clone", repository, workDir, "--", "--branch", ref})
 
