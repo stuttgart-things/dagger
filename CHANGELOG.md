@@ -1,3 +1,16 @@
+# [0.87.0](https://github.com/stuttgart-things/dagger/compare/v0.86.0...v0.87.0) (2026-03-27)
+
+
+### Bug Fixes
+
+* **git:** use GH_TOKEN instead of GITHUB_TOKEN for gh CLI auth ([ba2ef5f](https://github.com/stuttgart-things/dagger/commit/ba2ef5fa4d1f7aa10b3430b4e09ad42db9f3b785)), closes [#206](https://github.com/stuttgart-things/dagger/issues/206)
+
+
+### Features
+
+* feat/update-git-readme ([26e880d](https://github.com/stuttgart-things/dagger/commit/26e880d2df8c8711fda9ffd08c827c8925cd422c))
+* **git:** merge examples.md into README with correct function names ([ed679fa](https://github.com/stuttgart-things/dagger/commit/ed679faeb13d79a6516af8c255da5ba9f67b3dd2))
+
 # [0.86.0](https://github.com/stuttgart-things/dagger/compare/v0.85.0...v0.86.0) (2026-03-17)
 
 
