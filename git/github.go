@@ -38,21 +38,33 @@ func (m *Git) CreateGithubBranch(
 		WithSecretVariable("GH_TOKEN", token).
 		WithEnvVariable("GH_REPO", repository)
 
-	// Create new branch using gh CLI directly (no cloning needed)
-	createCmd := fmt.Sprintf("gh api repos/%s/git/refs/heads/%s --jq .object.sha | xargs -I {} gh api repos/%s/git/refs -f ref=refs/heads/%s -f sha={}",
-		repository, baseBranch, repository, newBranch)
+	// Get base branch SHA
+	getShaCmd := fmt.Sprintf("gh api repos/%s/git/refs/heads/%s --jq .object.sha",
+		repository, baseBranch)
 
-	output, err := ctr.
+	baseSha, err := ctr.
+		WithExec([]string{"sh", "-c", getShaCmd}).
+		Stdout(ctx)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to get base branch SHA: %w", err)
+	}
+
+	baseSha = strings.TrimSpace(baseSha)
+
+	// Try to create the branch; if it already exists, update it to the base SHA
+	createCmd := fmt.Sprintf(
+		"gh api repos/%s/git/refs -f ref=refs/heads/%s -f sha=%s 2>/dev/null || "+
+			"gh api repos/%s/git/refs/heads/%s -X PATCH -f sha=%s -f force=true",
+		repository, newBranch, baseSha,
+		repository, newBranch, baseSha)
+
+	_, err = ctr.
 		WithExec([]string{"sh", "-c", createCmd}).
 		Stdout(ctx)
 
 	if err != nil {
-		return "", fmt.Errorf("failed to create branch: %w", err)
-	}
-
-	// Verify branch was created
-	if strings.Contains(output, newBranch) {
-		return newBranch, nil
+		return "", fmt.Errorf("failed to create or update branch: %w", err)
 	}
 
 	return newBranch, nil
