@@ -1,3 +1,10 @@
+## [0.87.1](https://github.com/stuttgart-things/dagger/compare/v0.87.0...v0.87.1) (2026-03-28)
+
+
+### Bug Fixes
+
+* **git:** make CreateGithubBranch idempotent ([24bd060](https://github.com/stuttgart-things/dagger/commit/24bd060ae515ef151ec0232885940f3230daa583))
+
 # [0.87.0](https://github.com/stuttgart-things/dagger/compare/v0.86.0...v0.87.0) (2026-03-27)
 
 
