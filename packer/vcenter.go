@@ -56,10 +56,10 @@ func (m *Packer) Vcenteroperation(
 
 		switch target {
 		case "template":
-			// Convert template to VM first
-			unmarkCmd := []string{"govc", "vm.markastemplate", "-u=false", source}
+			// Convert template back to VM first, then destroy
+			unmarkCmd := []string{"govc", "vm.markasvm", source}
 			if _, err := ctr.WithExec(unmarkCmd).Stdout(ctx); err != nil {
-				panic(fmt.Errorf("failed to unmark template: %w", err))
+				panic(fmt.Errorf("failed to convert template to VM: %w", err))
 			}
 
 			// Now destroy the VM
