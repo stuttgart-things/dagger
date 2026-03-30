@@ -39,13 +39,13 @@ export VAULT_TOKEN=<token>
 export VAULT_SECRET_ID=<secret-id>
 
 dagger call -m packer bake \
-  --local-dir "/path/to/packer/builds/" \
-  --build-path ubuntu24-base-os.pkr.hcl \
-  --vault-addr https://vault.example.com:8200 \
-  --vault-role-id env:VAULT_ROLE_ID \
-  --vault-token env:VAULT_TOKEN \
-  --vault-secret-id env:VAULT_SECRET_ID \
-  --progress plain
+--local-dir "/path/to/packer/builds/" \
+--build-path ubuntu24-base-os.pkr.hcl \
+--vault-addr https://vault.example.com:8200 \
+--vault-role-id env:VAULT_ROLE_ID \
+--vault-token env:VAULT_TOKEN \
+--vault-secret-id env:VAULT_SECRET_ID \
+--progress plain
 ```
 
 ### vCenter Operations
