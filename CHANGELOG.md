@@ -1,3 +1,15 @@
+# [0.88.0](https://github.com/stuttgart-things/dagger/compare/v0.87.1...v0.88.0) (2026-03-30)
+
+
+### Bug Fixes
+
+* use govc vm.markasvm to convert template before delete ([172715c](https://github.com/stuttgart-things/dagger/commit/172715c9d368013a9af9b72b251480e65b3b554a))
+
+
+### Features
+
+* fix/packer-delete-templarte ([75f68db](https://github.com/stuttgart-things/dagger/commit/75f68db1f96b437c0751d4d7eab24af72557e803))
+
 ## [0.87.1](https://github.com/stuttgart-things/dagger/compare/v0.87.0...v0.87.1) (2026-03-28)
 
 
