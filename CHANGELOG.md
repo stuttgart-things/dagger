@@ -1,3 +1,15 @@
+# [0.89.0](https://github.com/stuttgart-things/dagger/compare/v0.88.0...v0.89.0) (2026-03-31)
+
+
+### Bug Fixes
+
+* use -F for boolean force param in gh api PATCH ([459c433](https://github.com/stuttgart-things/dagger/commit/459c43343ea4e1cdc1c5c167897274fa6e14af2c))
+
+
+### Features
+
+* feat/update-dagger-module-versions ([e1fe05e](https://github.com/stuttgart-things/dagger/commit/e1fe05eddd0aea4600cea1c07796b4eda8dace64))
+
 # [0.88.0](https://github.com/stuttgart-things/dagger/compare/v0.87.1...v0.88.0) (2026-03-30)
 
 
