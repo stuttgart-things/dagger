@@ -1,8 +1,7 @@
 {
   "name": "crane",
-  "engineVersion": "v0.18.3",
+  "engineVersion": "v0.20.0",
   "sdk": {
     "source": "go"
-  },
-  "source": "."
+  }
 }
