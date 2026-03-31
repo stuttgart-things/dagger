@@ -1,3 +1,10 @@
+# [0.90.0](https://github.com/stuttgart-things/dagger/compare/v0.89.0...v0.90.0) (2026-03-31)
+
+
+### Features
+
+* fix/update-docker-dagger-deps ([3d07d8d](https://github.com/stuttgart-things/dagger/commit/3d07d8da7b6b45782c7f3ab32453772c7efce4dc))
+
 # [0.89.0](https://github.com/stuttgart-things/dagger/compare/v0.88.0...v0.89.0) (2026-03-31)
 
 
