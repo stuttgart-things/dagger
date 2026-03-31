@@ -55,7 +55,7 @@ func (m *Git) CreateGithubBranch(
 	// Try to create the branch; if it already exists, update it to the base SHA
 	createCmd := fmt.Sprintf(
 		"gh api repos/%s/git/refs -f ref=refs/heads/%s -f sha=%s 2>/dev/null || "+
-			"gh api repos/%s/git/refs/heads/%s -X PATCH -f sha=%s -f force=true",
+			"gh api repos/%s/git/refs/heads/%s -X PATCH -f sha=%s -F force=true",
 		repository, newBranch, baseSha,
 		repository, newBranch, baseSha)
 
