@@ -58,7 +58,7 @@ Each module includes:
 Interactive task menu with [gum](https://github.com/charmbracelet/gum):
 
 ```bash
-# Start task menu
+# Start task
 task
 
 # Available tasks:

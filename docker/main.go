@@ -98,5 +98,5 @@ func (m *Docker) BuildAndPush(
 		return "", fmt.Errorf("push failed: %w", err)
 	}
 
-	return fmt.Sprintf("Successfully built and pushed", imageRef), nil
+	return fmt.Sprintf("Successfully built and pushed %s", imageRef), nil
 }

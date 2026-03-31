@@ -2,7 +2,6 @@ package main
 
 import (
 	"dagger/docker/internal/dagger"
-	"fmt"
 )
 
 // Build permit to build image from Dockerfile
@@ -25,7 +24,7 @@ func (m *Docker) Build(
 	}
 
 	for _, directory := range withDirectories {
-		src = src.WithDirectory(fmt.Sprintf("%s", directory), directory)
+		src = src.WithDirectory(".", directory)
 	}
 
 	return &ImageBuild{
