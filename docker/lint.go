@@ -5,7 +5,6 @@ import (
 	"dagger/docker/internal/dagger"
 
 	"github.com/creasty/defaults"
-	"github.com/disaster37/dagger-library-go/lib/helper"
 	"github.com/gookit/validate"
 )
 
@@ -43,6 +42,6 @@ func (m *Docker) Lint(
 	return m.BaseHadolintContainer.
 		WithDirectory("/project", option.src).
 		WithWorkdir("/project").
-		WithExec(helper.ForgeCommandf("/bin/hadolint --failure-threshold %s %s", option.Threashold, option.Dockerfile)).
+		WithExec([]string{"/bin/hadolint", "--failure-threshold", option.Threashold, option.Dockerfile}).
 		Stdout(ctx)
 }
