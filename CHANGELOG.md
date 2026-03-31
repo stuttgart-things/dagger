@@ -1,3 +1,11 @@
+## [0.90.1](https://github.com/stuttgart-things/dagger/compare/v0.90.0...v0.90.1) (2026-03-31)
+
+
+### Bug Fixes
+
+* **docker:** remove disaster37/dagger-library-go dependency ([bc06961](https://github.com/stuttgart-things/dagger/commit/bc06961d6f4ca1fcec467da2b10fe0d6e442b0f3))
+* fix/remove-unsued-import ([6bf6ac5](https://github.com/stuttgart-things/dagger/commit/6bf6ac5e916df84c1e4f39f4aca2e6a2b48c194d))
+
 # [0.90.0](https://github.com/stuttgart-things/dagger/compare/v0.89.0...v0.90.0) (2026-03-31)
 
 
