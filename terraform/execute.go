@@ -33,6 +33,9 @@ func (m *Terraform) Execute(
 	// vaultToken
 	// +optional
 	vaultToken *dagger.Secret,
+	// Vault address (e.g. "https://vault.example.com")
+	// +optional
+	vaultAddr string,
 	// Kubeconfig secret for Kubernetes backend access
 	// +optional
 	kubeConfig *dagger.Secret,
@@ -62,13 +65,16 @@ func (m *Terraform) Execute(
 
 	// INJECT VAULT SECRETS AS ENVIRONMENT VARIABLES
 	if vaultRoleID != nil {
-		ctr = ctr.WithSecretVariable("TF_VAR_vault_role_id", vaultRoleID)
+		ctr = ctr.WithSecretVariable("VAULT_ROLE_ID", vaultRoleID)
 	}
 	if vaultSecretID != nil { // pragma: allowlist secret
-		ctr = ctr.WithSecretVariable("TF_VAR_vault_secret_id", vaultSecretID)
+		ctr = ctr.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
 	}
 	if vaultToken != nil {
-		ctr = ctr.WithSecretVariable("TF_VAR_vault_token", vaultToken)
+		ctr = ctr.WithSecretVariable("VAULT_TOKEN", vaultToken)
+	}
+	if vaultAddr != "" {
+		ctr = ctr.WithEnvVariable("VAULT_ADDR", vaultAddr)
 	}
 
 	// MOUNT KUBECONFIG FOR KUBERNETES BACKEND
