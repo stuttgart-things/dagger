@@ -1,3 +1,10 @@
+## [0.90.3](https://github.com/stuttgart-things/dagger/compare/v0.90.2...v0.90.3) (2026-04-06)
+
+
+### Bug Fixes
+
+* fix/tf-module ([d40a4df](https://github.com/stuttgart-things/dagger/commit/d40a4df9aa5c878dbbec3442c5b18ebc3dbb63b3))
+
 ## [0.90.2](https://github.com/stuttgart-things/dagger/compare/v0.90.1...v0.90.2) (2026-04-06)
 
 
