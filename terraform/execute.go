@@ -43,6 +43,9 @@ func (m *Terraform) Execute(
 	// +optional
 	// +default="/root/.kube/config"
 	kubeConfigPath string,
+	// Run terraform output --json after the operation and write result to output.json
+	// +optional
+	exportTfOutput bool,
 ) (*dagger.Directory, error) {
 	if operation == "" {
 		operation = "init"
@@ -131,6 +134,10 @@ func (m *Terraform) Execute(
 		))
 	default:
 		return nil, fmt.Errorf("unsupported terraform operation: %s", operation)
+	}
+
+	if exportTfOutput {
+		ctr = ctr.WithExec([]string{"sh", "-c", "terraform output --json > output.json"})
 	}
 
 	return ctr.Directory(workDir), nil
