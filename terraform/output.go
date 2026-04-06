@@ -13,6 +13,13 @@ func (m *Terraform) Output(
 	awsAccessKeyID *dagger.Secret,
 	// +optional
 	awsSecretAccessKey *dagger.Secret,
+	// Kubeconfig secret for Kubernetes backend access
+	// +optional
+	kubeConfig *dagger.Secret,
+	// Path to mount the kubeconfig inside the container (must match backend config_path)
+	// +optional
+	// +default="/root/.kube/config"
+	kubeConfigPath string,
 ) (string, error) {
 	ctr, err := m.container(ctx)
 	if err != nil {
@@ -28,6 +35,11 @@ func (m *Terraform) Output(
 	}
 	// Prevent attempts to use IMDS, which can cause noisy errors in CI
 	ctr = ctr.WithEnvVariable("AWS_EC2_METADATA_DISABLED", "true")
+
+	// MOUNT KUBECONFIG FOR KUBERNETES BACKEND
+	if kubeConfig != nil {
+		ctr = ctr.WithMountedSecret(kubeConfigPath, kubeConfig)
+	}
 
 	workDir := "/src"
 
