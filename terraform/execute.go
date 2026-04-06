@@ -33,6 +33,13 @@ func (m *Terraform) Execute(
 	// vaultToken
 	// +optional
 	vaultToken *dagger.Secret,
+	// Kubeconfig secret for Kubernetes backend access
+	// +optional
+	kubeConfig *dagger.Secret,
+	// Path to mount the kubeconfig inside the container (must match backend config_path)
+	// +optional
+	// +default="/root/.kube/config"
+	kubeConfigPath string,
 ) (*dagger.Directory, error) {
 	if operation == "" {
 		operation = "init"
@@ -62,6 +69,11 @@ func (m *Terraform) Execute(
 	}
 	if vaultToken != nil {
 		ctr = ctr.WithSecretVariable("TF_VAR_vault_token", vaultToken)
+	}
+
+	// MOUNT KUBECONFIG FOR KUBERNETES BACKEND
+	if kubeConfig != nil {
+		ctr = ctr.WithMountedSecret(kubeConfigPath, kubeConfig)
 	}
 
 	workDir := "/src"
