@@ -1,3 +1,10 @@
+## [0.93.1](https://github.com/stuttgart-things/dagger/compare/v0.93.0...v0.93.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* **kcl:** rename workspace flag to subpath to avoid collision ([85a1431](https://github.com/stuttgart-things/dagger/commit/85a143196b649cc657e942b2af47a2b1ef486023))
+
 # [0.93.0](https://github.com/stuttgart-things/dagger/compare/v0.92.1...v0.93.0) (2026-04-13)
 
 
