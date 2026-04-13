@@ -8,7 +8,7 @@ import (
 func (m *Packer) container(
 	// The Packer version to use
 	// +optional
-	// +default="1.13.1"
+	// +default="1.15.1"
 	packerVersion,
 	// The Packer arch
 	// +optional
@@ -26,7 +26,7 @@ func (m *Packer) container(
 		destBinPath = "/usr/bin/" + packerBin
 
 		// Govc configuration
-		govcVersion = "0.51.0"
+		govcVersion = "0.53.0"
 		govcArch    = "Linux_x86_64"
 		govcURL     = fmt.Sprintf("https://github.com/vmware/govmomi/releases/download/v%s/govc_%s.tar.gz", govcVersion, govcArch)
 		govcTarball = fmt.Sprintf("govc_%s.tar.gz", govcArch)

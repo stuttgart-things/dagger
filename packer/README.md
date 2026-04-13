@@ -1,11 +1,12 @@
 # Packer Dagger Module
 
-This module provides Dagger functions for Packer operations including image building, vCenter operations, and Vault integration.
+This module provides Dagger functions for Packer operations including image building, vCenter and Proxmox operations, and Vault integration.
 
 ## Features
 
 - ✅ Packer image building with HCL configurations
-- ✅ vCenter VM template operations (move, rename)
+- ✅ vCenter VM template operations (move, rename, delete) + datastore/network inspection
+- ✅ Proxmox VE operations (move/migrate, rename, delete) + storage/network/resource inspection via REST API (pure Go, API token auth)
 - ✅ Vault integration for secure credential management
 - ✅ Build variables via comma-separated CLI string (`--vars`)
 - ✅ Build variables via plain YAML file (`--vars-file`)
@@ -19,7 +20,8 @@ This module provides Dagger functions for Packer operations including image buil
 - Dagger CLI installed
 - Docker runtime available
 - Packer HCL configuration files
-- vCenter access (for VM operations)
+- vCenter access (for vSphere operations)
+- Proxmox VE API token (for Proxmox operations) — create under *Datacenter → Permissions → API Tokens*
 
 ## Quick Start
 
@@ -197,7 +199,7 @@ dagger call -m packer bake \
 | --- | --- |
 | `--local-dir` | Local directory mounted as the packer source |
 | `--build-path` | Path to the `.pkr.hcl` file (the parent is used as the build dir) |
-| `--packer-version` | Packer version to install (default `1.12.0`) |
+| `--packer-version` | Packer version to install (default `1.15.1`) |
 | `--arch` | Packer arch (default `linux_amd64`) |
 | `--init-only` | Only run `packer init`, skip `packer build` |
 | `--force` | Pass `-force` to `packer build` |
@@ -228,6 +230,105 @@ dagger call -m packer vcenteroperation \
   --source /Datacenter/vm/templates/old-name \
   --target new-template-name
 ```
+
+### Proxmox Operations
+
+All Proxmox functions talk to the Proxmox VE REST API directly in Go
+(`net/http`, no extra deps, no `curl`/`jq`). Authentication uses an API token:
+
+- `--proxmox-url` — base URL, e.g. `https://pve.example.com:8006`
+- `--token-id` — token identifier, e.g. `automation@pam!dagger`
+- `--token-secret` — token UUID
+
+TLS verification is currently skipped (homelab-friendly).
+
+#### Create a Proxmox API token
+
+1. **Create the token** — in the Proxmox web UI: *Datacenter → Permissions → API Tokens → Add*.
+   - **User**: an existing user, e.g. `phermann@LabUL` (or `automation@pam`).
+   - **Token ID**: a short name, e.g. `dagger`. The full token ID becomes `phermann@LabUL!dagger`.
+   - **Privilege Separation**: leave **unchecked** if you want the token to inherit the user's permissions. If you keep it checked, you must grant permissions to the token itself (see step 2).
+   - Copy the generated **secret UUID** immediately — it is only shown once.
+
+2. **Grant permissions** — *Datacenter → Permissions → Add → API Token Permission* (or *User Permission* if privilege separation is disabled):
+   - **Path**: `/` for full visibility, or scope it down (e.g. `/storage`, `/nodes/<node>`, `/vms`).
+   - **API Token**: the token from step 1 (e.g. `phermann@LabUL!dagger`).
+   - **Role**:
+     - `PVEAuditor` — read-only, sufficient for `check-proxmox-storage`, `check-proxmox-networks`, `list-proxmox-resources`.
+     - `PVEVMAdmin` on `/vms` — required for `proxmoxoperation` (move/rename/delete).
+     - `PVEDatastoreAdmin` on `/storage` — if you need to manage storage.
+
+3. **Export and use**:
+
+   ```bash
+   export PVE_URL="https://pve.example.com:8006"
+   export PVE_TOKEN_ID='phermann@LabUL!dagger'   # single quotes — ! triggers bash history expansion
+   export PVE_TOKEN_SECRET="<uuid-from-step-1>"
+   ```
+
+   > **Note:** If you see `{ "data": [] }` from `check-proxmox-storage` despite a successful call, the token authenticated but lacks `Datastore.Audit` on `/storage`. Re-check step 2.
+
+```bash
+export PVE_URL=https://pve.example.com:8006
+export PVE_TOKEN_ID='automation@pam!dagger'
+export PVE_TOKEN_SECRET=<uuid>
+
+# Migrate VM 9001 from pve1 → pve2
+dagger call -m packer proxmoxoperation \
+  --operation move \
+  --node pve1 --vmid 9001 --target pve2 \
+  --proxmox-url env:PVE_URL \
+  --token-id env:PVE_TOKEN_ID \
+  --token-secret env:PVE_TOKEN_SECRET
+
+# Rename VM 9001
+dagger call -m packer proxmoxoperation \
+  --operation rename \
+  --node pve1 --vmid 9001 --target new-template-name \
+  --proxmox-url env:PVE_URL \
+  --token-id env:PVE_TOKEN_ID \
+  --token-secret env:PVE_TOKEN_SECRET
+
+# Delete VM 9001 (purges disks + unreferenced)
+dagger call -m packer proxmoxoperation \
+  --operation delete \
+  --node pve1 --vmid 9001 \
+  --proxmox-url env:PVE_URL \
+  --token-id env:PVE_TOKEN_ID \
+  --token-secret env:PVE_TOKEN_SECRET
+```
+
+```bash
+# Datacenter-wide resources (optional filter: vm | storage | node | sdn)
+dagger call -m packer list-proxmox-resources \
+  --proxmox-url env:PVE_URL \
+  --token-id env:PVE_TOKEN_ID \
+  --token-secret env:PVE_TOKEN_SECRET \
+  --resource-type vm
+
+# Storage pools (cluster-wide or per-node)
+dagger call -m packer check-proxmox-storage \
+  --proxmox-url env:PVE_URL \
+  --token-id env:PVE_TOKEN_ID \
+  --token-secret env:PVE_TOKEN_SECRET \
+  --node pve1
+
+# Network interfaces/bridges on a node
+dagger call -m packer check-proxmox-networks \
+  --proxmox-url env:PVE_URL \
+  --token-id env:PVE_TOKEN_ID \
+  --token-secret env:PVE_TOKEN_SECRET \
+  --node pve1
+```
+
+**Proxmox function reference:**
+
+| Function | Description |
+| --- | --- |
+| `proxmoxoperation` | `move` (migrate to target node), `rename` (set new VM name), `delete` (destroy + purge disks) |
+| `check-proxmox-storage` | Lists storage pools with usage; cluster-wide if `--node` omitted |
+| `check-proxmox-networks` | Lists interfaces/bridges on a node |
+| `list-proxmox-resources` | Datacenter-wide resources, optional `--resource-type vm\|storage\|node\|sdn` |
 
 ## Configuration Example
 
