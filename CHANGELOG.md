@@ -1,3 +1,10 @@
+## [0.92.1](https://github.com/stuttgart-things/dagger/compare/v0.92.0...v0.92.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* **kcl:** skip post-processor for multi-document YAML output ([2f4d8d0](https://github.com/stuttgart-things/dagger/commit/2f4d8d085e64b60629221d8b2c4c9560d8372515))
+
 # [0.92.0](https://github.com/stuttgart-things/dagger/compare/v0.91.0...v0.92.0) (2026-04-13)
 
 
