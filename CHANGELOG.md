@@ -1,3 +1,10 @@
+# [0.93.0](https://github.com/stuttgart-things/dagger/compare/v0.92.1...v0.93.0) (2026-04-13)
+
+
+### Features
+
+* feat/add-workspace-kcl-parameter ([8a96e63](https://github.com/stuttgart-things/dagger/commit/8a96e63e2635ced1bd3eff7251f79fc69cc77012))
+
 ## [0.92.1](https://github.com/stuttgart-things/dagger/compare/v0.92.0...v0.92.1) (2026-04-13)
 
 
