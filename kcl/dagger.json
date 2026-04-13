@@ -1,8 +1,8 @@
 {
   "name": "kcl",
-  "engineVersion": "v0.19.2",
+  "engineVersion": "v0.20.3",
   "sdk": {
     "source": "go"
   },
-  "source": "."
+  "disableDefaultFunctionCaching": true
 }
