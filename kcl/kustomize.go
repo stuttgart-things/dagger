@@ -37,11 +37,11 @@ func (m *Kcl) RenderKustomizeBase(
 	// Sub-path inside source to cd into before running kcl. Enables KCL
 	// packages with relative path deps pointing outside their own directory.
 	// +optional
-	workdir string,
+	subpath string,
 ) (*dagger.Directory, error) {
 
 	// Run KCL with formatOutput=true and outputFormat="yaml" to get clean multi-doc YAML
-	renderedFile, err := m.Run(ctx, source, ociSource, parameters, parametersFile, true, "yaml", entrypoint, workdir)
+	renderedFile, err := m.Run(ctx, source, ociSource, parameters, parametersFile, true, "yaml", entrypoint, subpath)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (m *Kcl) PushKustomizeBase(
 	// Sub-path inside source to cd into before running kcl. Enables KCL
 	// packages with relative path deps pointing outside their own directory.
 	// +optional
-	workdir string,
+	subpath string,
 	// OCI address (e.g., ghcr.io/stuttgart-things/my-app-kustomize)
 	address string,
 	// Version tag (e.g., v1.0.0)
@@ -165,7 +165,7 @@ func (m *Kcl) PushKustomizeBase(
 ) (string, error) {
 
 	// Render the kustomize base directory
-	baseDir, err := m.RenderKustomizeBase(ctx, source, ociSource, parameters, parametersFile, entrypoint, workdir)
+	baseDir, err := m.RenderKustomizeBase(ctx, source, ociSource, parameters, parametersFile, entrypoint, subpath)
 	if err != nil {
 		return "", err
 	}
