@@ -226,17 +226,33 @@ func (m *Kcl) Run(
 	// Execute and write /output.yaml
 	ctr = ctr.WithExec([]string{"sh", "-c", cmd})
 
-	// Post-process into clean YAML if formatOutput is enabled
+	// Post-process into clean YAML if formatOutput is enabled.
+	//
+	// The post-processor below is designed for KCL code whose top-level value
+	// is a list of resources (kcl emits `items:` + indented list). Modern KCL
+	// code that uses `manifests.yaml_stream(...)` already emits proper
+	// multi-document YAML, and running the post-processor on it corrupts the
+	// output (the `sed 's/^  //'` step strips two spaces from every nested
+	// line, flattening nested lists like a Dapr Component's `spec.metadata`
+	// into top-level keys, which then breaks downstream yq-based tooling).
+	//
+	// Detect multi-doc output and pass it through unchanged.
 	if formatOutput {
 		postProcess := `
-  cat /output.yaml \
-    | grep -v "^items:" \
-    | sed 's/^- /---\n/' \
-    | sed '1d' \
-    | sed 's/^  //' \
-    | sed '/^[[:space:]]*$/d' \
-    | awk 'NR==1{print "---"} 1' \
-    > /output-processed.yaml
+  if head -c 4 /output.yaml | grep -q '^---' || grep -q '^---[[:space:]]*$' /output.yaml; then
+    # kcl already produced multi-document YAML (e.g. via manifests.yaml_stream).
+    # Pass through unchanged — the sed pipeline below would corrupt it.
+    cp /output.yaml /output-processed.yaml
+  else
+    cat /output.yaml \
+      | grep -v "^items:" \
+      | sed 's/^- /---\n/' \
+      | sed '1d' \
+      | sed 's/^  //' \
+      | sed '/^[[:space:]]*$/d' \
+      | awk 'NR==1{print "---"} 1' \
+      > /output-processed.yaml
+  fi
 `
 		ctr = ctr.WithExec([]string{"sh", "-c", postProcess})
 		// Return processed output
