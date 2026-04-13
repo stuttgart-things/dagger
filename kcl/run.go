@@ -142,7 +142,13 @@ func (m *Kcl) Run(
 	// Entry point file name
 	// +optional
 	// +default="main.k"
-	entrypoint string) (*dagger.File, error) {
+	entrypoint string,
+	// Sub-path inside source to cd into before running kcl. Enables KCL
+	// packages with relative path deps pointing outside their own directory
+	// (e.g. shared modules in a monorepo). Pass the repo root as source and
+	// the sub-package path as workdir.
+	// +optional
+	workdir string) (*dagger.File, error) {
 
 	ctr := m.container()
 
@@ -157,9 +163,12 @@ func (m *Kcl) Run(
 		ctr = ctr.WithWorkdir("/work")
 	} else if source != nil {
 		// Mount local directory
-		ctr = ctr.
-			WithMountedDirectory("/src", source).
-			WithWorkdir("/src")
+		ctr = ctr.WithMountedDirectory("/src", source)
+		if workdir != "" {
+			ctr = ctr.WithWorkdir("/src/" + strings.TrimPrefix(workdir, "/"))
+		} else {
+			ctr = ctr.WithWorkdir("/src")
+		}
 	} else {
 		// Use current working directory
 		ctr = ctr.WithWorkdir("/work")

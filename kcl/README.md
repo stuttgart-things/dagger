@@ -143,6 +143,61 @@ dagger call -m kcl push-kustomize-base \
   --tag latest
 ```
 
+#### Monorepos with shared KCL path deps (`--workdir`)
+
+When a KCL sub-package depends on a sibling module via a relative
+`path = "../..."` entry in `kcl.mod`, mount the repo root as `--source`
+and point `--workdir` at the sub-package. The container `cd`s into
+`/src/<workdir>` before running `kcl`, so deps outside the sub-package
+still resolve.
+
+Layout:
+
+```
+dapr-workflows/
+├── deploy-base/                               # shared KCL module
+│   ├── kcl.mod
+│   └── worker.k
+└── backstage-template-execution/
+    └── deploy/
+        ├── kcl.mod                            # depends on ../../deploy-base
+        └── main.k
+```
+
+`deploy/kcl.mod`:
+
+```toml
+[dependencies]
+deploy_base = { path = "../../deploy-base" }
+```
+
+Invocation from the repo root:
+
+```bash
+# Run
+dagger call -m kcl run \
+  --source . \
+  --workdir backstage-template-execution/deploy \
+  export --path /tmp/rendered.yaml
+
+# Render kustomize base
+dagger call -m kcl render-kustomize-base \
+  --source . \
+  --workdir backstage-template-execution/deploy \
+  export --path /tmp/kustomize-base
+
+# Push kustomize base as OCI artifact
+dagger call -m kcl push-kustomize-base \
+  --source . \
+  --workdir backstage-template-execution/deploy \
+  --address ghcr.io/stuttgart-things/backstage-template-execution-kustomize \
+  --tag v0.0.1 \
+  --user env:GITHUB_USER \
+  --password env:GITHUB_TOKEN
+```
+
+Omit `--workdir` for self-contained packages — behavior is unchanged.
+
 ## Functions
 
 ### Core KCL Functions
