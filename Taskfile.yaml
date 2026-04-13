@@ -115,9 +115,48 @@ tasks:
     desc: Test packer functions
     cmds:
       - |
-        dagger call -m packer bake \
+        # BASIC HELLO BUILD
+        dagger call -m {{ .MODULE }} bake \
         --local-dir "." \
-        --build-path tests/packer/hello/hello.pkr.hcl \
+        --build-path {{ .TEST_HELLO }} \
+        --progress plain
+      - |
+        # VARS (COMMA-SEPARATED CLI)
+        dagger call -m {{ .MODULE }} bake \
+        --local-dir "." \
+        --build-path {{ .TEST_VARS_TEMPLATE }} \
+        --vars "{{ .TEST_VARS_CLI }}" \
+        --progress plain
+      - |
+        # VARS FILE (PLAIN YAML)
+        dagger call -m {{ .MODULE }} bake \
+        --local-dir "." \
+        --build-path {{ .TEST_VARS_TEMPLATE }} \
+        --vars-file {{ .TEST_VARS_FILE }} \
+        --progress plain
+      - |
+        # VARS FILE + SOPS FILE + CLI OVERRIDE
+        # REQUIRES: SOPS_AGE_KEY env var AND tests/packer/vars/secrets.enc.yaml
+        if [ -f tests/packer/vars/secrets.enc.yaml ] && [ -n "${SOPS_AGE_KEY}" ]; then
+          dagger call -m {{ .MODULE }} bake \
+          --local-dir "." \
+          --build-path {{ .TEST_VARS_TEMPLATE }} \
+          --vars-file {{ .TEST_VARS_FILE }} \
+          --sops-file {{ .TEST_SOPS_FILE }} \
+          --sops-age-key env:SOPS_AGE_KEY \
+          --vars "{{ .TEST_VARS_OVERRIDE }}" \
+          --progress plain
+        else
+          echo "SKIP: sops test (missing secrets.enc.yaml or SOPS_AGE_KEY)"
+        fi
+    vars:
+      MODULE: packer
+      TEST_HELLO: tests/packer/hello/hello.pkr.hcl
+      TEST_VARS_TEMPLATE: tests/packer/vars/template.pkr.hcl
+      TEST_VARS_FILE: vars.yaml
+      TEST_SOPS_FILE: secrets.enc.yaml
+      TEST_VARS_CLI: "name=from-cli,environment=ci,owner=dagger"
+      TEST_VARS_OVERRIDE: "environment=prod"
 
   test-kcl:
     desc: Test KCL functions

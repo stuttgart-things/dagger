@@ -5,6 +5,7 @@ import (
 	"dagger/packer/internal/dagger"
 	"fmt"
 	"path/filepath"
+	"strings"
 )
 
 type Packer struct {
@@ -44,6 +45,18 @@ func (m *Packer) Bake(
 	// vaultToken
 	// +optional
 	vaultToken *dagger.Secret,
+	// Comma-separated packer build vars, e.g. "name=tpl,username=root,password=foo" # pragma: allowlist secret
+	// +optional
+	vars string,
+	// Path (relative to the packer build dir) to a plain YAML file with build vars
+	// +optional
+	varsFile string,
+	// Path (relative to the packer build dir) to a SOPS-encrypted YAML file with secret build vars
+	// +optional
+	sopsFile string,
+	// Age private key used to decrypt sopsFile (SOPS_AGE_KEY)
+	// +optional
+	sopsAgeKey *dagger.Secret,
 	buildPath string,
 	localDir *dagger.Directory,
 ) string {
@@ -73,6 +86,25 @@ func (m *Packer) Bake(
 	if vaultSecretID != nil { // pragma: allowlist secret
 		base = base.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
 	}
+	if sopsAgeKey != nil {
+		base = base.WithSecretVariable("SOPS_AGE_KEY", sopsAgeKey)
+	}
+
+	// CONVERT PLAIN YAML VARS FILE -> JSON (packer -var-file accepts JSON)
+	if varsFile != "" {
+		base = base.WithExec([]string{
+			"sh", "-c",
+			fmt.Sprintf("yq -o=json '.' %s > /tmp/packer-vars.json", shellQuote(varsFile)),
+		})
+	}
+
+	// DECRYPT SOPS YAML -> JSON
+	if sopsFile != "" {
+		base = base.WithExec([]string{
+			"sh", "-c",
+			fmt.Sprintf("sops -d %s | yq -o=json '.' > /tmp/packer-sops.json", shellQuote(sopsFile)),
+		})
+	}
 
 	// RUN `PACKER INIT`
 	initContainer := base.WithExec([]string{
@@ -87,6 +119,15 @@ func (m *Packer) Bake(
 		buildArgs := []string{"packer", "build"}
 		if force {
 			buildArgs = append(buildArgs, "-force")
+		}
+		if varsFile != "" {
+			buildArgs = append(buildArgs, "-var-file=/tmp/packer-vars.json")
+		}
+		if sopsFile != "" {
+			buildArgs = append(buildArgs, "-var-file=/tmp/packer-sops.json")
+		}
+		for _, kv := range splitCSV(vars) {
+			buildArgs = append(buildArgs, "-var", kv)
 		}
 		buildArgs = append(buildArgs, packerFile)
 
@@ -119,4 +160,24 @@ func (m *Packer) Bake(
 	}
 
 	return logContents
+}
+
+// splitCSV splits "k1=v1,k2=v2" into ["k1=v1","k2=v2"], skipping empties.
+func splitCSV(s string) []string {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// shellQuote wraps a value in single quotes for safe shell interpolation.
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
 }

@@ -7,6 +7,9 @@ This module provides Dagger functions for Packer operations including image buil
 - ✅ Packer image building with HCL configurations
 - ✅ vCenter VM template operations (move, rename)
 - ✅ Vault integration for secure credential management
+- ✅ Build variables via comma-separated CLI string (`--vars`)
+- ✅ Build variables via plain YAML file (`--vars-file`)
+- ✅ Secret build variables via SOPS-encrypted YAML file (`--sops-file`)
 - ✅ Multi-platform build support
 - ✅ Local and remote build directory support
 - ✅ Automated template management workflows
@@ -46,6 +49,58 @@ dagger call -m packer bake \
 --vault-token env:VAULT_TOKEN \
 --vault-secret-id env:VAULT_SECRET_ID \
 --progress plain
+```
+
+### Build Variables
+
+`Bake` accepts variables for `packer build` from three sources. They are applied
+in order — **`--vars-file` → `--sops-file` → `--vars`** — so CLI values override
+file values.
+
+- `--vars` — comma-separated `key=value` pairs passed as `-var key=value`
+- `--vars-file` — path (relative to the build dir) to a **plain YAML** file;
+  converted to JSON inside the container with `yq` and consumed via
+  `packer build -var-file=...`
+- `--sops-file` — path (relative to the build dir) to a **SOPS-encrypted YAML**
+  file; decrypted with `sops -d`, converted to JSON, then consumed via
+  `-var-file=...`
+- `--sops-age-key` — age private key (as a Dagger secret) exported into the
+  container as `SOPS_AGE_KEY` for decryption
+
+```bash
+# Comma-separated CLI vars
+dagger call -m packer bake \
+  --local-dir "." \
+  --build-path tests/packer/vars/template.pkr.hcl \
+  --vars "name=tpl,environment=ci,owner=dagger" \
+  --progress plain
+
+# Plain YAML vars file
+dagger call -m packer bake \
+  --local-dir "." \
+  --build-path tests/packer/vars/template.pkr.hcl \
+  --vars-file vars.yaml \
+  --progress plain
+
+# Vars file + SOPS-encrypted secrets file + CLI override
+export SOPS_AGE_KEY=$(cat age.key)
+
+dagger call -m packer bake \
+  --local-dir "." \
+  --build-path tests/packer/vars/template.pkr.hcl \
+  --vars-file vars.yaml \
+  --sops-file secrets.enc.yaml \
+  --sops-age-key env:SOPS_AGE_KEY \
+  --vars "environment=prod" \
+  --progress plain
+```
+
+To create a SOPS fixture:
+
+```bash
+age-keygen -o age.key
+export SOPS_AGE_RECIPIENTS=$(grep 'public key:' age.key | awk '{print $4}')
+sops -e --age "$SOPS_AGE_RECIPIENTS" secrets.plain.yaml > secrets.enc.yaml
 ```
 
 ### vCenter Operations
@@ -125,7 +180,32 @@ dagger call -m packer bake \
   --vault-role-id env:VAULT_ROLE_ID \
   --vault-token env:VAULT_TOKEN \
   --vault-secret-id env:VAULT_SECRET_ID
+
+# Build with mixed variable sources
+dagger call -m packer bake \
+  --local-dir ./packer-configs \
+  --build-path image.pkr.hcl \
+  --vars-file vars.yaml \
+  --sops-file secrets.enc.yaml \
+  --sops-age-key env:SOPS_AGE_KEY \
+  --vars "name=my-template,environment=prod"
 ```
+
+**`Bake` parameters:**
+
+| Flag | Description |
+| --- | --- |
+| `--local-dir` | Local directory mounted as the packer source |
+| `--build-path` | Path to the `.pkr.hcl` file (the parent is used as the build dir) |
+| `--packer-version` | Packer version to install (default `1.12.0`) |
+| `--arch` | Packer arch (default `linux_amd64`) |
+| `--init-only` | Only run `packer init`, skip `packer build` |
+| `--force` | Pass `-force` to `packer build` |
+| `--vault-addr` / `--vault-token` / `--vault-role-id` / `--vault-secret-id` | Vault env/secret plumbing |
+| `--vars` | Comma-separated `key=value` pairs appended as `-var` args |
+| `--vars-file` | Plain YAML file (relative to build dir), normalized to JSON and passed via `-var-file` |
+| `--sops-file` | SOPS-encrypted YAML (relative to build dir), decrypted + normalized to JSON and passed via `-var-file` |
+| `--sops-age-key` | Age private key secret used to decrypt `--sops-file` (exported as `SOPS_AGE_KEY`) |
 
 ### vCenter Operations
 

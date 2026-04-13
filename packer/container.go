@@ -53,6 +53,9 @@ func (m *Packer) container(
 		"git",
 		"sshpass",
 		"gzip", // Already correct in Wolfi
+		"yq",
+		"sops",
+		"age",
 	})
 
 	// Install Ansible via pip
