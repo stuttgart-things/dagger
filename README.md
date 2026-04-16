@@ -24,6 +24,7 @@ A modular collection of Dagger building blocks for infrastructure, containers, s
 | [Git](./git/README.md)             | Git Operations                  | Repo, branch, tag, remote, sync |
 | [Crane](./crane/README.md)         | Registry Operations             | Image copy, manifest, multi-arch |
 | [KCL](./kcl/README.md)             | KCL Config & CRD Conversion     | KCL CLI, CRD2KCL, validation, OCI push |
+| [OCI](./oci/README.md)             | OCI Artifact Management         | Flux push, batch push, local TLS registry testing |
 
 ## 🛠️ Quick Start
 

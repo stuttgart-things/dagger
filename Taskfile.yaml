@@ -28,7 +28,7 @@ tasks:
     desc: Select test to run
     cmds:
       - |
-        totest=$(gum choose "ansible" "go" "helm" "crossplane" "kcl")
+        totest=$(gum choose "ansible" "go" "helm" "crossplane" "kcl" "oci")
         echo "Selected: ${totest}"
         task test-${totest}
 
@@ -54,6 +54,7 @@ tasks:
       - task: test-terraform
       - task: test-templating
       - task: test-python
+      - task: test-oci
       - task: git:pr
       - semantic-release --dry-run
       - semantic-release --debug --no-ci
@@ -415,6 +416,22 @@ tasks:
       OUTPUT_HUGO_FOLDER: /tmp/dagger/hugo
       OUTPUT_HUGO_STATIC_CONTENT: /tmp/dagger/hugo/{{ .NAME }}/static
       OUTPUT_HUGO_MERGE: /tmp/merged.md
+
+  test-oci:
+    desc: Test OCI functions (uses local zot registry, no credentials needed)
+    cmds:
+      - |
+        echo "Testing push-artifact with local zot registry..."
+        dagger call -m {{ .MODULE }} \
+        test-push-artifact \
+        --progress plain
+      - |
+        echo "Testing push-artifacts with local zot registry..."
+        dagger call -m {{ .MODULE }} \
+        test-push-artifacts \
+        --progress plain
+    vars:
+      MODULE: oci
 
   test-crossplane:
     desc: Test crossplame functions
