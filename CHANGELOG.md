@@ -1,3 +1,10 @@
+# [0.94.0](https://github.com/stuttgart-things/dagger/compare/v0.93.1...v0.94.0) (2026-04-16)
+
+
+### Features
+
+* feat/add-oci ([bda2292](https://github.com/stuttgart-things/dagger/commit/bda2292119da53d9b5f751da264b65693487adb0))
+
 ## [0.93.1](https://github.com/stuttgart-things/dagger/compare/v0.93.0...v0.93.1) (2026-04-13)
 
 
