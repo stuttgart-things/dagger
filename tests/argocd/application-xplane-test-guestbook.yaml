@@ -1,0 +1,10 @@
+name: xplane-test-guestbook
+namespace: argocd
+project: xplane-test
+repoURL: https://github.com/argoproj/argocd-example-apps.git
+path: guestbook
+targetRevision: HEAD
+destServer: https://10.100.136.192:34360
+destNamespace: guestbook
+syncOptions:
+  - CreateNamespace=true

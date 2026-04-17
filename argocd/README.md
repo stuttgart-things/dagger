@@ -3,13 +3,15 @@
 Register Kubernetes clusters in ArgoCD and render ArgoCD resources from OCI-hosted
 KCL modules — without ever leaving a Dagger pipeline.
 
-Three functions, three levels of coupling to the ArgoCD API:
+Five functions, from direct ArgoCD-API calls to pure Kubernetes / KCL paths:
 
 | Function | How it reaches ArgoCD | Requires |
 |---|---|---|
-| `add-cluster-cli`    | `argocd login` + `argocd cluster add` (gRPC-Web) | ArgoCD username/password, reachable gRPC-Web ingress |
-| `add-cluster-k-8-s`  | `kubectl apply` of a cluster Secret, no API call | kubeconfig of the ArgoCD-hosting cluster |
-| `create-app-project` | Renders via shared KCL module → optional `kubectl apply` | kubeconfig of the ArgoCD-hosting cluster (only if applying) |
+| `add-cluster-cli`        | `argocd login` + `argocd cluster add` (gRPC-Web)        | ArgoCD username/password, reachable gRPC-Web ingress |
+| `add-cluster-k-8-s`      | `kubectl apply` of a cluster Secret, no API call        | kubeconfig of the ArgoCD-hosting cluster |
+| `create-app-project`     | Renders via shared KCL module → optional `kubectl apply` | kubeconfig of the ArgoCD-hosting cluster (only if applying) |
+| `create-application`     | Renders via shared KCL module → optional `kubectl apply` | kubeconfig of the ArgoCD-hosting cluster (only if applying) |
+| `create-application-set` | Renders via shared KCL module → optional `kubectl apply` | kubeconfig of the ArgoCD-hosting cluster (only if applying) |
 
 ## add-cluster-cli
 
@@ -141,15 +143,46 @@ is also how you'd rotate it before the previous one expires. Token duration is
 capped by the target cluster's kube-apiserver
 (`--service-account-max-token-expiration`).
 
+The function returns a Directory containing `<cluster-name>.yaml` — the rendered
+Secret. Pass `--apply-to-cluster=false` to skip the `kubectl apply` step and just
+get the file back (the target cluster is still mutated — SA + RBAC + token — because
+the Secret can't be built without a live token).
+
+```bash
+# RENDER ONLY — no ArgoCD cluster kubeconfig needed
+dagger call -m github.com/stuttgart-things/dagger/argocd add-cluster-k-8-s \
+--kube-config file://~/.kube/ci-mgmt-1 \
+--cluster-name cicd-mgmt-1 \
+--apply-to-cluster=false \
+export --path /tmp/cluster-secret
+```
+
 ## create-app-project
 
 Renders an ArgoCD `AppProject` manifest from the
-[`argocd-app-project`](https://github.com/stuttgart-things/stuttgart-things/tree/main/kubernetes/argocd-app-project)
+[`argocd-app-project`](https://github.com/stuttgart-things/kcl/tree/main/kubernetes/argocd-app-project)
 KCL module (fetched from OCI via the shared `kcl` Dagger module) and optionally
 applies it to the ArgoCD-hosting cluster.
 
 Complex spec fields (`destinations`, whitelists, `labels`, `annotations`) take
 JSON strings — wrap them in single quotes so the shell leaves the braces alone.
+
+All three `create-*` functions also accept `--parameters-file <yaml>`, a YAML
+(or JSON) file with the same keys as the CLI flags. CLI flags override
+values from the file; values from the file override the KCL module's own
+defaults. See [tests/argocd/](../../tests/argocd/) for working examples.
+
+```bash
+# FROM YAML ONLY
+dagger call -m github.com/stuttgart-things/dagger/argocd create-app-project \
+--parameters-file tests/argocd/appproject-xplane-test.yaml \
+--apply-to-cluster=true --kube-config file://~/.kube/argocd-host
+
+# YAML + CLI OVERRIDE
+dagger call -m github.com/stuttgart-things/dagger/argocd create-application \
+--parameters-file tests/argocd/application-xplane-test-guestbook.yaml \
+--name xplane-test-guestbook-dev --dest-namespace guestbook-dev
+```
 
 ```bash
 # RENDER ONLY (returns a Directory containing <name>.yaml)
@@ -191,9 +224,105 @@ Pin the KCL module to a specific version with `--oci-source`:
 --oci-source 'oci://ghcr.io/stuttgart-things/argocd-app-project?tag=0.1.0'
 ```
 
+## create-application
+
+Renders an ArgoCD `Application` manifest from the
+[`argocd-application`](https://github.com/stuttgart-things/kcl/tree/main/kubernetes/argocd-application)
+KCL module and optionally applies it.
+
+Scalar fields (`project`, `repoURL`, `path`, `chart`, `destServer`,
+`destNamespace`, …) are exposed as typed params. Complex nested fields
+(`helm`, `kustomize`, `sources`, `syncPolicy`, `retry`, `automated`,
+`destination`, `info`, `labels`, `annotations`, `finalizers`) take JSON
+strings — wrap them in single quotes.
+
+```bash
+# RECREATE THE xplane-test-guestbook APPLICATION
+dagger call -m github.com/stuttgart-things/dagger/argocd create-application \
+--name xplane-test-guestbook \
+--project xplane-test \
+--dest-server https://10.100.136.192:34360 \
+--dest-namespace guestbook \
+--progress plain \
+export --path=/tmp/app.yaml
+```
+
+```bash
+# HELM CHART FROM A HELM REPO
+dagger call -m github.com/stuttgart-things/dagger/argocd create-application \
+--name kube-prometheus-stack \
+--project monitoring \
+--repo-url https://prometheus-community.github.io/helm-charts \
+--chart kube-prometheus-stack \
+--target-revision 65.1.0 \
+--dest-namespace monitoring \
+--helm '{"releaseName":"kps","valueFiles":["values.yaml"]}' \
+--apply-to-cluster=true \
+--kube-config file://~/.kube/platform-sthings
+```
+
+```bash
+# PIN A GIT REVISION, DISABLE AUTO-SYNC, ADD A FINALIZER
+dagger call -m github.com/stuttgart-things/dagger/argocd create-application \
+--name pinned-app \
+--target-revision v1.2.3 \
+--sync-policy '{}' \
+--finalizers '["resources-finalizer.argocd.argoproj.io"]'
+```
+
+## create-application-set
+
+Renders an ArgoCD `ApplicationSet` manifest from the
+[`argocd-application-set`](https://github.com/stuttgart-things/kcl/tree/main/kubernetes/argocd-application-set)
+KCL module and optionally applies it.
+
+`generators` is the main lever. Argo Go-template expressions like
+`{{ .cluster.name }}` survive the JSON/shell round-trip when they sit inside
+quoted string values.
+
+```bash
+# FAN-OUT A SINGLE-SOURCE APP ACROSS A LIST OF CLUSTERS
+dagger call -m github.com/stuttgart-things/dagger/argocd create-application-set \
+--name multi-cluster-guestbook \
+--generators '[{"list":{"elements":[
+    {"cluster":"dev","url":"https://1.2.3.4","namespace":"guestbook-dev"},
+    {"cluster":"prod","url":"https://5.6.7.8","namespace":"guestbook-prod"}
+  ]}}]' \
+--template-name '{{ .cluster }}-guestbook' \
+--template-labels '{"cluster":"{{ .cluster }}"}' \
+--source '{"repoURL":"https://github.com/argoproj/argocd-example-apps.git","path":"guestbook","targetRevision":"HEAD"}' \
+--dest-server '{{ .url }}' \
+--dest-namespace '{{ .namespace }}' \
+--sync-options '["CreateNamespace=true"]'
+```
+
+```bash
+# CLUSTER GENERATOR (ALL ARGO-REGISTERED CLUSTERS)
+dagger call -m github.com/stuttgart-things/dagger/argocd create-application-set \
+--name cluster-addons \
+--generators '[{"clusters":{}}]' \
+--template-name 'addons-{{ .name }}' \
+--dest-server '{{ .server }}' \
+--dest-namespace addons
+```
+
+```bash
+# ROLLING SYNC STRATEGY
+dagger call -m github.com/stuttgart-things/dagger/argocd create-application-set \
+--name staged-rollout \
+--strategy '{"type":"RollingSync","rollingSync":{"steps":[
+    {"matchExpressions":[{"key":"env","operator":"In","values":["dev"]}]},
+    {"matchExpressions":[{"key":"env","operator":"In","values":["prod"]}],"maxUpdate":"10%"}
+  ]}}'
+```
+
+Pin any of the three KCL modules with `--oci-source 'oci://.../<module>?tag=<version>'`.
+
 ## Files
 
 - [main.go](main.go) — module struct
 - [cli.go](cli.go) — `AddClusterCli`
 - [cluster.go](cluster.go) — `AddClusterK8s`
 - [project.go](project.go) — `CreateAppProject`
+- [application.go](application.go) — `CreateApplication`
+- [applicationset.go](applicationset.go) — `CreateApplicationSet`
