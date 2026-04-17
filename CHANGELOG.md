@@ -1,3 +1,10 @@
+# [0.97.0](https://github.com/stuttgart-things/dagger/compare/v0.96.0...v0.97.0) (2026-04-17)
+
+
+### Features
+
+* feat/fix-argo-cluster ([2ab8663](https://github.com/stuttgart-things/dagger/commit/2ab8663a22291d2281d5f495c346f0c890dc8365))
+
 # [0.96.0](https://github.com/stuttgart-things/dagger/compare/v0.95.0...v0.96.0) (2026-04-17)
 
 
