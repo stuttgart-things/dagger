@@ -144,17 +144,24 @@ capped by the target cluster's kube-apiserver
 (`--service-account-max-token-expiration`).
 
 The function returns a Directory containing `<cluster-name>.yaml` — the rendered
-Secret. Pass `--apply-to-cluster=false` to skip the `kubectl apply` step and just
-get the file back (the target cluster is still mutated — SA + RBAC + token — because
-the Secret can't be built without a live token).
+Secret. Apply is **off by default** (consistent with `create-*` functions); pass
+`--apply-to-cluster=true` and an `--argocd-kube-config` to also push it. The target
+cluster is always mutated (SA + RBAC + token) because the Secret can't be built
+without a live token.
 
 ```bash
-# RENDER ONLY — no ArgoCD cluster kubeconfig needed
+# RENDER ONLY (default) — no ArgoCD cluster kubeconfig needed
 dagger call -m github.com/stuttgart-things/dagger/argocd add-cluster-k-8-s \
 --kube-config file://~/.kube/ci-mgmt-1 \
 --cluster-name cicd-mgmt-1 \
---apply-to-cluster=false \
 export --path /tmp/cluster-secret
+
+# RENDER + APPLY
+dagger call -m github.com/stuttgart-things/dagger/argocd add-cluster-k-8-s \
+--kube-config file://~/.kube/ci-mgmt-1 \
+--argocd-kube-config file://~/.kube/argocd-host \
+--cluster-name cicd-mgmt-1 \
+--apply-to-cluster=true
 ```
 
 ## create-app-project
