@@ -1,3 +1,10 @@
+# [0.95.0](https://github.com/stuttgart-things/dagger/compare/v0.94.0...v0.95.0) (2026-04-17)
+
+
+### Features
+
+* feat/add-argocd ([85aad89](https://github.com/stuttgart-things/dagger/commit/85aad8987cc47e4de9044230d74dbca110a03f4f))
+
 # [0.94.0](https://github.com/stuttgart-things/dagger/compare/v0.93.1...v0.94.0) (2026-04-16)
 
 
