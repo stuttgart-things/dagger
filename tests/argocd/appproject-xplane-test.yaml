@@ -1,0 +1,14 @@
+name: xplane-test
+namespace: argocd
+description: Test project pinned to the xplane-test cluster
+sourceRepos:
+  - https://github.com/argoproj/argocd-example-apps.git
+destinations:
+  - server: https://10.100.136.192:34360
+    namespace: "*"
+clusterResourceWhitelist:
+  - group: "*"
+    kind: "*"
+namespaceResourceWhitelist:
+  - group: "*"
+    kind: "*"

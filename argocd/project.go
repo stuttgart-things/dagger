@@ -16,11 +16,18 @@ import (
 // that are passed straight to `kcl run -D key=<json>`.
 func (m *Argocd) CreateAppProject(
 	ctx context.Context,
-	// AppProject name (metadata.name and the output file basename)
-	name string,
-	// Namespace where ArgoCD is installed
+	// AppProject name (metadata.name and the output file basename).
+	// Can also be supplied via parametersFile; the CLI value wins.
 	// +optional
-	// +default="argocd"
+	name string,
+	// YAML/JSON file with KCL parameters as key: value pairs. Every CLI flag
+	// below takes precedence over values in this file. Values may be scalars,
+	// JSON arrays, or JSON objects (yq/jq stringifies nested values before
+	// handing them to `kcl run -D`).
+	// +optional
+	parametersFile *dagger.File,
+	// Namespace where ArgoCD is installed (KCL default: "argocd")
+	// +optional
 	namespace string,
 	// Free-form description written to spec.description
 	// +optional
@@ -61,22 +68,21 @@ func (m *Argocd) CreateAppProject(
 	kubeConfig *dagger.Secret,
 ) (*dagger.Directory, error) {
 
-	if name == "" {
-		return nil, fmt.Errorf("name must not be empty")
+	if name == "" && parametersFile == nil {
+		return nil, fmt.Errorf("either name or parametersFile must be provided")
 	}
 	if applyToCluster && kubeConfig == nil {
 		return nil, fmt.Errorf("kubeConfig is required when applyToCluster is true")
 	}
 
-	params := []string{
-		"name=" + name,
-		"namespace=" + namespace,
-	}
+	var params []string
 	addIfSet := func(key, value string) {
 		if value != "" {
 			params = append(params, key+"="+value)
 		}
 	}
+	addIfSet("name", name)
+	addIfSet("namespace", namespace)
 	addIfSet("description", description)
 	addIfSet("sourceRepos", sourceRepos)
 	addIfSet("destinations", destinations)
@@ -86,9 +92,10 @@ func (m *Argocd) CreateAppProject(
 	addIfSet("annotations", annotations)
 
 	renderedFile := dag.Kcl().Run(dagger.KclRunOpts{
-		OciSource:  ociSource,
-		Parameters: strings.Join(params, ","),
-		Entrypoint: "main.k",
+		OciSource:      ociSource,
+		Parameters:     strings.Join(params, ","),
+		ParametersFile: parametersFile,
+		Entrypoint:     "main.k",
 	})
 
 	renderedContent, err := renderedFile.Contents(ctx)
@@ -96,7 +103,11 @@ func (m *Argocd) CreateAppProject(
 		return nil, fmt.Errorf("failed to render AppProject: %w", err)
 	}
 
-	outputPath := name + "." + fileExtension
+	outputBase := name
+	if outputBase == "" {
+		outputBase = "appproject"
+	}
+	outputPath := outputBase + "." + fileExtension
 	outputDir := dag.Directory().WithNewFile(outputPath, renderedContent)
 
 	if applyToCluster {

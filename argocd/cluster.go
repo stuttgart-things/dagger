@@ -7,17 +7,26 @@ import (
 )
 
 // AddClusterK8s registers a Kubernetes cluster in ArgoCD without calling the ArgoCD
-// HTTP/gRPC API. It creates (or reuses) a ServiceAccount with cluster-admin permissions in
-// the target cluster, mints a token via `kubectl create token`, extracts the cluster's
-// server URL and CA from the kubeconfig, and applies the resulting ArgoCD cluster Secret
-// (labelled argocd.argoproj.io/secret-type=cluster) in the cluster where ArgoCD runs.
+// HTTP/gRPC API. It creates (or reuses) a ServiceAccount with cluster-admin permissions
+// in the target cluster, mints a token via `kubectl create token`, extracts the cluster's
+// server URL and CA from the kubeconfig, and assembles the ArgoCD cluster Secret
+// (labelled argocd.argoproj.io/secret-type=cluster).
+//
+// The rendered Secret is always returned in the output Directory as `<clusterName>.yaml`.
+// When applyToCluster is true (the default) the Secret is also applied to the
+// ArgoCD-hosting cluster; when false, you get the file back without touching the
+// ArgoCD cluster — handy for git-committing or inspecting before apply. Either way,
+// the target cluster IS mutated (SA + RBAC created, token minted) because the Secret
+// can't be built without a live token.
 func (m *Argocd) AddClusterK8s(
 	ctx context.Context,
 	// Kubeconfig of the target cluster to register (where the SA is created)
 	kubeConfig *dagger.Secret,
-	// Display name for the cluster in ArgoCD (also the Secret name)
+	// Display name for the cluster in ArgoCD (also the Secret name and output filename)
 	clusterName string,
-	// Kubeconfig of the cluster where ArgoCD runs. If omitted, kubeConfig is used.
+	// Kubeconfig of the cluster where ArgoCD runs. Required when applyToCluster is true
+	// (and you want to apply somewhere other than the target cluster). Ignored when
+	// applyToCluster is false.
 	// +optional
 	argocdKubeConfig *dagger.Secret,
 	// Namespace where ArgoCD is installed
@@ -45,17 +54,23 @@ func (m *Argocd) AddClusterK8s(
 	// +optional
 	// +default="8760h"
 	tokenDuration string,
+	// Apply the generated cluster Secret to the ArgoCD cluster. When false, the Secret
+	// is only rendered and returned — inspect/commit it, apply later with your own tooling.
+	// +optional
+	// +default=true
+	applyToCluster bool,
 	// +optional
 	// +default="cgr.dev/chainguard/wolfi-base:latest"
 	baseImage string,
-) (string, error) {
+) (*dagger.Directory, error) {
 
 	if clusterName == "" {
-		return "", fmt.Errorf("clusterName must not be empty")
+		return nil, fmt.Errorf("clusterName must not be empty")
 	}
 
 	const srcPath = "/tmp/src-kubeconfig"
 	const argoPath = "/tmp/argocd-kubeconfig"
+	const secretPath = "/tmp/cluster-secret.yaml"
 
 	ctr := dag.Container().
 		From(baseImage).
@@ -64,13 +79,19 @@ func (m *Argocd) AddClusterK8s(
 			Mode: 0444,
 		})
 
-	argoSecret := argocdKubeConfig
-	if argoSecret == nil {
-		argoSecret = kubeConfig
+	apply := "0"
+	if applyToCluster {
+		apply = "1"
+		argoSecret := argocdKubeConfig // pragma: allowlist secret
+		if argoSecret == nil {         // pragma: allowlist secret
+			argoSecret = kubeConfig // pragma: allowlist secret
+		}
+		ctr = ctr.WithMountedSecret(argoPath, argoSecret, dagger.ContainerWithMountedSecretOpts{
+			Mode: 0444,
+		})
 	}
-	ctr = ctr.WithMountedSecret(argoPath, argoSecret, dagger.ContainerWithMountedSecretOpts{
-		Mode: 0444,
-	}).
+
+	ctr = ctr.
 		WithEnvVariable("CLUSTER_NAME", clusterName).
 		WithEnvVariable("ARGOCD_NAMESPACE", argocdNamespace).
 		WithEnvVariable("SA_NAME", serviceAccountName).
@@ -78,12 +99,12 @@ func (m *Argocd) AddClusterK8s(
 		WithEnvVariable("SOURCE_CONTEXT", sourceContext).
 		WithEnvVariable("ARGOCD_CONTEXT", argocdContext).
 		WithEnvVariable("SERVER_URL_OVERRIDE", serverURL).
-		WithEnvVariable("TOKEN_DURATION", tokenDuration)
+		WithEnvVariable("TOKEN_DURATION", tokenDuration).
+		WithEnvVariable("APPLY", apply)
 
 	script := `set -eu
 cp ` + srcPath + ` /tmp/src.kc
-cp ` + argoPath + ` /tmp/argo.kc
-chmod 600 /tmp/src.kc /tmp/argo.kc
+chmod 600 /tmp/src.kc
 
 export KUBECONFIG=/tmp/src.kc
 SRC_JSON=$(kubectl config view --flatten --raw -o json)
@@ -161,7 +182,7 @@ NAME_B64=$(printf '%s' "$CLUSTER_NAME"   | base64 | tr -d '\n')
 SERVER_B64=$(printf '%s' "$SERVER"       | base64 | tr -d '\n')
 CONFIG_B64=$(printf '%s' "$CONFIG_JSON"  | base64 | tr -d '\n')
 
-cat >/tmp/cluster-secret.yaml <<YAML
+cat >` + secretPath + ` <<YAML
 apiVersion: v1
 kind: Secret
 metadata:
@@ -176,15 +197,28 @@ data:
   config: ${CONFIG_B64}
 YAML
 
-export KUBECONFIG=/tmp/argo.kc
-ARGO_CTX_ARG=""
-if [ -n "${ARGOCD_CONTEXT:-}" ]; then
-  ARGO_CTX_ARG="--context=${ARGOCD_CONTEXT}"
+if [ "${APPLY:-0}" = "1" ]; then
+  cp ` + argoPath + ` /tmp/argo.kc
+  chmod 600 /tmp/argo.kc
+  export KUBECONFIG=/tmp/argo.kc
+  ARGO_CTX_ARG=""
+  if [ -n "${ARGOCD_CONTEXT:-}" ]; then
+    ARGO_CTX_ARG="--context=${ARGOCD_CONTEXT}"
+  fi
+  kubectl $ARGO_CTX_ARG apply -f ` + secretPath + `
+  echo "registered cluster '$CLUSTER_NAME' -> $SERVER in namespace $ARGOCD_NAMESPACE"
+else
+  echo "rendered cluster Secret for '$CLUSTER_NAME' -> $SERVER (apply skipped)"
 fi
-
-kubectl $ARGO_CTX_ARG apply -f /tmp/cluster-secret.yaml
-echo "registered cluster '$CLUSTER_NAME' -> $SERVER in namespace $ARGOCD_NAMESPACE"
 `
 
-	return ctr.WithExec([]string{"sh", "-c", script}).Stdout(ctx)
+	execCtr := ctr.WithExec([]string{"sh", "-c", script})
+
+	secretContents, err := execCtr.File(secretPath).Contents(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read generated cluster Secret: %w", err)
+	}
+
+	outputDir := dag.Directory().WithNewFile(clusterName+".yaml", secretContents)
+	return outputDir, nil
 }

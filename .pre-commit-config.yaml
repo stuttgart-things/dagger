@@ -46,6 +46,7 @@ repos:
         files: .*  # all files
         args: ["--exclude-files", "git/dagger.json|tests/vm/terraform.tfvars.enc.json|repository-linting/dagger.json",
                "--exclude-files", "ansible/dagger.json",
+               "--exclude-files", "argocd/dagger.json",
                "--exclude-files", "go/dagger.json",
                 "--exclude-files", "tests/sops/tfvars.json"
                ]
