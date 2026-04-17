@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"dagger/argocd/internal/dagger"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"strings"
+	"text/template"
 )
 
 // AddClusterK8s registers a Kubernetes cluster in ArgoCD without calling the ArgoCD
@@ -69,85 +74,187 @@ func (m *Argocd) AddClusterK8s(
 		return nil, fmt.Errorf("clusterName must not be empty")
 	}
 
-	const srcPath = "/tmp/src-kubeconfig"
-	const argoPath = "/tmp/argocd-kubeconfig"
-	const secretPath = "/tmp/cluster-secret.yaml"
-
-	ctr := dag.Container().
-		From(baseImage).
-		WithExec([]string{"apk", "add", "--no-cache", "kubectl", "jq"}).
-		WithMountedSecret(srcPath, kubeConfig, dagger.ContainerWithMountedSecretOpts{
-			Mode: 0444,
-		})
-
-	apply := "0"
-	if applyToCluster {
-		apply = "1"
-		argoSecret := argocdKubeConfig // pragma: allowlist secret
-		if argoSecret == nil {         // pragma: allowlist secret
-			argoSecret = kubeConfig // pragma: allowlist secret
-		}
-		ctr = ctr.WithMountedSecret(argoPath, argoSecret, dagger.ContainerWithMountedSecretOpts{
-			Mode: 0444,
-		})
+	access, err := ensureTargetAccess(ctx, targetAccessInput{
+		kubeConfig:              kubeConfig,
+		serviceAccountName:      serviceAccountName,
+		serviceAccountNamespace: serviceAccountNamespace,
+		sourceContext:           sourceContext,
+		tokenDuration:           tokenDuration,
+		serverURLOverride:       serverURL,
+		baseImage:               baseImage,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("prepare target cluster: %w", err)
 	}
 
-	ctr = ctr.
-		WithEnvVariable("CLUSTER_NAME", clusterName).
-		WithEnvVariable("ARGOCD_NAMESPACE", argocdNamespace).
-		WithEnvVariable("SA_NAME", serviceAccountName).
-		WithEnvVariable("SA_NAMESPACE", serviceAccountNamespace).
-		WithEnvVariable("SOURCE_CONTEXT", sourceContext).
-		WithEnvVariable("ARGOCD_CONTEXT", argocdContext).
-		WithEnvVariable("SERVER_URL_OVERRIDE", serverURL).
-		WithEnvVariable("TOKEN_DURATION", tokenDuration).
-		WithEnvVariable("APPLY", apply)
+	secretYAML, err := renderClusterSecret(clusterName, argocdNamespace, access)
+	if err != nil {
+		return nil, fmt.Errorf("render cluster Secret: %w", err)
+	}
+
+	outputPath := clusterName + ".yaml"
+	outputDir := dag.Directory().WithNewFile(outputPath, secretYAML)
+
+	if applyToCluster {
+		argoKC := argocdKubeConfig
+		if argoKC == nil {
+			argoKC = kubeConfig
+		}
+		if err := applyClusterSecret(ctx, applyInput{
+			kubeConfig:      argoKC,
+			kubeContext:     argocdContext,
+			secretFile:      outputDir.File(outputPath),
+			argocdNamespace: argocdNamespace,
+			baseImage:       baseImage,
+		}); err != nil {
+			return nil, fmt.Errorf("apply cluster Secret: %w", err)
+		}
+	}
+
+	return outputDir, nil
+}
+
+type applyInput struct {
+	kubeConfig      *dagger.Secret
+	kubeContext     string
+	secretFile      *dagger.File
+	argocdNamespace string
+	baseImage       string
+}
+
+// applyClusterSecret runs `kubectl apply` against the ArgoCD-hosting cluster. When
+// no explicit context is requested, it delegates to the shared kubernetes module so
+// the apply path matches project.go / application.go. When a context is set, the
+// shared Kubectl has no --context option, so we fall back to a thin container.
+func applyClusterSecret(ctx context.Context, in applyInput) error {
+	if in.kubeContext == "" {
+		_, err := dag.Kubernetes().Kubectl(ctx, dagger.KubernetesKubectlOpts{
+			Operation:  "apply",
+			SourceFile: in.secretFile,
+			KubeConfig: in.kubeConfig,
+			Namespace:  in.argocdNamespace,
+		})
+		return err
+	}
+
+	const kubeconfigPath = "/tmp/argo.kc"
+	const secretPath = "/tmp/cluster-secret.yaml"
+
+	_, err := dag.Container().
+		From(in.baseImage).
+		WithExec([]string{"apk", "add", "--no-cache", "kubectl"}).
+		WithMountedSecret(kubeconfigPath, in.kubeConfig, dagger.ContainerWithMountedSecretOpts{Mode: 0444}).
+		WithMountedFile(secretPath, in.secretFile).
+		WithEnvVariable("KUBECONFIG", kubeconfigPath).
+		WithExec([]string{
+			"kubectl",
+			"--context=" + in.kubeContext,
+			"-n", in.argocdNamespace,
+			"apply", "-f", secretPath,
+		}).
+		Stdout(ctx)
+	return err
+}
+
+// targetClusterAccess is everything renderClusterSecret needs from the target cluster.
+type targetClusterAccess struct {
+	ServerURL string
+	CAData    string // base64-encoded, empty when absent
+	Insecure  bool
+	Token     string
+}
+
+type targetAccessInput struct {
+	kubeConfig              *dagger.Secret
+	serviceAccountName      string
+	serviceAccountNamespace string
+	sourceContext           string
+	tokenDuration           string
+	serverURLOverride       string
+	baseImage               string
+}
+
+// ensureTargetAccess provisions the SA + cluster-admin RBAC in the target cluster,
+// mints a token, and extracts the server URL / CA from the kubeconfig. The shell
+// script emits a single JSON line on stdout so parsing stays in Go.
+func ensureTargetAccess(ctx context.Context, in targetAccessInput) (*targetClusterAccess, error) {
+	const srcPath = "/tmp/src-kubeconfig"
+	const rbacPath = "/tmp/rbac.yaml"
+
+	rbac, err := renderRBAC(in.serviceAccountName, in.serviceAccountNamespace)
+	if err != nil {
+		return nil, fmt.Errorf("render RBAC: %w", err)
+	}
+
+	ctr := dag.Container().
+		From(in.baseImage).
+		WithExec([]string{"apk", "add", "--no-cache", "kubectl", "jq"}).
+		WithMountedSecret(srcPath, in.kubeConfig, dagger.ContainerWithMountedSecretOpts{Mode: 0444}).
+		WithNewFile(rbacPath, rbac).
+		WithEnvVariable("SA_NAME", in.serviceAccountName).
+		WithEnvVariable("SA_NAMESPACE", in.serviceAccountNamespace).
+		WithEnvVariable("SOURCE_CONTEXT", in.sourceContext).
+		WithEnvVariable("TOKEN_DURATION", in.tokenDuration).
+		WithEnvVariable("SERVER_URL_OVERRIDE", in.serverURLOverride)
 
 	script := `set -eu
 cp ` + srcPath + ` /tmp/src.kc
 chmod 600 /tmp/src.kc
-
 export KUBECONFIG=/tmp/src.kc
+
 SRC_JSON=$(kubectl config view --flatten --raw -o json)
 
 SRC_CTX="${SOURCE_CONTEXT:-}"
-if [ -z "$SRC_CTX" ]; then
-  SRC_CTX=$(printf '%s' "$SRC_JSON" | jq -r '."current-context" // empty')
-fi
-if [ -z "$SRC_CTX" ]; then
-  echo "could not determine source context; set --source-context explicitly" >&2
-  exit 1
-fi
+[ -n "$SRC_CTX" ] || SRC_CTX=$(printf '%s' "$SRC_JSON" | jq -r '."current-context" // empty')
+[ -n "$SRC_CTX" ] || { echo "could not determine source context; set --source-context explicitly" >&2; exit 1; }
 
 CLUSTER_REF=$(printf '%s' "$SRC_JSON" | jq -r --arg c "$SRC_CTX" '.contexts[] | select(.name==$c) | .context.cluster')
-if [ -z "$CLUSTER_REF" ] || [ "$CLUSTER_REF" = "null" ]; then
-  echo "context '$SRC_CTX' has no cluster reference" >&2
-  exit 1
-fi
+[ -n "$CLUSTER_REF" ] && [ "$CLUSTER_REF" != "null" ] || { echo "context '$SRC_CTX' has no cluster reference" >&2; exit 1; }
 
 SERVER=$(printf '%s' "$SRC_JSON" | jq -r --arg c "$CLUSTER_REF" '.clusters[] | select(.name==$c) | .cluster.server')
-if [ -n "${SERVER_URL_OVERRIDE:-}" ]; then
-  SERVER="$SERVER_URL_OVERRIDE"
-fi
-if [ -z "$SERVER" ] || [ "$SERVER" = "null" ]; then
-  echo "could not determine server URL for cluster '$CLUSTER_REF'" >&2
-  exit 1
-fi
+[ -n "${SERVER_URL_OVERRIDE:-}" ] && SERVER="$SERVER_URL_OVERRIDE"
+[ -n "$SERVER" ] && [ "$SERVER" != "null" ] || { echo "could not determine server URL for cluster '$CLUSTER_REF'" >&2; exit 1; }
 
 CA_DATA=$(printf '%s' "$SRC_JSON" | jq -r --arg c "$CLUSTER_REF" '.clusters[] | select(.name==$c) | .cluster["certificate-authority-data"] // empty')
 INSECURE=$(printf '%s' "$SRC_JSON" | jq -r --arg c "$CLUSTER_REF" '.clusters[] | select(.name==$c) | .cluster["insecure-skip-tls-verify"] // false')
 
-kubectl --context "$SRC_CTX" apply -f - <<YAML
-apiVersion: v1
+kubectl --context "$SRC_CTX" apply -f ` + rbacPath + ` >&2
+
+TOKEN=$(kubectl --context "$SRC_CTX" -n "$SA_NAMESPACE" create token "$SA_NAME" --duration="$TOKEN_DURATION")
+
+jq -cn \
+  --arg server "$SERVER" \
+  --arg ca "$CA_DATA" \
+  --arg insecure "$INSECURE" \
+  --arg token "$TOKEN" \
+  '{serverURL:$server, caData:$ca, insecure:($insecure=="true"), token:$token}'
+`
+
+	out, err := ctr.WithExec([]string{"sh", "-c", script}).Stdout(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var access targetClusterAccess
+	if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &access); err != nil {
+		return nil, fmt.Errorf("parse access JSON: %w", err)
+	}
+	if access.Token == "" {
+		return nil, fmt.Errorf("empty token returned from target cluster")
+	}
+	return &access, nil
+}
+
+const rbacTmpl = `apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${SA_NAME}
-  namespace: ${SA_NAMESPACE}
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ${SA_NAME}-role
+  name: {{ .Name }}-role
 rules:
 - apiGroups: ["*"]
   resources: ["*"]
@@ -158,68 +265,81 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ${SA_NAME}-role-binding
+  name: {{ .Name }}-role-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ${SA_NAME}-role
+  name: {{ .Name }}-role
 subjects:
 - kind: ServiceAccount
-  name: ${SA_NAME}
-  namespace: ${SA_NAMESPACE}
-YAML
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+`
 
-TOKEN=$(kubectl --context "$SRC_CTX" -n "$SA_NAMESPACE" create token "$SA_NAME" --duration="$TOKEN_DURATION")
+func renderRBAC(saName, saNamespace string) (string, error) {
+	return execTemplate("rbac", rbacTmpl, map[string]string{
+		"Name":      saName,
+		"Namespace": saNamespace,
+	})
+}
 
-if [ -n "$CA_DATA" ]; then
-  CONFIG_JSON=$(jq -cn --arg t "$TOKEN" --arg ca "$CA_DATA" '{bearerToken:$t, tlsClientConfig:{caData:$ca}}')
-elif [ "$INSECURE" = "true" ]; then
-  CONFIG_JSON=$(jq -cn --arg t "$TOKEN" '{bearerToken:$t, tlsClientConfig:{insecure:true}}')
-else
-  CONFIG_JSON=$(jq -cn --arg t "$TOKEN" '{bearerToken:$t, tlsClientConfig:{}}')
-fi
-
-NAME_B64=$(printf '%s' "$CLUSTER_NAME"   | base64 | tr -d '\n')
-SERVER_B64=$(printf '%s' "$SERVER"       | base64 | tr -d '\n')
-CONFIG_B64=$(printf '%s' "$CONFIG_JSON"  | base64 | tr -d '\n')
-
-cat >` + secretPath + ` <<YAML
-apiVersion: v1
+const clusterSecretTmpl = `apiVersion: v1
 kind: Secret
 metadata:
-  name: ${CLUSTER_NAME}
-  namespace: ${ARGOCD_NAMESPACE}
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
   labels:
     argocd.argoproj.io/secret-type: cluster
 type: Opaque
 data:
-  name: ${NAME_B64}
-  server: ${SERVER_B64}
-  config: ${CONFIG_B64}
-YAML
-
-if [ "${APPLY:-0}" = "1" ]; then
-  cp ` + argoPath + ` /tmp/argo.kc
-  chmod 600 /tmp/argo.kc
-  export KUBECONFIG=/tmp/argo.kc
-  ARGO_CTX_ARG=""
-  if [ -n "${ARGOCD_CONTEXT:-}" ]; then
-    ARGO_CTX_ARG="--context=${ARGOCD_CONTEXT}"
-  fi
-  kubectl $ARGO_CTX_ARG apply -f ` + secretPath + `
-  echo "registered cluster '$CLUSTER_NAME' -> $SERVER in namespace $ARGOCD_NAMESPACE"
-else
-  echo "rendered cluster Secret for '$CLUSTER_NAME' -> $SERVER (apply skipped)"
-fi
+  name: {{ .NameB64 }}
+  server: {{ .ServerB64 }}
+  config: {{ .ConfigB64 }}
 `
 
-	execCtr := ctr.WithExec([]string{"sh", "-c", script})
-
-	secretContents, err := execCtr.File(secretPath).Contents(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read generated cluster Secret: %w", err)
+// renderClusterSecret returns the ArgoCD cluster Secret YAML as a string. Pure Go,
+// no container, no shell. The config blob is the ArgoCD cluster-secret schema
+// documented at https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#clusters.
+func renderClusterSecret(clusterName, argocdNamespace string, access *targetClusterAccess) (string, error) {
+	type tlsClientConfig struct {
+		CAData   string `json:"caData,omitempty"`
+		Insecure bool   `json:"insecure,omitempty"`
+	}
+	type clusterConfig struct {
+		BearerToken     string          `json:"bearerToken"`
+		TLSClientConfig tlsClientConfig `json:"tlsClientConfig"`
 	}
 
-	outputDir := dag.Directory().WithNewFile(clusterName+".yaml", secretContents)
-	return outputDir, nil
+	cfg := clusterConfig{BearerToken: access.Token}
+	switch {
+	case access.CAData != "":
+		cfg.TLSClientConfig.CAData = access.CAData
+	case access.Insecure:
+		cfg.TLSClientConfig.Insecure = true
+	}
+
+	cfgJSON, err := json.Marshal(cfg)
+	if err != nil {
+		return "", fmt.Errorf("marshal cluster config: %w", err)
+	}
+
+	return execTemplate("cluster-secret", clusterSecretTmpl, map[string]string{
+		"Name":      clusterName,
+		"Namespace": argocdNamespace,
+		"NameB64":   base64.StdEncoding.EncodeToString([]byte(clusterName)),
+		"ServerB64": base64.StdEncoding.EncodeToString([]byte(access.ServerURL)),
+		"ConfigB64": base64.StdEncoding.EncodeToString(cfgJSON),
+	})
+}
+
+func execTemplate(name, body string, data any) (string, error) {
+	t, err := template.New(name).Option("missingkey=error").Parse(body)
+	if err != nil {
+		return "", fmt.Errorf("parse %s template: %w", name, err)
+	}
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("execute %s template: %w", name, err)
+	}
+	return buf.String(), nil
 }
