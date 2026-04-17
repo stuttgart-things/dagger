@@ -13,11 +13,11 @@ import (
 // (labelled argocd.argoproj.io/secret-type=cluster).
 //
 // The rendered Secret is always returned in the output Directory as `<clusterName>.yaml`.
-// When applyToCluster is true (the default) the Secret is also applied to the
-// ArgoCD-hosting cluster; when false, you get the file back without touching the
-// ArgoCD cluster — handy for git-committing or inspecting before apply. Either way,
-// the target cluster IS mutated (SA + RBAC created, token minted) because the Secret
-// can't be built without a live token.
+// When applyToCluster is true the Secret is also applied to the ArgoCD-hosting cluster;
+// when false (the default, matching create-app-project / create-application*) you get
+// the file back without touching the ArgoCD cluster — handy for git-committing or
+// inspecting before apply. Either way, the target cluster IS mutated (SA + RBAC
+// created, token minted) because the Secret can't be built without a live token.
 func (m *Argocd) AddClusterK8s(
 	ctx context.Context,
 	// Kubeconfig of the target cluster to register (where the SA is created)
@@ -54,10 +54,11 @@ func (m *Argocd) AddClusterK8s(
 	// +optional
 	// +default="8760h"
 	tokenDuration string,
-	// Apply the generated cluster Secret to the ArgoCD cluster. When false, the Secret
-	// is only rendered and returned — inspect/commit it, apply later with your own tooling.
+	// Apply the generated cluster Secret to the ArgoCD cluster. When false (default),
+	// the Secret is only rendered and returned — inspect/commit it, apply later with
+	// your own tooling (or pipe it through SOPS first).
 	// +optional
-	// +default=true
+	// +default=false
 	applyToCluster bool,
 	// +optional
 	// +default="cgr.dev/chainguard/wolfi-base:latest"
