@@ -1,3 +1,10 @@
+# [0.98.0](https://github.com/stuttgart-things/dagger/compare/v0.97.0...v0.98.0) (2026-04-19)
+
+
+### Features
+
+* feat/rewrite-argocd-module ([3589aa6](https://github.com/stuttgart-things/dagger/commit/3589aa61af02c926947a678f6b8d86dab1f3e2ab))
+
 # [0.97.0](https://github.com/stuttgart-things/dagger/compare/v0.96.0...v0.97.0) (2026-04-17)
 
 
