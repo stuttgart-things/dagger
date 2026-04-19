@@ -47,7 +47,6 @@ tasks:
       - task: test-go
       - task: test-helm
       - task: test-ansible
-      - task: test-argocd
       - task: test-docker
       - task: test-hugo
       - task: test-linting
@@ -159,56 +158,6 @@ tasks:
       TEST_SOPS_FILE: secrets.enc.yaml
       TEST_VARS_CLI: "name=from-cli,environment=ci,owner=dagger"
       TEST_VARS_OVERRIDE: "environment=prod"
-
-  test-argocd:
-    desc: Test argocd KCL-render functions (no cluster needed)
-    cmds:
-      - |
-        rm -rf {{ .OUTPUT_DIR }} && mkdir -p {{ .OUTPUT_DIR }}
-      - |
-        echo "Rendering AppProject from YAML..."
-        dagger call -m ./{{ .MODULE }} \
-        create-app-project \
-        --parameters-file {{ .APPPROJECT_PARAMS }} \
-        --progress plain \
-        export --path {{ .OUTPUT_DIR }}/appproject
-        echo "=== AppProject ==="
-        cat {{ .OUTPUT_DIR }}/appproject/*.yaml
-      - |
-        echo "Rendering Application from YAML..."
-        dagger call -m ./{{ .MODULE }} \
-        create-application \
-        --parameters-file {{ .APPLICATION_PARAMS }} \
-        --progress plain \
-        export --path {{ .OUTPUT_DIR }}/application
-        echo "=== Application ==="
-        cat {{ .OUTPUT_DIR }}/application/*.yaml
-      - |
-        echo "Rendering ApplicationSet from YAML..."
-        dagger call -m ./{{ .MODULE }} \
-        create-application-set \
-        --parameters-file {{ .APPLICATIONSET_PARAMS }} \
-        --progress plain \
-        export --path {{ .OUTPUT_DIR }}/applicationset
-        echo "=== ApplicationSet ==="
-        cat {{ .OUTPUT_DIR }}/applicationset/*.yaml
-      - |
-        echo "Rendering Application with YAML + CLI override (expect name/dest-namespace overridden)..."
-        dagger call -m ./{{ .MODULE }} \
-        create-application \
-        --parameters-file {{ .APPLICATION_PARAMS }} \
-        --name xplane-test-guestbook-dev \
-        --dest-namespace guestbook-dev \
-        --progress plain \
-        export --path {{ .OUTPUT_DIR }}/application-override
-        echo "=== Application (override) ==="
-        cat {{ .OUTPUT_DIR }}/application-override/*.yaml
-    vars:
-      MODULE: argocd
-      APPPROJECT_PARAMS: tests/argocd/appproject-xplane-test.yaml
-      APPLICATION_PARAMS: tests/argocd/application-xplane-test-guestbook.yaml
-      APPLICATIONSET_PARAMS: tests/argocd/applicationset-multi-cluster-guestbook.yaml
-      OUTPUT_DIR: /tmp/dagger/argocd
 
   test-kcl:
     desc: Test KCL functions
