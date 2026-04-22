@@ -1,3 +1,10 @@
+# [0.99.0](https://github.com/stuttgart-things/dagger/compare/v0.98.0...v0.99.0) (2026-04-22)
+
+
+### Features
+
+* feat/helm-kubeconform ([3f6e010](https://github.com/stuttgart-things/dagger/commit/3f6e01093841b31efa156220eee97b57e18847ac))
+
 # [0.98.0](https://github.com/stuttgart-things/dagger/compare/v0.97.0...v0.98.0) (2026-04-19)
 
 
