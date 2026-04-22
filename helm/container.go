@@ -60,6 +60,34 @@ func (m *Helm) container() *dagger.Container {
 		WithExec([]string{"chmod", "+x", polarisBinPath})
 
 	// ======================================================
+	// INSTALL KUBECONFORM
+	// ======================================================
+	kubeconformVersion := "0.6.7"
+	kubeconformTar := "kubeconform-linux-amd64.tar.gz"
+	kubeconformURL := fmt.Sprintf("https://github.com/yannh/kubeconform/releases/download/v%s/%s", kubeconformVersion, kubeconformTar)
+	kubeconformBinPath := "/usr/bin/kubeconform"
+
+	ctr = ctr.
+		WithExec([]string{"wget", "-O", "/tmp/" + kubeconformTar, kubeconformURL}).
+		WithExec([]string{"tar", "-xzf", "/tmp/" + kubeconformTar, "-C", "/tmp/"}).
+		WithExec([]string{"mv", "/tmp/kubeconform", kubeconformBinPath}).
+		WithExec([]string{"chmod", "+x", kubeconformBinPath})
+
+	// ======================================================
+	// INSTALL CONFTEST
+	// ======================================================
+	conftestVersion := "0.56.0"
+	conftestTar := fmt.Sprintf("conftest_%s_Linux_x86_64.tar.gz", conftestVersion)
+	conftestURL := fmt.Sprintf("https://github.com/open-policy-agent/conftest/releases/download/v%s/%s", conftestVersion, conftestTar)
+	conftestBinPath := "/usr/bin/conftest"
+
+	ctr = ctr.
+		WithExec([]string{"wget", "-O", "/tmp/" + conftestTar, conftestURL}).
+		WithExec([]string{"tar", "-xzf", "/tmp/" + conftestTar, "-C", "/tmp/"}).
+		WithExec([]string{"mv", "/tmp/conftest", conftestBinPath}).
+		WithExec([]string{"chmod", "+x", conftestBinPath})
+
+	// ======================================================
 	// INSTALL VALS
 	// ======================================================
 	valsVersion := "0.42.4"
