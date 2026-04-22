@@ -9,6 +9,8 @@ This module provides Dagger functions for Helm chart operations including lintin
 - ✅ Template rendering with custom values
 - ✅ Helmfile operations with Kubernetes integration
 - ✅ Polaris-based security validation
+- ✅ Kubeconform schema validation (with Datree CRDs-catalog fallback)
+- ✅ Conftest / OPA policy evaluation (scaffold; policies caller-supplied)
 - ✅ Registry authentication and multi-registry support
 
 ## Prerequisites
@@ -167,6 +169,42 @@ dagger call -m helm validate-chart \
   --severity danger \
   --src tests/helm/test-chart/ \
   export --path=/tmp/polaris.json
+```
+
+### Schema Validation (Kubeconform)
+
+Render the chart and validate every resource against Kubernetes + CRD schemas.
+Defaults to upstream Kubernetes schemas plus the Datree CRDs-catalog fallback,
+which covers ArgoCD, Gateway-API, cert-manager, and cilium CRDs.
+
+```bash
+# Default schema locations (k8s + Datree CRDs-catalog)
+dagger call -m helm kubeconform \
+  --src tests/helm/test-chart
+
+# With a values fixture
+dagger call -m helm kubeconform \
+  --src tests/helm/test-chart \
+  --values-file tests/helm/test-values.yaml
+
+# Override schema locations (e.g. internal CRD mirror)
+dagger call -m helm kubeconform \
+  --src tests/helm/test-chart \
+  --schema-locations default \
+  --schema-locations 'https://crds.internal/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+```
+
+### Policy Evaluation (Conftest)
+
+Render the chart and run `conftest test` against a caller-supplied Rego policy
+directory. Policy authoring is deferred; the function is scaffolded so consumers
+can wire the call now and add policies later without a signature change.
+
+```bash
+dagger call -m helm conftest \
+  --src tests/helm/test-chart \
+  --policy-dir ./policy \
+  --values-file tests/helm/test-values.yaml
 ```
 
 ## Examples
