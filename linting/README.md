@@ -74,6 +74,25 @@ Exclude files matching a regex pattern:
 dagger call -m linting scan-secrets --src . --exclude-files "\.git|node_modules" export --path=/tmp/secret-findings.json
 ```
 
+### JSON Schema Syntax Validation
+
+Run `jq empty` over every matching `*.schema.json` under the source tree — a
+fast syntax gate that fails CI if any schema file won't parse:
+```bash
+dagger call -m linting validate-json-schema --src tests/linting/schemas/
+```
+
+- `--src` — directory to recurse into
+- `--glob` — optional basename pattern (default `**/*.schema.json`; the leading
+  `**/` is stripped since `find` already recurses). Example:
+  `--glob '*.json'` to check every JSON file.
+
+Exits non-zero on the first parse failure; stdout lists every file checked.
+
+The module's `test-linting` task exercises local happy + regression fixtures;
+`test-linting-schemas SCHEMAS_SRC=/path/to/tree` runs the same function against
+an external source tree (defaults to `../argocd`).
+
 ### AI-Powered Secret Auto-Fix
 
 Use the AI agent to automatically add `pragma: allowlist secret` comments to flagged lines:
@@ -91,6 +110,8 @@ Example test data can be found in:
 - `tests/linting/yaml/valid.yaml`
 - `tests/linting/yaml/invalid.yaml`
 - `tests/linting/markdown/` - Markdown test files
+- `tests/linting/schemas/` - valid JSON schema fixtures (happy path)
+- `tests/linting/schemas-invalid/` - malformed schema (regression path)
 - `.pre-commit-config.yaml` - Pre-commit configuration
 
 ## 🔧 Supported Pre-Commit Hooks
