@@ -55,18 +55,25 @@ func (m *Packer) Vcenteroperation(
 		}
 
 		switch target {
-		case "template":
-			// Convert template back to VM first, then destroy
-			unmarkCmd := []string{"govc", "vm.markasvm", source}
-			if _, err := ctr.WithExec(unmarkCmd).Stdout(ctx); err != nil {
-				panic(fmt.Errorf("failed to convert template to VM: %w", err))
+		case "template", "vm", "":
+			// Check existence first — treat missing source as a no-op so the
+			// caller can use this idempotently (e.g. "delete if exists").
+			existsCmd := []string{"govc", "ls", source}
+			out, err := ctr.WithExec(existsCmd).Stdout(ctx)
+			if err != nil || out == "" {
+				fmt.Printf("govc delete: source %q not found, skipping\n", source)
+				return
 			}
 
-			// Now destroy the VM
-			destroyCmd := []string{"govc", "vm.destroy", source}
-			cmd = destroyCmd
+			// For templates, mark-as-VM first. Tolerate failure: the object
+			// may already be a VM, in which case vm.destroy works directly.
+			if target == "template" {
+				unmarkCmd := []string{"govc", "vm.markasvm", source}
+				if _, err := ctr.WithExec(unmarkCmd).Stdout(ctx); err != nil {
+					fmt.Printf("govc vm.markasvm failed (maybe already a VM), continuing to destroy: %v\n", err)
+				}
+			}
 
-		case "vm", "":
 			cmd = []string{"govc", "vm.destroy", source}
 
 		default:
