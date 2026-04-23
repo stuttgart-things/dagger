@@ -1,3 +1,11 @@
+# [0.100.0](https://github.com/stuttgart-things/dagger/compare/v0.99.0...v0.100.0) (2026-04-23)
+
+
+### Features
+
+* feat/add-argocd-lint ([a2d1617](https://github.com/stuttgart-things/dagger/commit/a2d16171b8def17d5ac5d1bf0e3bd0d82983d2b7))
+* **flux:** add module for building and pushing OCI artifacts ([f11fc6d](https://github.com/stuttgart-things/dagger/commit/f11fc6deefc3a0b20b1d2d2058aadd0dd548879a))
+
 # [0.99.0](https://github.com/stuttgart-things/dagger/compare/v0.98.0...v0.99.0) (2026-04-22)
 
 
