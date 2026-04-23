@@ -1,3 +1,10 @@
+# [0.101.0](https://github.com/stuttgart-things/dagger/compare/v0.100.0...v0.101.0) (2026-04-23)
+
+
+### Features
+
+* feat/update-packer ([1311958](https://github.com/stuttgart-things/dagger/commit/1311958ac582bafe82c05000db0bcd13c56116e6))
+
 # [0.100.0](https://github.com/stuttgart-things/dagger/compare/v0.99.0...v0.100.0) (2026-04-23)
 
 
