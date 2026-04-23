@@ -24,6 +24,7 @@ func (m *Linting) container() *dagger.Container {
 		"bash",
 		"shellcheck",
 		"docker-cli",
+		"jq",
 	})
 
 	ctr = ctr.WithExec([]string{
