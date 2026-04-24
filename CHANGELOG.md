@@ -1,3 +1,10 @@
+# [0.102.0](https://github.com/stuttgart-things/dagger/compare/v0.101.0...v0.102.0) (2026-04-24)
+
+
+### Features
+
+* feat/add-argocd-verify ([cc1e4a1](https://github.com/stuttgart-things/dagger/commit/cc1e4a1bd2c9f6c3d70821dbbbe5591730328626))
+
 # [0.101.0](https://github.com/stuttgart-things/dagger/compare/v0.100.0...v0.101.0) (2026-04-23)
 
 
