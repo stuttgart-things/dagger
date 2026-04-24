@@ -1,0 +1,4 @@
+apiVersion: v2
+name: alpha
+description: happy-path fixture chart A
+version: 0.1.0

@@ -104,6 +104,30 @@ tasks:
     vars:
       SCHEMAS_SRC: '{{ .SCHEMAS_SRC | default "../argocd" }}'
 
+  test-argocd:
+    desc: Test argocd.VerifyCatalog against happy-path and duplicate-name fixtures
+    cmds:
+      - |
+        # happy path: unique chart names, all schemas valid, all charts render+pass kubeconform
+        dagger call -m argocd \
+        verify-catalog --src {{ .HAPPY_DIR }}
+      - |
+        # regression: duplicate Chart.yaml names must fail the step (issue stuttgart-things/argocd#41)
+        ! dagger call -m argocd \
+        verify-catalog --src {{ .DUP_DIR }}
+    vars:
+      HAPPY_DIR: tests/argocd/verify-catalog-happy/
+      DUP_DIR: tests/argocd/verify-catalog-dup/
+
+  test-argocd-catalog:
+    desc: Run argocd.VerifyCatalog against an external source tree (default ../argocd; issue #233 orchestrator acceptance)
+    cmds:
+      - |
+        dagger call -m argocd \
+        verify-catalog --src {{ .CATALOG_SRC }}
+    vars:
+      CATALOG_SRC: '{{ .CATALOG_SRC | default "../argocd" }}'
+
   test-templating:
     desc: Test templating functions
     cmds:

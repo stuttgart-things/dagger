@@ -2,10 +2,11 @@
 
 Register Kubernetes clusters in ArgoCD from a Dagger pipeline.
 
-| Function         | Purpose                                                                  |
-| ---------------- | ------------------------------------------------------------------------ |
-| `base-container` | Wolfi container with `curl`, `git`, `kubectl` and the `argocd` CLI.      |
-| `add-cluster`    | `argocd login` + `argocd cluster add` with optional label assignment.    |
+| Function          | Purpose                                                                            |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| `base-container`  | Wolfi container with `curl`, `git`, `kubectl` and the `argocd` CLI.                |
+| `add-cluster`     | `argocd login` + `argocd cluster add` with optional label assignment.              |
+| `verify-catalog`  | Catalog-wide gate: schema parse + chart-name uniqueness + per-chart kubeconform.   |
 
 ## base-container
 
@@ -82,6 +83,42 @@ dagger call -m github.com/stuttgart-things/dagger/argocd add-cluster \
   --source-context "" \
   --plaintext=false --insecure=false
 ```
+
+## verify-catalog
+
+Catalog-wide verification for an ArgoCD app-of-apps tree. Runs three gates in order
+and fails fast:
+
+1. `linting.ValidateJsonSchema` over the whole tree — every `*.schema.json` parses.
+2. Chart-name uniqueness — scans every `Chart.yaml` and fails on duplicate `name:`
+   values (the regression guard for [stuttgart-things/argocd#41](https://github.com/stuttgart-things/argocd/issues/41)).
+3. `helm.Kubeconform` per chart — renders each chart and validates manifests against
+   Kubernetes + CRD schemas. If `<chart>/ci/default-values.yaml` exists it is passed
+   as `--values-file` so charts with required values still render.
+
+Composed via `dagger install` from the `helm` and `linting` modules — no duplication.
+
+```bash
+# VERIFY AN EXTERNAL CATALOG
+dagger call -m github.com/stuttgart-things/dagger/argocd verify-catalog \
+  --src ../argocd
+```
+
+```bash
+# CUSTOM SCHEMA LOCATIONS (e.g. a pinned CRDs-catalog revision)
+dagger call -m github.com/stuttgart-things/dagger/argocd verify-catalog \
+  --src ../argocd \
+  --schema-locations default \
+  --schema-locations https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
+```
+
+### In-repo regression fixtures
+
+`tests/argocd/verify-catalog-happy/` — unique chart names, schemas parse, manifests
+render clean. Exercised by `task test-argocd`.
+
+`tests/argocd/verify-catalog-dup/` — two charts declaring `name: collision`. The
+task negates the call (`! dagger ...`) so a non-zero exit is the passing signal.
 
 ### Testing local changes
 

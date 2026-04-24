@@ -1,0 +1,4 @@
+apiVersion: v2
+name: collision
+description: duplicate-name fixture (same as chart-a) — VerifyCatalog must reject this tree
+version: 0.1.0
