@@ -1,0 +1,4 @@
+apiVersion: v2
+name: collision
+description: duplicate-name fixture (same as chart-b)
+version: 0.1.0

@@ -4,5 +4,14 @@
   "sdk": {
     "source": "go"
   },
-  "source": "."
+  "dependencies": [
+    {
+      "name": "helm",
+      "source": "../helm"
+    },
+    {
+      "name": "linting",
+      "source": "../linting"
+    }
+  ]
 }
