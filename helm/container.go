@@ -15,15 +15,14 @@ func (m *Helm) container() *dagger.Container {
 
 	ctr := dag.Container().
 		From(m.BaseImage).
-		WithExec([]string{"apk", "add", "--no-cache", "wget", "curl", "git", "kubectl"})
+		WithExec([]string{"apk", "add", "--no-cache", "wget", "curl", "git", "kubectl-1.35"})
 
 	// ======================================================
-	// INSTALL HELM (manual: Wolfi does NOT ship Helm 3.x)
+	// INSTALL HELM (manual: Wolfi does NOT ship Helm 3.x/4.x)
 	// ======================================================
 	helmVersion := "v4.1.4"
 
 	ctr = ctr.
-		WithExec([]string{"apk", "add", "--no-cache", "wget", "curl", "git"}).
 		WithExec([]string{"sh", "-c", "wget https://get.helm.sh/helm-" + helmVersion + "-linux-amd64.tar.gz -O /tmp/helm.tar.gz"}).
 		WithExec([]string{"tar", "-xzvf", "/tmp/helm.tar.gz", "-C", "/tmp/"}).
 		WithExec([]string{"mv", "/tmp/linux-amd64/helm", "/usr/bin/helm"}).
@@ -50,7 +49,7 @@ func (m *Helm) container() *dagger.Container {
 	// ======================================================
 	polarisVersion := "10.1.8"
 	polarisTar := fmt.Sprintf("polaris_%s.tar.gz", arch)
-	polarisURL := fmt.Sprintf("https://github.com/FairwindsOps/polaris/releases/download/%s/polaris_linux_amd64.tar.gz", polarisVersion)
+	polarisURL := fmt.Sprintf("https://github.com/FairwindsOps/polaris/releases/download/%s/%s", polarisVersion, polarisTar)
 	polarisBinPath := "/usr/bin/polaris"
 
 	ctr = ctr.
