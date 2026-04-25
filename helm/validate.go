@@ -33,7 +33,10 @@ func (m *Helm) ValidateChart(
 		WithWorkdir("/manifests").
 		WithNewFile("rendered.yaml", renderedManifests)
 
-	// Run Polaris and capture the output
+	// Run Polaris and capture the output. Polaris is run in
+	// report-only mode: severity violations are surfaced in the
+	// returned JSON file but do not fail the call. Callers parse
+	// the report to enforce policy.
 	polarisContainer = polarisContainer.
 		WithExec([]string{
 			"polaris",
@@ -47,10 +50,6 @@ func (m *Helm) ValidateChart(
 			"--output-file",
 			"/manifests/validation.json",
 		})
-
-	if err != nil {
-		return nil, err
-	}
 
 	return polarisContainer.File("/manifests/validation.json"), nil
 }
