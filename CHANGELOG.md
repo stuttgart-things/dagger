@@ -1,3 +1,10 @@
+# [0.107.0](https://github.com/stuttgart-things/dagger/compare/v0.106.0...v0.107.0) (2026-04-25)
+
+
+### Features
+
+* feat/add-argoc-clusterbook ([3f0c489](https://github.com/stuttgart-things/dagger/commit/3f0c489c02012933b276007e11f4fe47f9bffc7b))
+
 # [0.106.0](https://github.com/stuttgart-things/dagger/compare/v0.105.0...v0.106.0) (2026-04-25)
 
 
