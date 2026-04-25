@@ -1,3 +1,18 @@
+# [0.105.0](https://github.com/stuttgart-things/dagger/compare/v0.104.0...v0.105.0) (2026-04-25)
+
+
+### Bug Fixes
+
+* **helm:** bump helmfile/polaris/kubeconform/conftest/vals ([#240](https://github.com/stuttgart-things/dagger/issues/240)) ([54f213c](https://github.com/stuttgart-things/dagger/commit/54f213c60643a3525f7b807b1757ef432a514213)), closes [#239](https://github.com/stuttgart-things/dagger/issues/239)
+* **helm:** resolve latent issues in push/validate/render-helmfile ([#244](https://github.com/stuttgart-things/dagger/issues/244)) ([2649dd4](https://github.com/stuttgart-things/dagger/commit/2649dd406e58264e4eda5213a72be2ede04e0aa7)), closes [#239](https://github.com/stuttgart-things/dagger/issues/239)
+
+
+### Features
+
+* feat/release-helm-upgrade ([da1d373](https://github.com/stuttgart-things/dagger/commit/da1d373f6a848fc050242debbb4617cf9e38620d))
+* **helm:** add Version, Test, Diff + lifecycle flags on Execute ([#245](https://github.com/stuttgart-things/dagger/issues/245)) ([67b938c](https://github.com/stuttgart-things/dagger/commit/67b938cb09c5250293326ea8a8270ab03b979c0d)), closes [#242](https://github.com/stuttgart-things/dagger/issues/242) [#239](https://github.com/stuttgart-things/dagger/issues/239)
+* **helm:** bump helm to v4.1.4 ([#241](https://github.com/stuttgart-things/dagger/issues/241)) ([cfe31f1](https://github.com/stuttgart-things/dagger/commit/cfe31f1130cd22f740d03b1c5856cff47f9d7cad)), closes [#239](https://github.com/stuttgart-things/dagger/issues/239)
+
 # [0.104.0](https://github.com/stuttgart-things/dagger/compare/v0.103.0...v0.104.0) (2026-04-25)
 
 
