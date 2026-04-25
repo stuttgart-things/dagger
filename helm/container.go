@@ -32,7 +32,7 @@ func (m *Helm) container() *dagger.Container {
 	// ======================================================
 	// INSTALL HELMFILE
 	// ======================================================
-	helmfileVersion := "1.1.9"
+	helmfileVersion := "1.4.4"
 	helmfileBin := "helmfile"
 	helmfileTar := fmt.Sprintf("%s_%s_%s.tar.gz", helmfileBin, helmfileVersion, arch)
 	helmfileURL := fmt.Sprintf("https://github.com/helmfile/helmfile/releases/download/v%s/%s", helmfileVersion, helmfileTar)
@@ -48,7 +48,7 @@ func (m *Helm) container() *dagger.Container {
 	// ======================================================
 	// INSTALL POLARIS
 	// ======================================================
-	polarisVersion := "10.1.2"
+	polarisVersion := "10.1.8"
 	polarisTar := fmt.Sprintf("polaris_%s.tar.gz", arch)
 	polarisURL := fmt.Sprintf("https://github.com/FairwindsOps/polaris/releases/download/%s/polaris_linux_amd64.tar.gz", polarisVersion)
 	polarisBinPath := "/usr/bin/polaris"
@@ -62,7 +62,7 @@ func (m *Helm) container() *dagger.Container {
 	// ======================================================
 	// INSTALL KUBECONFORM
 	// ======================================================
-	kubeconformVersion := "0.6.7"
+	kubeconformVersion := "0.7.0"
 	kubeconformTar := "kubeconform-linux-amd64.tar.gz"
 	kubeconformURL := fmt.Sprintf("https://github.com/yannh/kubeconform/releases/download/v%s/%s", kubeconformVersion, kubeconformTar)
 	kubeconformBinPath := "/usr/bin/kubeconform"
@@ -76,7 +76,7 @@ func (m *Helm) container() *dagger.Container {
 	// ======================================================
 	// INSTALL CONFTEST
 	// ======================================================
-	conftestVersion := "0.56.0"
+	conftestVersion := "0.68.2"
 	conftestTar := fmt.Sprintf("conftest_%s_Linux_x86_64.tar.gz", conftestVersion)
 	conftestURL := fmt.Sprintf("https://github.com/open-policy-agent/conftest/releases/download/v%s/%s", conftestVersion, conftestTar)
 	conftestBinPath := "/usr/bin/conftest"
@@ -90,7 +90,7 @@ func (m *Helm) container() *dagger.Container {
 	// ======================================================
 	// INSTALL VALS
 	// ======================================================
-	valsVersion := "0.42.4"
+	valsVersion := "0.43.9"
 	valsBin := "vals"
 	valsTar := fmt.Sprintf("%s_%s_%s.tar.gz", valsBin, valsVersion, arch)
 	valsURL := fmt.Sprintf("https://github.com/helmfile/vals/releases/download/v%s/%s", valsVersion, valsTar)
