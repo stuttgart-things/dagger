@@ -115,9 +115,16 @@ tasks:
         # regression: duplicate Chart.yaml names must fail the step (issue stuttgart-things/argocd#41)
         ! dagger call -m argocd \
         verify-catalog --src {{ .DUP_DIR }}
+      - |
+        # render the clusterbook-cluster-gen module against the philly fixture
+        dagger call -m kcl render-clusterbook-cluster \
+        --parameters-file {{ .CLUSTERBOOK_PARAMS }} \
+        export --path={{ .CLUSTERBOOK_OUTPUT }}
     vars:
       HAPPY_DIR: tests/argocd/verify-catalog-happy/
       DUP_DIR: tests/argocd/verify-catalog-dup/
+      CLUSTERBOOK_PARAMS: tests/argocd/clusterbook-cluster-philly.yaml
+      CLUSTERBOOK_OUTPUT: /tmp/dagger/clusterbook-cluster-philly.yaml
 
   test-argocd-catalog:
     desc: Run argocd.VerifyCatalog against an external source tree (default ../argocd; issue #233 orchestrator acceptance)
