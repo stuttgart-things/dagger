@@ -6,7 +6,7 @@ Register Kubernetes clusters in ArgoCD from a Dagger pipeline.
 | ----------------- | ---------------------------------------------------------------------------------- |
 | `base-container`  | Wolfi container with `curl`, `git`, `kubectl` and the `argocd` CLI.                |
 | `add-cluster`     | `argocd login` + `argocd cluster add` with optional label assignment.              |
-| `verify-catalog`  | Catalog-wide gate: schema parse + chart-name uniqueness + per-chart kubeconform.   |
+| `verify-catalog`  | Catalog-wide gate: schema parse + Chart.yaml uniqueness + per-chart helm-lint/kubeconform + argocd#41 double-render. |
 
 ## base-container
 
@@ -86,15 +86,21 @@ dagger call -m github.com/stuttgart-things/dagger/argocd add-cluster \
 
 ## verify-catalog
 
-Catalog-wide verification for an ArgoCD app-of-apps tree. Runs three gates in order
+Catalog-wide verification for an ArgoCD app-of-apps tree. Runs four gates in order
 and fails fast:
 
 1. `linting.ValidateJsonSchema` over the whole tree — every `*.schema.json` parses.
-2. Chart-name uniqueness — scans every `Chart.yaml` and fails on duplicate `name:`
-   values (the regression guard for [stuttgart-things/argocd#41](https://github.com/stuttgart-things/argocd/issues/41)).
-3. `helm.Kubeconform` per chart — renders each chart and validates manifests against
-   Kubernetes + CRD schemas. If `<chart>/ci/default-values.yaml` exists it is passed
-   as `--values-file` so charts with required values still render.
+2. Chart discovery + `Chart.yaml` `name:` uniqueness pre-flight (cheap fail-fast on
+   duplicate chart names).
+3. Per chart: `helm.Lint` followed by `helm.Kubeconform` — renders each chart and
+   validates manifests against Kubernetes + CRD schemas. If
+   `<chart>/ci/default-values.yaml` exists it is passed as `--values-file` so
+   charts with required values still render.
+4. argocd#41 regression guard — for each chart, render twice with different
+   `destination.server` values and assert the rendered `argoproj.io` Application
+   `metadata.name` set differs between the two renders. Charts that emit no
+   Application resources are skipped. This is the direct regression guard for
+   [stuttgart-things/argocd#41](https://github.com/stuttgart-things/argocd/issues/41).
 
 Composed via `dagger install` from the `helm` and `linting` modules — no duplication.
 

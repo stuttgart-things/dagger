@@ -7,6 +7,7 @@ A modular collection of Dagger building blocks for infrastructure, containers, s
 | Module         | Purpose                        | Key Features |
 |---------------|--------------------------------|--------------|
 | [Ansible](./ansible/README.md)     | Automation & Configuration      | Playbook execution, collection build, GitHub release |
+| [ArgoCD](./argocd/README.md)       | ArgoCD GitOps                   | Cluster registration, app-of-apps catalog verification |
 | [Go](./go/README.md)               | Go Development                  | Linting, build, Ko containers, security scan |
 | [Helm](./helm/README.md)           | Kubernetes Package Management   | Chart operations, Helmfile, registry, validation |
 | [Kubernetes](./kubernetes/README.md)   | Kubernetes Management | Kubectl operations |
