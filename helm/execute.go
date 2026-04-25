@@ -36,6 +36,19 @@ func (m *Helm) Execute(
 	// Chart version (e.g., "1.2.3")
 	// +optional
 	version string,
+	// Wait for resources to be ready (--wait)
+	// +optional
+	wait bool,
+	// Timeout for --wait, e.g. "5m", "300s" (--timeout)
+	// +optional
+	timeout string,
+	// Roll back the release if the install/upgrade fails (--atomic)
+	// +optional
+	atomic bool,
+	// Render templates and validate against the cluster but do not
+	// apply changes (--dry-run)
+	// +optional
+	dryRun bool,
 ) error {
 
 	projectDir := "/helm"
@@ -93,6 +106,20 @@ func (m *Helm) Execute(
 			for _, pair := range valuePairs {
 				args = append(args, "--set", pair)
 			}
+		}
+
+		// LIFECYCLE FLAGS
+		if wait {
+			args = append(args, "--wait")
+		}
+		if timeout != "" {
+			args = append(args, "--timeout", timeout)
+		}
+		if atomic {
+			args = append(args, "--atomic")
+		}
+		if dryRun {
+			args = append(args, "--dry-run")
 		}
 
 	case "uninstall":
