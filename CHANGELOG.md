@@ -1,3 +1,10 @@
+# [0.104.0](https://github.com/stuttgart-things/dagger/compare/v0.103.0...v0.104.0) (2026-04-25)
+
+
+### Features
+
+* feat/update-helm-verify ([b624929](https://github.com/stuttgart-things/dagger/commit/b624929956e976947bb6d0e60b33c5a71e804bbb))
+
 # [0.102.0](https://github.com/stuttgart-things/dagger/compare/v0.101.0...v0.102.0) (2026-04-24)
 
 
