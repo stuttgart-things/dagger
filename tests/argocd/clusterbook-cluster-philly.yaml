@@ -1,0 +1,9 @@
+clusterName: philly
+networkKey: "10.31.101"
+createDNS: true
+preserveKubeconfigServer: true
+releaseOnDelete: true
+argocdNamespace: argocd
+providerConfigRef: '{"name":"default"}'
+kubeconfigSecretRef: '{"name":"philly","namespace":"argocd"}'
+labels: '{"env":"lab","role":"mgmt","auto-project":"true"}'

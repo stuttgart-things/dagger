@@ -109,6 +109,22 @@ dagger call -m kcl push-module \
 -vv
 ```
 
+### ClusterbookCluster
+
+```bash
+# Render the clusterbook-cluster-gen module from its OCI artifact
+# (defaults to ghcr.io/stuttgart-things/clusterbook-cluster-gen:0.1.0)
+dagger call -m kcl render-clusterbook-cluster \
+  --parameters 'clusterName=demo,networkKey=net-a,providerConfigRef={"name":"default"},kubeconfigSecretRef={"name":"kubeconfig","namespace":"default"}' \
+  export --path=/tmp/clusterbook-cluster.yaml
+
+# Override the OCI source / pin a different tag
+dagger call -m kcl render-clusterbook-cluster \
+  --oci-source ghcr.io/stuttgart-things/clusterbook-cluster-gen:0.2.0 \
+  --parameters-file ./params.yaml \
+  export --path=/tmp/clusterbook-cluster.yaml
+```
+
 ### Kustomize Base
 
 ```bash
@@ -216,6 +232,12 @@ Omit `--subpath` for self-contained packages — behavior is unchanged.
 |---------------------------|--------------------------------------|--------------------------------------------|--------------------------|
 | `RenderKustomizeBase()`   | Render KCL output into a kustomize base directory | `source?`, `ociSource?`, `parameters?`, `parametersFile?`, `entrypoint?` | Directory with split YAML files + `kustomization.yaml` |
 | `PushKustomizeBase()`     | Render kustomize base and push as OCI artifact | `source?`, `ociSource?`, `parameters?`, `parametersFile?`, `entrypoint?`, `address`, `tag`, `user?`, `password?` | OCI reference string |
+
+### Clusterbook Functions
+
+| Function                       | Purpose                              | Parameters                                 | Returns                  |
+|--------------------------------|--------------------------------------|--------------------------------------------|--------------------------|
+| `RenderClusterbookCluster()`   | Render the `clusterbook-cluster-gen` KCL module from its OCI artifact (defaults to `ghcr.io/stuttgart-things/clusterbook-cluster-gen:0.1.0`) | `ociSource?`, `parameters?`, `parametersFile?`, `outputFormat?` | Rendered YAML/JSON file |
 
 ### CRD Conversion Functions
 
@@ -363,6 +385,7 @@ kcl/                             # Main KCL Dagger module
 ├── container.go                 # Container configuration
 ├── run.go                       # KCL execution engine
 ├── kustomize.go                 # Kustomize base rendering and OCI push
+├── clusterbook.go               # ClusterbookCluster rendering wrapper
 ├── push.go                      # Module publishing
 ├── crd_convert.go               # CRD to KCL conversion
 ├── secret.go                    # Kubernetes secret management
