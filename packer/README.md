@@ -6,7 +6,7 @@ This module provides Dagger functions for Packer operations including image buil
 
 - ✅ Packer image building with HCL configurations
 - ✅ vCenter VM template operations (move, rename, delete) + datastore/network inspection
-- ✅ Proxmox VE operations (move/migrate, rename, delete) + storage/network/resource inspection via REST API (pure Go, API token auth)
+- ✅ Proxmox VE operations (move/migrate, rename, delete, lookup VMID by name) + storage/network/resource inspection via REST API (pure Go, API token auth)
 - ✅ Vault integration for secure credential management
 - ✅ Build variables via comma-separated CLI string (`--vars`)
 - ✅ Build variables via plain YAML file (`--vars-file`)
@@ -296,6 +296,31 @@ dagger call -m packer proxmoxoperation \
   --proxmox-url env:PVE_URL \
   --token-id env:PVE_TOKEN_ID \
   --token-secret env:PVE_TOKEN_SECRET
+
+# Look up VMID by template name (optional --pool / --node narrow the search)
+dagger call -m packer get-proxmox-template-id-by-name \
+  --name ubuntu26-labul-proxmox-base-os \
+  --pool stuttgart-things \
+  --proxmox-url env:PVE_URL \
+  --token-id env:PVE_TOKEN_ID \
+  --token-secret env:PVE_TOKEN_SECRET
+
+# Golden image promote: lookup → delete old → rename new
+OLD_ID=$(dagger call -m packer get-proxmox-template-id-by-name \
+  --name ubuntu26-labul-proxmox-base-os \
+  --proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET)
+
+dagger call -m packer proxmoxoperation --operation delete \
+  --node ul-pve01 --vmid "$OLD_ID" \
+  --proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET
+
+NEW_ID=$(dagger call -m packer get-proxmox-template-id-by-name \
+  --name 2026-04-25-ubuntu26-labul-proxmox \
+  --proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET)
+
+dagger call -m packer proxmoxoperation --operation rename \
+  --node ul-pve01 --vmid "$NEW_ID" --target ubuntu26-labul-proxmox-base-os \
+  --proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET
 ```
 
 ```bash
@@ -326,6 +351,7 @@ dagger call -m packer check-proxmox-networks \
 | Function | Description |
 | --- | --- |
 | `proxmoxoperation` | `move` (migrate to target node), `rename` (set new VM name), `delete` (destroy + purge disks) |
+| `get-proxmox-template-id-by-name` | Returns VMID for a VM/template by `--name`; optional `--pool` / `--node` narrow the search; errors on zero or multiple matches |
 | `check-proxmox-storage` | Lists storage pools with usage; cluster-wide if `--node` omitted |
 | `check-proxmox-networks` | Lists interfaces/bridges on a node |
 | `list-proxmox-resources` | Datacenter-wide resources, optional `--resource-type vm\|storage\|node\|sdn` |

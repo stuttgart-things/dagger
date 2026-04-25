@@ -176,6 +176,71 @@ func (m *Packer) CheckProxmoxNetworks(
 	return c.do(ctx, http.MethodGet, fmt.Sprintf("/nodes/%s/network", node), nil)
 }
 
+// GetProxmoxTemplateIdByName looks up a VM/template VMID by its name.
+// Errors if zero or multiple matches are found. Optional pool/node narrow the search.
+func (m *Packer) GetProxmoxTemplateIdByName(
+	ctx context.Context,
+	// Name of the VM/template to look up
+	name string,
+	proxmoxUrl *dagger.Secret,
+	tokenId *dagger.Secret,
+	tokenSecret *dagger.Secret,
+	// Restrict search to this pool
+	// +optional
+	pool string,
+	// Restrict search to this node
+	// +optional
+	node string,
+) (string, error) {
+	if name == "" {
+		return "", fmt.Errorf("name must be specified")
+	}
+	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret)
+	if err != nil {
+		return "", err
+	}
+
+	body, err := c.do(ctx, http.MethodGet, "/cluster/resources?type=vm", nil)
+	if err != nil {
+		return "", err
+	}
+
+	var resp struct {
+		Data []struct {
+			VMID int    `json:"vmid"`
+			Name string `json:"name"`
+			Node string `json:"node"`
+			Pool string `json:"pool"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal([]byte(body), &resp); err != nil {
+		return "", fmt.Errorf("parse cluster resources: %w", err)
+	}
+
+	var matches []int
+	for _, r := range resp.Data {
+		if r.Name != name {
+			continue
+		}
+		if pool != "" && r.Pool != pool {
+			continue
+		}
+		if node != "" && r.Node != node {
+			continue
+		}
+		matches = append(matches, r.VMID)
+	}
+
+	switch len(matches) {
+	case 0:
+		return "", fmt.Errorf("no VM/template found with name %q (pool=%q, node=%q)", name, pool, node)
+	case 1:
+		return fmt.Sprintf("%d", matches[0]), nil
+	default:
+		return "", fmt.Errorf("multiple VMs/templates found with name %q: vmids=%v", name, matches)
+	}
+}
+
 // ListProxmoxResources returns datacenter-wide resources (nodes, VMs, storage, sdn).
 func (m *Packer) ListProxmoxResources(
 	ctx context.Context,
