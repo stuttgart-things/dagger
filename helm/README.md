@@ -1,4 +1,4 @@
-# Helm Dagger Module
+# Helm Module
 
 This module provides Dagger functions for Helm chart operations including linting, packaging, rendering, and deployment.
 
