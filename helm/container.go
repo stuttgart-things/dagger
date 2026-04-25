@@ -15,7 +15,7 @@ func (m *Helm) container() *dagger.Container {
 
 	ctr := dag.Container().
 		From(m.BaseImage).
-		WithExec([]string{"apk", "add", "--no-cache", "wget", "curl", "git", "kubectl-1.35"})
+		WithExec([]string{"apk", "add", "--no-cache", "wget", "curl", "git", "kubectl-1.35", "kubectl-1.35-default"})
 
 	// ======================================================
 	// INSTALL HELM (manual: Wolfi does NOT ship Helm 3.x/4.x)
