@@ -57,6 +57,10 @@ func (m *Helm) RenderHelmfile(
 	// +optional
 	// +default="helmfile.yaml"
 	helmfileName string,
+	// Comma-separated key=value pairs for --state-values-set
+	// (mirrors HelmfileOperation's stateValues surface).
+	// +optional
+	stateValues string,
 	// +optional
 	registrySecret *dagger.Secret,
 ) (string, error) {
@@ -78,6 +82,12 @@ func (m *Helm) RenderHelmfile(
 		"-f",
 		helmfileName,
 		"template"}
+
+	if stateValues != "" {
+		for _, pair := range splitValues(stateValues) {
+			args = append(args, "--state-values-set", pair)
+		}
+	}
 
 	renderedManifests, err := helmContainer.
 		WithExec(args).

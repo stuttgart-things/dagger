@@ -40,11 +40,13 @@ func (m *Helm) Push(
 		return "", fmt.Errorf("failed to get packaged chart filename: %w", err)
 	}
 
-	// Push the chart
+	// Push the chart. Mount src first, then overlay the packaged
+	// .tgz and the docker config — otherwise WithDirectory can
+	// clobber the .tgz that was just placed at projectDir.
 	result, err := helmContainer.
+		WithDirectory(projectDir, src).
 		WithFile(projectDir+"/"+archiveFileName, packedChart).
 		WithNewFile("/root/.docker/config.json", configJSON).
-		WithDirectory(projectDir, src).
 		WithWorkdir(projectDir).
 		WithExec([]string{
 			"helm",
