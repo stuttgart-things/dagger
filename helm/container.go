@@ -20,7 +20,7 @@ func (m *Helm) container() *dagger.Container {
 	// ======================================================
 	// INSTALL HELM (manual: Wolfi does NOT ship Helm 3.x)
 	// ======================================================
-	helmVersion := "v3.19.2"
+	helmVersion := "v4.1.4"
 
 	ctr = ctr.
 		WithExec([]string{"apk", "add", "--no-cache", "wget", "curl", "git"}).
