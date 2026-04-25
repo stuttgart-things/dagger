@@ -1,3 +1,10 @@
+# [0.106.0](https://github.com/stuttgart-things/dagger/compare/v0.105.0...v0.106.0) (2026-04-25)
+
+
+### Features
+
+* feat/rework-packer-proxmox ([a2f9487](https://github.com/stuttgart-things/dagger/commit/a2f948768c932003a68d9f497014c4b3a53ff5ae))
+
 # [0.105.0](https://github.com/stuttgart-things/dagger/compare/v0.104.0...v0.105.0) (2026-04-25)
 
 
