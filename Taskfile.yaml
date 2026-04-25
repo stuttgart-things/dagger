@@ -533,6 +533,10 @@ tasks:
     cmds:
       - |
         dagger call -m {{ .MODULE }} \
+        version \
+        -vv --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
         lint \
         --src {{ .TEST_CHART }} \
         -vv --progress plain
@@ -541,6 +545,12 @@ tasks:
         render \
         --src {{ .TEST_CHART }} \
         --valuesFile {{ .TEST_VALUES }} \
+        -vv --progress plain
+      - |
+        dagger call -m {{ .MODULE }} \
+        render-helmfile \
+        --src {{ .TEST_HELMFILE_DIR }} \
+        --helmfile-name helmfile.yaml \
         -vv --progress plain
       - |
         dagger call -m {{ .MODULE }} \
@@ -588,6 +598,7 @@ tasks:
     vars:
       MODULE: helm
       TEST_CHART: tests/{{ .MODULE }}/test-chart/
+      TEST_HELMFILE_DIR: tests/{{ .MODULE }}/
       TEST_PACKAGE: tests/{{ .MODULE }}/chart.tgz
       TEST_VALUES: tests/{{ .MODULE }}/test-values.yaml
       TEST_POLICY: tests/{{ .MODULE }}/test-policy/
