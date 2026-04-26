@@ -29,6 +29,8 @@ func (m *Ansible) ModifyRoleIncludes(
 	// RENAME ALL ROLENAMES WITH DASHES TO UNDERSCORES
 	for _, roleDir := range roleDirs {
 
+		roleDir = strings.TrimSuffix(roleDir, "/")
+
 		if strings.Contains(roleDir, "-") {
 
 			// SET NEW COLLECTION ROLE NAME
