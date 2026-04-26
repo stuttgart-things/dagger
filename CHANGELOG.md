@@ -1,3 +1,10 @@
+# [0.108.0](https://github.com/stuttgart-things/dagger/compare/v0.107.1...v0.108.0) (2026-04-26)
+
+
+### Features
+
+* ffix/gh-release ([72a314e](https://github.com/stuttgart-things/dagger/commit/72a314eb7fef7789d1b00cf6453f2b979fe8df36))
+
 ## [0.107.1](https://github.com/stuttgart-things/dagger/compare/v0.107.0...v0.107.1) (2026-04-26)
 
 
