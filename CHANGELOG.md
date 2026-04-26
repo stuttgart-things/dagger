@@ -1,3 +1,11 @@
+## [0.107.1](https://github.com/stuttgart-things/dagger/compare/v0.107.0...v0.107.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* **ansible:** pin gh dep to gh/v0.11.0 to fix apko cache permission error ([fe9c3ec](https://github.com/stuttgart-things/dagger/commit/fe9c3ec5464c44c0c057efbdba5eb137a921b709))
+* fix/gh-release-apko-cache ([5b3f51f](https://github.com/stuttgart-things/dagger/commit/5b3f51f06e96b31f2536e86492c81317636dbc1f))
+
 # [0.107.0](https://github.com/stuttgart-things/dagger/compare/v0.106.0...v0.107.0) (2026-04-25)
 
 
