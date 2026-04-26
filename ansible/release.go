@@ -37,7 +37,11 @@ func (m *Ansible) GithubRelease(
 	args := []string{"gh", "release", "create", tag, "--title", title, "--notes", notes}
 
 	for i, f := range files {
-		assetPath := fmt.Sprintf("/work/asset-%d", i)
+		name, err := f.Name(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get file name for asset %d: %w", i, err)
+		}
+		assetPath := "/work/" + name
 		container = container.WithMountedFile(assetPath, f)
 		args = append(args, assetPath)
 	}
