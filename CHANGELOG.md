@@ -1,3 +1,10 @@
+# [0.109.0](https://github.com/stuttgart-things/dagger/compare/v0.108.0...v0.109.0) (2026-04-26)
+
+
+### Features
+
+* fix/ansible-gh-release-name ([9b48ad6](https://github.com/stuttgart-things/dagger/commit/9b48ad6abc2d4fdf22b8d0da1bd3712609280fd9))
+
 # [0.108.0](https://github.com/stuttgart-things/dagger/compare/v0.107.1...v0.108.0) (2026-04-26)
 
 
