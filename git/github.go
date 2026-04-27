@@ -378,20 +378,22 @@ func (m *Git) AddFolderToGithubBranch(
 	// +default="bot@dagger.io"
 	authorEmail string) (string, error) {
 
-	// Clone the repository using gh CLI
-	gitDir := dag.Gh().Repo().Clone(repository, dagger.GhRepoCloneOpts{Token: token})
-
 	// Get the base container with git and gh
 	ctr, err := m.container(ctx)
 	if err != nil {
 		return "", fmt.Errorf("container init failed: %w", err)
 	}
 
+	// Clone via gh CLI inside our own container (avoids the upstream gh module,
+	// whose apko-built base image fails on shared cache volumes with "permission denied").
+	ctr = ctr.
+		WithSecretVariable("GH_TOKEN", token).
+		WithEnvVariable("GH_REPO", repository).
+		WithExec([]string{"gh", "repo", "clone", repository, workDir})
+
 	// Configure git user and authentication
 	ctr = ctr.
-		WithDirectory(workDir, gitDir).
 		WithWorkdir(workDir).
-		WithSecretVariable("GH_TOKEN", token).
 		WithExec([]string{"git", "config", "user.name", authorName}).
 		WithExec([]string{"git", "config", "user.email", authorEmail}).
 		WithExec([]string{"git", "config", "--global", "credential.helper", "!gh auth git-credential"})
