@@ -1,3 +1,10 @@
+# [0.110.0](https://github.com/stuttgart-things/dagger/compare/v0.109.0...v0.110.0) (2026-04-27)
+
+
+### Features
+
+* fix/update-gi ([830affb](https://github.com/stuttgart-things/dagger/commit/830affba4b63e75178f5d02265ca18dbf982fd21))
+
 # [0.109.0](https://github.com/stuttgart-things/dagger/compare/v0.108.0...v0.109.0) (2026-04-26)
 
 
