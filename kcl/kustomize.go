@@ -110,6 +110,69 @@ done
 	return ctr.Directory("/output"), nil
 }
 
+// RenderInstallYAML renders the KCL → kustomize base and then runs
+// `kustomize build` against it to produce a single flat multi-doc YAML
+// suitable for `kubectl apply -f install.yaml` deployments.
+//
+// The use case is operator-style releases where users want a one-line
+// install path (`kubectl apply -f https://.../install.yaml`) without
+// having to learn kustomize or pull an OCI artifact. Pair it with a
+// `gh release upload` step in CI to attach it to the GitHub release.
+//
+// Example usage:
+//
+//	dagger call render-install-yaml \
+//	  --source ./kcl \
+//	  --parameters-file /tmp/release/profile.yaml \
+//	  export --path=/tmp/install.yaml
+func (m *Kcl) RenderInstallYAML(
+	ctx context.Context,
+	// Local source directory (optional if using OCI source)
+	// +optional
+	source *dagger.Directory,
+	// OCI source path (e.g., oci://ghcr.io/stuttgart-things/kcl-flux-instance)
+	// +optional
+	ociSource string,
+	// KCL parameters as comma-separated key=value pairs
+	// +optional
+	parameters string,
+	// YAML/JSON file containing KCL parameters as key-value pairs
+	// +optional
+	parametersFile *dagger.File,
+	// Entry point file name
+	// +optional
+	// +default="main.k"
+	entrypoint string,
+	// Sub-path inside source to cd into before running kcl.
+	// +optional
+	subpath string,
+	// Kustomize binary version pinned into the render container.
+	// +optional
+	// +default="v5.4.3"
+	kustomizeVersion string,
+) (*dagger.File, error) {
+
+	baseDir, err := m.RenderKustomizeBase(ctx, source, ociSource, parameters, parametersFile, entrypoint, subpath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Install kustomize, then run `kustomize build` against the rendered
+	// base. The result is one multi-doc YAML written to /out/install.yaml.
+	// Pinning the version keeps releases reproducible.
+	installCmd := fmt.Sprintf(
+		"curl -sL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/%s/kustomize_%s_linux_amd64.tar.gz | tar xz -C /usr/local/bin kustomize",
+		kustomizeVersion, kustomizeVersion,
+	)
+
+	ctr := m.container().
+		WithExec([]string{"sh", "-c", installCmd}).
+		WithMountedDirectory("/base", baseDir).
+		WithExec([]string{"sh", "-c", "mkdir -p /out && kustomize build /base > /out/install.yaml"})
+
+	return ctr.File("/out/install.yaml"), nil
+}
+
 // PushKustomizeBase renders a kustomize base from KCL and pushes it as an OCI artifact.
 // It calls RenderKustomizeBase() internally, then uses oras to push the result.
 //

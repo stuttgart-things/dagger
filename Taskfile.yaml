@@ -254,6 +254,18 @@ tasks:
         export --path={{ .OUTPUT_KUSTOMIZE_DIR }}
         echo "Generated kustomize base:"
         ls {{ .OUTPUT_KUSTOMIZE_DIR }}/
+      - |
+        echo "Testing install.yaml rendering..."
+        dagger call -m {{ .MODULE }} \
+        render-install-yaml \
+        --source {{ .TEST_KUSTOMIZE_PROJECT }} \
+        --parameters-file {{ .TEST_KUSTOMIZE_PARAMS }} \
+        --progress plain \
+        export --path={{ .OUTPUT_INSTALL_YAML }}
+        echo "Generated install.yaml:"
+        ls -la {{ .OUTPUT_INSTALL_YAML }}
+        # sanity-check: must contain at least one kind: line
+        grep -q '^kind:' {{ .OUTPUT_INSTALL_YAML }}
     vars:
       MODULE: kcl
       TEST_KCL_PROJECT: tests/kcl/test-kcl-project
@@ -263,6 +275,7 @@ tasks:
       TEST_KUSTOMIZE_PROJECT: tests/kcl/test-kustomize-project
       TEST_KUSTOMIZE_PARAMS: tests/kcl/test-kustomize-project/params.yaml
       OUTPUT_KUSTOMIZE_DIR: /tmp/dagger/kcl-test-kustomize-base
+      OUTPUT_INSTALL_YAML: /tmp/dagger/kcl-test-install.yaml
 
   test-kcl-kustomize:
     desc: Test KCL kustomize base rendering
@@ -299,6 +312,36 @@ tasks:
       TEST_KUSTOMIZE_PROJECT: tests/kcl/test-kustomize-project
       TEST_KUSTOMIZE_PARAMS: tests/kcl/test-kustomize-project/params.yaml
       OUTPUT_KUSTOMIZE_DIR: /tmp/dagger/kcl-test-kustomize-base
+
+  test-kcl-install-yaml:
+    desc: Test KCL render-install-yaml (KCL → kustomize → flat install.yaml)
+    cmds:
+      - |
+        echo "Rendering install.yaml from KCL source..."
+        dagger call -m {{ .MODULE }} \
+        render-install-yaml \
+        --source {{ .TEST_KUSTOMIZE_PROJECT }} \
+        --parameters-file {{ .TEST_KUSTOMIZE_PARAMS }} \
+        --progress plain \
+        export --path={{ .OUTPUT_INSTALL_YAML }}
+
+        echo ""
+        echo "Generated install.yaml:"
+        ls -la {{ .OUTPUT_INSTALL_YAML }}
+
+        echo ""
+        echo "--- install.yaml ---"
+        cat {{ .OUTPUT_INSTALL_YAML }}
+
+        echo ""
+        echo "Sanity check: must contain at least one 'kind:' line"
+        grep -q '^kind:' {{ .OUTPUT_INSTALL_YAML }}
+        echo "OK"
+    vars:
+      MODULE: kcl
+      TEST_KUSTOMIZE_PROJECT: tests/kcl/test-kustomize-project
+      TEST_KUSTOMIZE_PARAMS: tests/kcl/test-kustomize-project/params.yaml
+      OUTPUT_INSTALL_YAML: /tmp/dagger/kcl-test-install.yaml
 
   render-kustomize-base:
     desc: Render kustomize base from KCL source
