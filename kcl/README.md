@@ -159,6 +159,27 @@ dagger call -m kcl push-kustomize-base \
   --tag latest
 ```
 
+#### One-shot `install.yaml` for `kubectl apply -f`
+
+`render-install-yaml` runs `render-kustomize-base` and then `kustomize build`
+against the result, producing a single flat multi-doc YAML file. Attach it to
+a GitHub release so users can run `kubectl apply -f <release-url>/install.yaml`
+without learning kustomize or pulling an OCI artifact.
+
+```bash
+dagger call -m kcl render-install-yaml \
+  --source ./deployment \
+  --parameters-file ./tests/kcl-deploy-profile.yaml \
+  export --path=/tmp/install.yaml
+
+# Pin a specific kustomize version (default: v5.4.3)
+dagger call -m kcl render-install-yaml \
+  --source ./deployment \
+  --parameters-file ./tests/kcl-deploy-profile.yaml \
+  --kustomize-version v5.5.0 \
+  export --path=/tmp/install.yaml
+```
+
 #### Monorepos with shared KCL path deps (`--subpath`)
 
 When a KCL sub-package depends on a sibling module via a relative
@@ -232,6 +253,7 @@ Omit `--subpath` for self-contained packages — behavior is unchanged.
 |---------------------------|--------------------------------------|--------------------------------------------|--------------------------|
 | `RenderKustomizeBase()`   | Render KCL output into a kustomize base directory | `source?`, `ociSource?`, `parameters?`, `parametersFile?`, `entrypoint?` | Directory with split YAML files + `kustomization.yaml` |
 | `PushKustomizeBase()`     | Render kustomize base and push as OCI artifact | `source?`, `ociSource?`, `parameters?`, `parametersFile?`, `entrypoint?`, `address`, `tag`, `user?`, `password?` | OCI reference string |
+| `RenderInstallYAML()`     | Render KCL → kustomize base → flat `install.yaml` for `kubectl apply -f` | `source?`, `ociSource?`, `parameters?`, `parametersFile?`, `entrypoint?`, `subpath?`, `kustomizeVersion?` | Single multi-doc YAML file |
 
 ### Clusterbook Functions
 
