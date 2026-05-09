@@ -1,3 +1,12 @@
+# [0.111.0](https://github.com/stuttgart-things/dagger/compare/v0.110.0...v0.111.0) (2026-05-09)
+
+
+### Features
+
+* feat/add-slidev ([1905c7c](https://github.com/stuttgart-things/dagger/commit/1905c7c2a913db18c0c69295e55f110bccba8c63))
+* **kcl:** add render-install-yaml for one-shot kubectl apply ([71f480d](https://github.com/stuttgart-things/dagger/commit/71f480dc5edb656e9afa96d86f234ebd154737b8))
+* **slidev:** add module for scaffolding, serving, and building decks ([3629e13](https://github.com/stuttgart-things/dagger/commit/3629e13142edfd5815b7de5eb51e204d80499a22))
+
 # [0.110.0](https://github.com/stuttgart-things/dagger/compare/v0.109.0...v0.110.0) (2026-04-27)
 
 
