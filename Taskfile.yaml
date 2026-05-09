@@ -510,6 +510,40 @@ tasks:
       OUTPUT_HUGO_STATIC_CONTENT: /tmp/dagger/hugo/{{ .NAME }}/static
       OUTPUT_HUGO_MERGE: /tmp/merged.md
 
+  test-slidev:
+    desc: Test slidev
+    cmds:
+      - |
+        # CLEANUP DECK FOLDER
+        rm -rf {{ .OUTPUT_SLIDEV_DECK }} || true
+
+        # INIT DECK
+        dagger call -m {{ .MODULE }} \
+        init-deck \
+        --slides {{ .TEST_SLIDEV_SLIDES }} \
+        --style {{ .TEST_SLIDEV_STYLE }} \
+        export \
+        --path {{ .OUTPUT_SLIDEV_DECK }} -vvv
+      - |
+        # CLEANUP STATIC CONTENT
+        rm -rf {{ .OUTPUT_SLIDEV_DIST }} || true
+
+        # BUILD STATIC DIST
+        dagger call -m {{ .MODULE }} \
+        build \
+        --slides {{ .TEST_SLIDEV_SLIDES }} \
+        --style {{ .TEST_SLIDEV_STYLE }} \
+        export \
+        --path {{ .OUTPUT_SLIDEV_DIST }} -vvv
+        echo "✅ Static dist: {{ .OUTPUT_SLIDEV_DIST }}"
+        ls {{ .OUTPUT_SLIDEV_DIST }}
+    vars:
+      MODULE: slidev
+      TEST_SLIDEV_SLIDES: tests/slidev/slides.md
+      TEST_SLIDEV_STYLE: tests/slidev/style.css
+      OUTPUT_SLIDEV_DECK: /tmp/dagger/slidev/deck
+      OUTPUT_SLIDEV_DIST: /tmp/dagger/slidev/dist
+
   test-oci:
     desc: Test OCI functions (uses local zot registry, no credentials needed)
     cmds:
