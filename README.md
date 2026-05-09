@@ -26,6 +26,13 @@ A modular collection of Dagger building blocks for infrastructure, containers, s
 | [Crane](./crane/README.md)         | Registry Operations             | Image copy, manifest, multi-arch |
 | [KCL](./kcl/README.md)             | KCL Config & CRD Conversion     | KCL CLI, CRD2KCL, validation, OCI push |
 | [OCI](./oci/README.md)             | OCI Artifact Management         | Flux push, batch push, local TLS registry testing |
+| [Flux](./flux/README.md)           | Flux GitOps Artifacts           | Build/push OCI artifacts, batch push, registry auth |
+| [Slidev](./slidev/README.md)       | Presentations / Decks           | Scaffold, dev server, static build from a single `slides.md` |
+| [Python](./python/README.md)       | Python Development              | Lint (ruff), tests (pytest), security (bandit), Docker build |
+| [Linting](./linting/README.md)     | Linting                         | YAML, Markdown, pre-commit hooks |
+| [Templating](./templating/README.md) | Go Templating                 | Render Go text/template from file or URL with YAML/CLI vars |
+| [Dependencies](./dependencies/README.md) | Dependency Updates        | Renovate dry-run, Ansible requirements update & apply |
+| [Clusterbook](./clusterbook/README.md) | Cluster IPAM                  | Cluster/network registry, IP allocation and release |
 
 ## 🛠️ Quick Start
 
