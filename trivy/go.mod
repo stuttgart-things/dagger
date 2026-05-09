@@ -1,6 +1,6 @@
 module dagger/trivy
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/99designs/gqlgen v0.17.90
