@@ -1,6 +1,6 @@
 {
   "name": "go",
-  "engineVersion": "v0.16.2",
+  "engineVersion": "v0.20.8",
   "sdk": {
     "source": "go"
   },
@@ -17,22 +17,8 @@
     },
     {
       "name": "trivy",
-      "source": "github.com/luanmtruong/daggerverse/trivy",
+      "source": "github.com/luanmtruong/daggerverse/trivy@main",
       "pin": "96c13b929c636316317f745ff36cda4e4c66f680"
-    }
-  ],
-  "pragma": [
-    {
-      "name": "docker",
-      "value": "false positive"
-    },
-    {
-      "name": "golangci-lint",
-      "value": "false positive"
-    },
-    {
-      "name": "pin",
-      "value": "pragma: allowlist secret"
     }
   ]
 }

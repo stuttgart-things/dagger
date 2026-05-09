@@ -5,21 +5,21 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"sort"
 
+	telemetry "github.com/dagger/otel-go"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.40.0"
 	"go.opentelemetry.io/otel/trace"
 
 	"dagger/hugo/internal/dagger"
-	"dagger/hugo/internal/querybuilder"
-	"dagger/hugo/internal/telemetry"
+
+	"dagger.io/dagger/querybuilder"
 )
 
 var dag = dagger.Connect()
@@ -57,16 +57,22 @@ func convertSlice[I any, O any](in []I, f func(I) O) []O {
 }
 
 func (r Hugo) MarshalJSON() ([]byte, error) {
-	var concrete struct{}
+	var concrete struct {
+		BaseImage string
+	}
+	concrete.BaseImage = r.BaseImage
 	return json.Marshal(&concrete)
 }
 
 func (r *Hugo) UnmarshalJSON(bs []byte) error {
-	var concrete struct{}
+	var concrete struct {
+		BaseImage string
+	}
 	err := json.Unmarshal(bs, &concrete)
 	if err != nil {
 		return err
 	}
+	r.BaseImage = concrete.BaseImage
 	return nil
 }
 
@@ -85,8 +91,7 @@ func main() {
 }
 
 func convertError(rerr error) *dagger.Error {
-	var gqlErr *gqlerror.Error
-	if errors.As(rerr, &gqlErr) {
+	if gqlErr := findSingleGQLError(rerr); gqlErr != nil {
 		dagErr := dag.Error(gqlErr.Message)
 		if gqlErr.Extensions != nil {
 			keys := make([]string, 0, len(gqlErr.Extensions))
@@ -107,6 +112,18 @@ func convertError(rerr error) *dagger.Error {
 	return dag.Error(rerr.Error())
 }
 
+func findSingleGQLError(rerr error) *gqlerror.Error {
+	switch x := rerr.(type) {
+	case *gqlerror.Error:
+		return x
+	case interface{ Unwrap() []error }:
+		return nil
+	case interface{ Unwrap() error }:
+		return findSingleGQLError(x.Unwrap())
+	default:
+		return nil
+	}
+}
 func dispatch(ctx context.Context) (rerr error) {
 	ctx = telemetry.InitEmbedded(ctx, resource.NewWithAttributes(
 		semconv.SchemaURL,
@@ -161,10 +178,6 @@ func dispatch(ctx context.Context) (rerr error) {
 
 	result, err := invoke(ctx, []byte(parentJson), parentName, fnName, inputArgs)
 	if err != nil {
-		var exec *dagger.ExecError
-		if errors.As(err, &exec) {
-			return exec.Unwrap()
-		}
 		return err
 	}
 	resultBytes, err := json.Marshal(result)
@@ -182,62 +195,296 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 	switch parentName {
 	case "Hugo":
 		switch fnName {
-		case "ContainerEcho":
+		case "BuildAndExport":
 			var parent Hugo
 			err = json.Unmarshal(parentJSON, &parent)
 			if err != nil {
 				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
 			}
-			var stringArg string
-			if inputArgs["stringArg"] != nil {
-				err = json.Unmarshal([]byte(inputArgs["stringArg"]), &stringArg)
+			var name string
+			if inputArgs["name"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["name"]), &name)
 				if err != nil {
-					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg stringArg", err))
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg name", err))
 				}
 			}
-			return (*Hugo).ContainerEcho(&parent, stringArg), nil
-		case "GrepDir":
+			var config *dagger.File
+			if inputArgs["config"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["config"]), &config)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg config", err))
+				}
+			}
+			var content *dagger.Directory
+			if inputArgs["content"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["content"]), &content)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg content", err))
+				}
+			}
+			var theme string
+			if inputArgs["theme"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["theme"]), &theme)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg theme", err))
+				}
+			}
+			return (*Hugo).BuildAndExport(&parent, ctx, name, config, content, theme)
+		case "BuildSyncExport":
 			var parent Hugo
 			err = json.Unmarshal(parentJSON, &parent)
 			if err != nil {
 				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
 			}
-			var directoryArg *dagger.Directory
-			if inputArgs["directoryArg"] != nil {
-				err = json.Unmarshal([]byte(inputArgs["directoryArg"]), &directoryArg)
+			var name string
+			if inputArgs["name"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["name"]), &name)
 				if err != nil {
-					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg directoryArg", err))
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg name", err))
 				}
 			}
-			var pattern string
-			if inputArgs["pattern"] != nil {
-				err = json.Unmarshal([]byte(inputArgs["pattern"]), &pattern)
+			var config *dagger.File
+			if inputArgs["config"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["config"]), &config)
 				if err != nil {
-					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg pattern", err))
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg config", err))
 				}
 			}
-			return (*Hugo).GrepDir(&parent, ctx, directoryArg, pattern)
+			var content *dagger.Directory
+			if inputArgs["content"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["content"]), &content)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg content", err))
+				}
+			}
+			var theme string
+			if inputArgs["theme"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["theme"]), &theme)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg theme", err))
+				}
+			}
+			var endpoint string
+			if inputArgs["endpoint"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["endpoint"]), &endpoint)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg endpoint", err))
+				}
+			}
+			var accessKey *dagger.Secret
+			if inputArgs["accessKey"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["accessKey"]), &accessKey)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg accessKey", err))
+				}
+			}
+			var secretKey *dagger.Secret
+			if inputArgs["secretKey"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["secretKey"]), &secretKey)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg secretKey", err))
+				}
+			}
+			var bucketName string
+			if inputArgs["bucketName"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["bucketName"]), &bucketName)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg bucketName", err))
+				}
+			}
+			var aliasName string
+			if inputArgs["aliasName"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["aliasName"]), &aliasName)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg aliasName", err))
+				}
+			}
+			var insecure bool
+			if inputArgs["insecure"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["insecure"]), &insecure)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg insecure", err))
+				}
+			}
+			return (*Hugo).BuildSyncExport(&parent, ctx, name, config, content, theme, endpoint, accessKey, secretKey, bucketName, aliasName, insecure)
+		case "ExportStaticContent":
+			var parent Hugo
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
+			}
+			var siteDir *dagger.Directory
+			if inputArgs["siteDir"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["siteDir"]), &siteDir)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg siteDir", err))
+				}
+			}
+			var theme string
+			if inputArgs["theme"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["theme"]), &theme)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg theme", err))
+				}
+			}
+			return (*Hugo).ExportStaticContent(&parent, ctx, siteDir, theme)
+		case "InitSite":
+			var parent Hugo
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
+			}
+			var name string
+			if inputArgs["name"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["name"]), &name)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg name", err))
+				}
+			}
+			var config *dagger.File
+			if inputArgs["config"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["config"]), &config)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg config", err))
+				}
+			}
+			var content *dagger.Directory
+			if inputArgs["content"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["content"]), &content)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg content", err))
+				}
+			}
+			var theme string
+			if inputArgs["theme"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["theme"]), &theme)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg theme", err))
+				}
+			}
+			return (*Hugo).InitSite(&parent, ctx, name, config, content, theme)
+		case "MergeMarkdowns":
+			var parent Hugo
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
+			}
+			var src *dagger.Directory
+			if inputArgs["src"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["src"]), &src)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg src", err))
+				}
+			}
+			var presentationFile *dagger.File
+			if inputArgs["presentationFile"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["presentationFile"]), &presentationFile)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg presentationFile", err))
+				}
+			}
+			return (*Hugo).MergeMarkdowns(&parent, ctx, src, presentationFile)
+		case "Serve":
+			var parent Hugo
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
+			}
+			var config *dagger.File
+			if inputArgs["config"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["config"]), &config)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg config", err))
+				}
+			}
+			var content *dagger.Directory
+			if inputArgs["content"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["content"]), &content)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg content", err))
+				}
+			}
+			var name string
+			if inputArgs["name"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["name"]), &name)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg name", err))
+				}
+			}
+			var baseUrl string
+			if inputArgs["baseURL"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["baseURL"]), &baseUrl)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg baseURL", err))
+				}
+			}
+			var port string
+			if inputArgs["port"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["port"]), &port)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg port", err))
+				}
+			}
+			var theme string
+			if inputArgs["theme"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["theme"]), &theme)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg theme", err))
+				}
+			}
+			return (*Hugo).Serve(&parent, ctx, config, content, name, baseUrl, port, theme)
+		case "SyncMinioBucket":
+			var parent Hugo
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
+			}
+			var endpoint string
+			if inputArgs["endpoint"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["endpoint"]), &endpoint)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg endpoint", err))
+				}
+			}
+			var accessKey *dagger.Secret
+			if inputArgs["accessKey"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["accessKey"]), &accessKey)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg accessKey", err))
+				}
+			}
+			var secretKey *dagger.Secret
+			if inputArgs["secretKey"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["secretKey"]), &secretKey)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg secretKey", err))
+				}
+			}
+			var bucketName string
+			if inputArgs["bucketName"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["bucketName"]), &bucketName)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg bucketName", err))
+				}
+			}
+			var aliasName string
+			if inputArgs["aliasName"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["aliasName"]), &aliasName)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg aliasName", err))
+				}
+			}
+			var insecure bool
+			if inputArgs["insecure"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["insecure"]), &insecure)
+				if err != nil {
+					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg insecure", err))
+				}
+			}
+			return (*Hugo).SyncMinioBucket(&parent, ctx, endpoint, accessKey, secretKey, bucketName, aliasName, insecure)
 		default:
 			return nil, fmt.Errorf("unknown function %s", fnName)
 		}
-	case "":
-		return dag.Module().
-			WithDescription("A generated module for Hugo functions\n\nThis module has been generated via dagger init and serves as a reference to\nbasic module structure as you get started with Dagger.\n\nTwo functions have been pre-created. You can modify, delete, or add to them,\nas needed. They demonstrate usage of arguments and return types using simple\necho and grep commands. The functions can be called from the dagger CLI or\nfrom one of the SDKs.\n\nThe first line in this comment block is a short description line and the\nrest is a long description with more detail on the module's purpose or usage,\nif appropriate. All modules should have a short description.\n").
-			WithObject(
-				dag.TypeDef().WithObject("Hugo", dagger.TypeDefWithObjectOpts{SourceMap: dag.SourceMap("main.go", 22, 6)}).
-					WithFunction(
-						dag.Function("ContainerEcho",
-							dag.TypeDef().WithObject("Container")).
-							WithDescription("Returns a container that echoes whatever string argument is provided").
-							WithSourceMap(dag.SourceMap("main.go", 25, 1)).
-							WithArg("stringArg", dag.TypeDef().WithKind(dagger.TypeDefKindStringKind), dagger.FunctionWithArgOpts{SourceMap: dag.SourceMap("main.go", 25, 30)})).
-					WithFunction(
-						dag.Function("GrepDir",
-							dag.TypeDef().WithKind(dagger.TypeDefKindStringKind)).
-							WithDescription("Returns lines that match a pattern in the files of the provided Directory").
-							WithSourceMap(dag.SourceMap("main.go", 30, 1)).
-							WithArg("directoryArg", dag.TypeDef().WithObject("Directory"), dagger.FunctionWithArgOpts{SourceMap: dag.SourceMap("main.go", 30, 45)}).
-							WithArg("pattern", dag.TypeDef().WithKind(dagger.TypeDefKindStringKind), dagger.FunctionWithArgOpts{SourceMap: dag.SourceMap("main.go", 30, 77)}))), nil
 	default:
 		return nil, fmt.Errorf("unknown object %s", parentName)
 	}

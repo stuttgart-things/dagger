@@ -1,8 +1,7 @@
 {
   "name": "dependencies",
-  "engineVersion": "v0.19.7",
+  "engineVersion": "v0.20.8",
   "sdk": {
     "source": "go"
-  },
-  "source": "."
+  }
 }
