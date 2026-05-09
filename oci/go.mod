@@ -1,6 +1,6 @@
 module dagger/oci
 
-go 1.26.1
+go 1.26.0
 
 require (
 	dagger.io/dagger v0.20.8
