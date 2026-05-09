@@ -15,7 +15,7 @@ require (
 	dagger.io/dagger v0.20.8
 	github.com/99designs/gqlgen v0.17.90
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.17.0
-	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.17.0
+	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.19.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.41.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.41.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.41.0
@@ -60,7 +60,7 @@ require (
 
 replace go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc => go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.16.0
 
-replace go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp => go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.16.0
+replace go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp => go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.19.0
 
 replace go.opentelemetry.io/otel/log => go.opentelemetry.io/otel/log v0.16.0
 
