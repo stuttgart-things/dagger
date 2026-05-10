@@ -1,3 +1,16 @@
+# [0.112.0](https://github.com/stuttgart-things/dagger/compare/v0.111.0...v0.112.0) (2026-05-10)
+
+
+### Bug Fixes
+
+* **git:** cache-bust gh repo clone to avoid stale origin HEAD ([#267](https://github.com/stuttgart-things/dagger/issues/267)) ([80d9dee](https://github.com/stuttgart-things/dagger/commit/80d9deea6ba19bef24fa36e1ee0a48bb3baf3ecd)), closes [blueprints#158](https://github.com/blueprints/issues/158)
+
+
+### Features
+
+* align all modules to dagger engine + sdk v0.20.8 ([6402b60](https://github.com/stuttgart-things/dagger/commit/6402b60305858ffa27ab9ce74f0ca3d210bd00b8)), closes [#262](https://github.com/stuttgart-things/dagger/issues/262)
+* pin every module's go.mod to go 1.26.0 ([#266](https://github.com/stuttgart-things/dagger/issues/266)) ([0a01b0c](https://github.com/stuttgart-things/dagger/commit/0a01b0c9fe71410daa2e7f0463da2acd7efccc2f)), closes [#262](https://github.com/stuttgart-things/dagger/issues/262)
+
 # [0.111.0](https://github.com/stuttgart-things/dagger/compare/v0.110.0...v0.111.0) (2026-05-09)
 
 
