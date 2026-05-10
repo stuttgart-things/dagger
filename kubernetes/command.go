@@ -47,7 +47,8 @@ func (m *Kubernetes) Command(
 	}
 
 	kubectlContainer := m.container().
-		WithMountedSecret(kubeConfigPath, kubeConfig)
+		WithMountedSecret(kubeConfigPath, kubeConfig).
+		WithEnvVariable("KUBECONFIG", kubeConfigPath)
 
 	// If additional command is provided, pipe kubectl output through it
 	if additionalCommand != "" {
@@ -120,7 +121,8 @@ func (m *Kubernetes) Kubectl(
 	manifestPath := "/tmp/manifest.yaml"
 
 	kubectlContainer := m.container().
-		WithMountedSecret(kubeConfigPath, kubeConfig)
+		WithMountedSecret(kubeConfigPath, kubeConfig).
+		WithEnvVariable("KUBECONFIG", kubeConfigPath)
 
 	// Build kubectl command
 	var args []string
