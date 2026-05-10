@@ -5,6 +5,7 @@ import (
 	"dagger/git/internal/dagger"
 	"fmt"
 	"strings"
+	"time"
 )
 
 var (
@@ -264,8 +265,11 @@ func (m *Git) CloneGithub(
 		fmt.Errorf("CONTAINER INIT FAILED: %w", err)
 	}
 
-	// Use gh to clone with authentication and checkout the specific branch
+	// Use gh to clone with authentication and checkout the specific branch.
+	// CACHE_BUSTER forces a fresh clone on every run so callers (AddFile/AddFiles)
+	// don't push on top of a stale origin HEAD (blueprints#158).
 	ctr = ctr.
+		WithEnvVariable("CACHE_BUSTER", fmt.Sprintf("%d", time.Now().UnixNano())).
 		WithSecretVariable("GH_TOKEN", token).
 		WithEnvVariable("GH_REPO", repository).
 		WithExec([]string{"gh", "repo", "clone", repository, workDir, "--", "--branch", ref})
@@ -386,7 +390,11 @@ func (m *Git) AddFolderToGithubBranch(
 
 	// Clone via gh CLI inside our own container (avoids the upstream gh module,
 	// whose apko-built base image fails on shared cache volumes with "permission denied").
+	// CACHE_BUSTER forces Dagger to re-run clone+fetch+checkout every invocation;
+	// without it the cache key is static and /src ends up at a stale origin/main,
+	// causing "fetch first" push rejections (blueprints#158).
 	ctr = ctr.
+		WithEnvVariable("CACHE_BUSTER", fmt.Sprintf("%d", time.Now().UnixNano())).
 		WithSecretVariable("GH_TOKEN", token).
 		WithEnvVariable("GH_REPO", repository).
 		WithExec([]string{"gh", "repo", "clone", repository, workDir})
