@@ -1,3 +1,10 @@
+## [0.112.1](https://github.com/stuttgart-things/dagger/compare/v0.112.0...v0.112.1) (2026-05-10)
+
+
+### Bug Fixes
+
+* **kubernetes:** set KUBECONFIG env var alongside the mount ([#268](https://github.com/stuttgart-things/dagger/issues/268)) ([1040fa8](https://github.com/stuttgart-things/dagger/commit/1040fa84923320712ac5b367dab7a1c70f5ae629)), closes [stuttgart-things/blueprints#165](https://github.com/stuttgart-things/blueprints/issues/165)
+
 # [0.112.0](https://github.com/stuttgart-things/dagger/compare/v0.111.0...v0.112.0) (2026-05-10)
 
 
