@@ -1,3 +1,10 @@
+# [0.113.0](https://github.com/stuttgart-things/dagger/compare/v0.112.1...v0.113.0) (2026-05-14)
+
+
+### Features
+
+* feat/add-slidev-export ([35150a0](https://github.com/stuttgart-things/dagger/commit/35150a04a8b968dfb94d2d16eb49407b6430cb61))
+
 ## [0.112.1](https://github.com/stuttgart-things/dagger/compare/v0.112.0...v0.112.1) (2026-05-10)
 
 
