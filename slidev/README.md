@@ -7,6 +7,7 @@ This module provides Dagger functions for [Slidev](https://sli.dev) presentation
 - ✅ Slidev project scaffolding driven by a single Markdown file
 - ✅ Local development server with hot reload (`slidev` + `--remote`)
 - ✅ Static build to `dist/` for any HTTP host (nginx, MinIO, S3, Pages, ...)
+- ✅ Printable export to PDF / PPTX / PNG (`slidev export`, headless Chromium bundled)
 - ✅ Custom theme and addon installation via npm package names
 - ✅ Optional `style.css` overlay for branding tweaks
 
@@ -35,6 +36,16 @@ dagger call -m slidev serve \
 dagger call -m slidev build \
   --slides ./slides.md \
   export --path /tmp/slidev/dist
+```
+
+### Printable Export (PDF)
+
+```bash
+# Export the deck to a PDF for printing / sharing
+dagger call -m slidev export \
+  --slides ./slides.md \
+  export --path /tmp/slidev/out
+# → /tmp/slidev/out/slides-export.pdf
 ```
 
 ### Initialize Deck Only
@@ -81,6 +92,29 @@ dagger call -m slidev build \
 | Flag      | Type     | Default | Notes                                                              |
 |-----------|----------|---------|--------------------------------------------------------------------|
 | `--base`  | `string` | `/`     | Public URL prefix passed to `slidev build --base`.                 |
+
+### Export
+
+```bash
+dagger call -m slidev export \
+  --slides ./slides.md \
+  --style ./style.css \
+  --extras ./ \
+  --format pdf \
+  --with-clicks=false \
+  --dark=false \
+  export --path /tmp/slidev/out
+```
+
+| Flag            | Type        | Default | Notes                                                                 |
+|-----------------|-------------|---------|-----------------------------------------------------------------------|
+| `--format`      | `string`    | `pdf`   | `pdf`, `pptx`, or `png`. PNG output is one file per slide.            |
+| `--with-clicks` | `bool`      | `false` | Render each click step as its own page (preserves `v-click` reveals). |
+| `--dark`        | `bool`      | `false` | Export in dark mode.                                                  |
+
+Returns a directory. For `pdf` / `pptx` it contains a single `slides-export.<format>`; for `png` it contains one `<n>.png` per slide.
+
+Unlike `build` / `serve` / `init-deck`, which run on the lightweight `node:22-alpine` base, `export` runs on `node:22-bookworm-slim`: Playwright doesn't officially support Alpine, and its bundled `chromium-headless-shell` binary is built against glibc. Export installs Chromium's system dependencies via `apt-get` and then runs `playwright install chromium` inside the container — Dagger caches both layers, so subsequent exports skip the apt and browser download steps entirely.
 
 ### InitDeck
 
