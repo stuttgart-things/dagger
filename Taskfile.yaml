@@ -522,6 +522,7 @@ tasks:
         init-deck \
         --slides {{ .TEST_SLIDEV_SLIDES }} \
         --style {{ .TEST_SLIDEV_STYLE }} \
+        --extras {{ .TEST_SLIDEV_EXTRAS }} \
         export \
         --path {{ .OUTPUT_SLIDEV_DECK }} -vvv
       - |
@@ -533,16 +534,58 @@ tasks:
         build \
         --slides {{ .TEST_SLIDEV_SLIDES }} \
         --style {{ .TEST_SLIDEV_STYLE }} \
+        --extras {{ .TEST_SLIDEV_EXTRAS }} \
         export \
         --path {{ .OUTPUT_SLIDEV_DIST }} -vvv
         echo "✅ Static dist: {{ .OUTPUT_SLIDEV_DIST }}"
         ls {{ .OUTPUT_SLIDEV_DIST }}
+      - |
+        # CLEANUP EXPORT FOLDER
+        rm -rf {{ .OUTPUT_SLIDEV_EXPORT }} || true
+
+        # EXPORT PRINTABLE PDF
+        dagger call -m {{ .MODULE }} \
+        export \
+        --slides {{ .TEST_SLIDEV_SLIDES }} \
+        --style {{ .TEST_SLIDEV_STYLE }} \
+        --extras {{ .TEST_SLIDEV_EXTRAS }} \
+        --format pdf \
+        export \
+        --path {{ .OUTPUT_SLIDEV_EXPORT }} -vvv
+        echo "✅ Printable export: {{ .OUTPUT_SLIDEV_EXPORT }}"
+        ls {{ .OUTPUT_SLIDEV_EXPORT }}
     vars:
       MODULE: slidev
       TEST_SLIDEV_SLIDES: tests/slidev/slides.md
       TEST_SLIDEV_STYLE: tests/slidev/style.css
+      TEST_SLIDEV_EXTRAS: tests/slidev
       OUTPUT_SLIDEV_DECK: /tmp/dagger/slidev/deck
       OUTPUT_SLIDEV_DIST: /tmp/dagger/slidev/dist
+      OUTPUT_SLIDEV_EXPORT: /tmp/dagger/slidev/out
+
+  test-slidev-export:
+    desc: Test slidev export (PDF / PPTX / PNG) — set FORMAT=pdf|pptx|png
+    cmds:
+      - |
+        rm -rf {{ .OUTPUT_SLIDEV_EXPORT }} || true
+
+        dagger call -m {{ .MODULE }} \
+        export \
+        --slides {{ .TEST_SLIDEV_SLIDES }} \
+        --style {{ .TEST_SLIDEV_STYLE }} \
+        --extras {{ .TEST_SLIDEV_EXTRAS }} \
+        --format {{ .FORMAT }} \
+        export \
+        --path {{ .OUTPUT_SLIDEV_EXPORT }} -vvv
+        echo "✅ Slidev export ({{ .FORMAT }}): {{ .OUTPUT_SLIDEV_EXPORT }}"
+        ls -la {{ .OUTPUT_SLIDEV_EXPORT }}
+    vars:
+      MODULE: slidev
+      TEST_SLIDEV_SLIDES: tests/slidev/slides.md
+      TEST_SLIDEV_STYLE: tests/slidev/style.css
+      TEST_SLIDEV_EXTRAS: tests/slidev
+      OUTPUT_SLIDEV_EXPORT: /tmp/dagger/slidev/out
+      FORMAT: '{{ .FORMAT | default "pdf" }}'
 
   test-oci:
     desc: Test OCI functions (uses local zot registry, no credentials needed)

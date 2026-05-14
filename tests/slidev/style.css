@@ -1,3 +1,40 @@
 :root {
   --slidev-theme-primary: #5d8392;
+  --accent: #f97316;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.dot {
+  color: var(--accent);
+}
+
+.topline,
+.kicker,
+.page-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 0.5rem;
+}
+
+.sub,
+.lede {
+  font-size: 1.1rem;
+  opacity: 0.85;
+  max-width: 60ch;
+}
+
+.slide-meta {
+  position: absolute;
+  bottom: 1rem;
+  left: 2rem;
+  right: 2rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  opacity: 0.5;
 }

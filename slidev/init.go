@@ -28,22 +28,44 @@ func (m *Slidev) InitDeck(
 	// +optional
 	extras *dagger.Directory,
 ) (*dagger.Directory, error) {
+	return m.installDeck(m.container(), slides, style, theme, addons, extras, nil).
+		Directory("/deck"), nil
+}
+
+// installDeck is the shared scaffolding pipeline used by InitDeck, Build,
+// Serve and Export. It is lowercase so the Dagger SDK does not expose it as
+// a module function — callers pass in the base container (which can be
+// further configured, e.g. with Chromium for Export) and any extra dev
+// dependencies to install alongside @slidev/cli.
+func (m *Slidev) installDeck(
+	ctr *dagger.Container,
+	slides *dagger.File,
+	style *dagger.File,
+	theme string,
+	addons []string,
+	extras *dagger.Directory,
+	extraDev []string,
+) *dagger.Container {
 	pkgs := append([]string{"pnpm", "add", "@slidev/cli", "vue", theme}, addons...)
 
-	ctr := m.container().
-		WithWorkdir("/deck").
+	c := ctr.WithWorkdir("/deck").
 		WithExec([]string{"pnpm", "init"}).
 		WithExec(pkgs)
 
-	if extras != nil {
-		ctr = ctr.WithDirectory(".", extras)
+	if len(extraDev) > 0 {
+		devPkgs := append([]string{"pnpm", "add", "-D", "--ignore-scripts"}, extraDev...)
+		c = c.WithExec(devPkgs)
 	}
 
-	ctr = ctr.WithFile("slides.md", slides)
+	if extras != nil {
+		c = c.WithDirectory(".", extras)
+	}
+
+	c = c.WithFile("slides.md", slides)
 
 	if style != nil {
-		ctr = ctr.WithFile("style.css", style)
+		c = c.WithFile("style.css", style)
 	}
 
-	return ctr.Directory("/deck"), nil
+	return c
 }

@@ -48,5 +48,7 @@ repos:
                "--exclude-files", "ansible/dagger.json",
                "--exclude-files", "argocd/dagger.json",
                "--exclude-files", "go/dagger.json",
-                "--exclude-files", "tests/sops/tfvars.json"
+               "--exclude-files", hugo/dagger.json",
+               "--exclude-files", "tests/sops/tfvars.json",
+               "--exclude-files", "hugo/dagger.gen.go"
                ]
