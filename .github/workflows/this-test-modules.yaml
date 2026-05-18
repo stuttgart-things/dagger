@@ -1,0 +1,114 @@
+---
+name: Test Changed Modules
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - feature/*
+      - fix/*
+
+# Run `dagger functions -m ./<module>` against every module touched
+# in the PR/push so schema or flag regressions (e.g. flag-name
+# collisions inside a module) surface before release. Tracked in
+# https://github.com/stuttgart-things/dagger/issues/262 (P2.1).
+
+permissions:
+  contents: read
+
+jobs:
+  detect-modules:
+    name: Detect changed modules
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.detect.outputs.modules }}
+      count: ${{ steps.detect.outputs.count }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute changed modules
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            git fetch --no-tags --depth=0 origin "$BASE_REF"
+            base="origin/${BASE_REF}"
+            range="${base}...HEAD"
+          else
+            # Push event. If the "before" SHA is unknown (force push,
+            # first push, etc.) fall back to the last commit only.
+            if [[ -z "$BEFORE_SHA" || "$BEFORE_SHA" =~ ^0+$ ]] \
+              || ! git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+              range="HEAD~1...HEAD"
+            else
+              range="${BEFORE_SHA}...${HEAD_SHA}"
+            fi
+          fi
+
+          echo "Diff range: $range"
+          changed_files=$(git diff --name-only "$range" || true)
+          echo "Changed files:"
+          echo "$changed_files"
+
+          modules=()
+          while IFS= read -r path; do
+            [[ -z "$path" ]] && continue
+            top="${path%%/*}"
+            [[ "$top" == "$path" ]] && continue  # top-level file, not a module dir
+            [[ -f "${top}/dagger.json" ]] || continue
+            modules+=("$top")
+          done < <(printf '%s\n' "$changed_files")
+
+          # Dedup, preserve sort order
+          if [[ ${#modules[@]} -gt 0 ]]; then
+            mapfile -t modules < <(printf '%s\n' "${modules[@]}" | sort -u)
+          fi
+
+          count=${#modules[@]}
+          if [[ $count -eq 0 ]]; then
+            json="[]"
+          else
+            json=$(printf '%s\n' "${modules[@]}" | jq -R . | jq -sc .)
+          fi
+
+          echo "Changed modules ($count): $json"
+          echo "modules=$json" >> "$GITHUB_OUTPUT"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+  test-modules:
+    name: dagger functions (${{ matrix.module }})
+    needs: detect-modules
+    if: needs.detect-modules.outputs.count != '0'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dagger CLI
+        env:
+          DAGGER_VERSION: 0.20.8
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL https://dl.dagger.io/dagger/install.sh \
+            | BIN_DIR="$HOME/.local/bin" sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/dagger" version
+
+      - name: dagger functions -m ./${{ matrix.module }}
+        run: dagger functions -m "./${{ matrix.module }}"
