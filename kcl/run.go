@@ -54,38 +54,6 @@ func splitParameters(params string) []string {
 	return result
 }
 
-// Helper function to parse parameters string into a map
-func parseParametersToMap(params string) map[string]string {
-	result := make(map[string]string)
-	if params == "" {
-		return result
-	}
-
-	parameters := splitParameters(params)
-	for _, param := range parameters {
-		parts := strings.SplitN(param, "=", 2)
-		if len(parts) == 2 {
-			result[parts[0]] = parts[1]
-		}
-	}
-
-	return result
-}
-
-// Helper function to convert parameter map back to comma-separated string
-func mapToParameterString(params map[string]string) string {
-	if len(params) == 0 {
-		return ""
-	}
-
-	var parts []string
-	for k, v := range params {
-		parts = append(parts, k+"="+v)
-	}
-
-	return strings.Join(parts, ",")
-}
-
 // Run executes KCL code from a provided directory or OCI source with parameters
 // Supports three methods of passing parameters (in order of precedence):
 // 1. CLI parameters (--parameters flag) - highest priority
@@ -188,42 +156,25 @@ func (m *Kcl) Run(
 		cmd += entrypoint
 	}
 
-	// Merge parameters from file and CLI (CLI takes precedence)
-	mergedParams := ""
+	// If a parameters file is provided, transform it into a KCL settings file
+	// (kcl_options:) and pass it via -Y. This preserves multi-line YAML values
+	// as literal-block scalars end-to-end. The previous path flattened values
+	// through `jq gsub("\n"; "\\n")` into a `-D` comma list, which turned real
+	// newlines into the literal two-character sequence \n; KCL then emitted
+	// single-quoted multi-line scalars, and YAML folds those to spaces on
+	// read, corrupting any multi-line parameter value (issue #271).
 	if parametersFile != nil {
-		// Read parameters from file and convert to comma-separated format
-		// Use tostring for values and gsub to escape newlines in multiline strings
-		readParamsCmd := `yq eval -o=json /params.yaml | jq -r 'to_entries | map(.key + "=" + ((.value | tostring) | gsub("\n"; "\\n"))) | join(",")'`
-		mergedParams, _ = ctr.WithExec([]string{"sh", "-c", readParamsCmd}).Stdout(ctx)
-		mergedParams = strings.TrimSpace(mergedParams)
+		settingsCmd := `yq eval -o=yaml '{"kcl_options": [to_entries | .[] | {"key": .key, "value": .value}]}' /params.yaml > /settings.yaml`
+		ctr = ctr.WithExec([]string{"sh", "-c", settingsCmd})
+		cmd += " -Y /settings.yaml"
 	}
 
-	// Override with CLI parameters if provided
+	// CLI parameters use -D. KCL applies -D after -Y, so any key passed via
+	// --parameters overrides the same key from the settings file.
 	if parameters != "" {
-		if mergedParams != "" {
-			// Merge: parse both, CLI params override file params
-			fileParams := parseParametersToMap(mergedParams)
-			cliParams := parseParametersToMap(parameters)
-
-			// Merge maps (CLI overwrites file)
-			for k, v := range cliParams {
-				fileParams[k] = v
-			}
-
-			// Convert back to comma-separated string
-			mergedParams = mapToParameterString(fileParams)
-		} else {
-			mergedParams = parameters
-		}
-	}
-
-	// Add parameters if we have any
-	if mergedParams != "" {
-		// Split comma-separated parameters and add each as -D flag
-		params := splitParameters(mergedParams)
+		params := splitParameters(parameters)
 		for _, param := range params {
-			// Properly quote parameters to preserve special characters
-			// Use single quotes to protect the value, but handle single quotes in the value
+			// Single-quote the value and escape embedded single quotes.
 			quotedParam := "'" + strings.ReplaceAll(param, "'", "'\"'\"'") + "'"
 			cmd += " -D " + quotedParam
 		}
