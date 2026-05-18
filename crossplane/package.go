@@ -4,6 +4,7 @@ import (
 	"context"
 	"dagger/crossplane/internal/dagger"
 	"dagger/crossplane/templates"
+	"encoding/json"
 	"fmt"
 )
 
@@ -34,6 +35,7 @@ func (m *Crossplane) Package(ctx context.Context, src *dagger.Directory) *dagger
 //   - kind: Composite Resource kind (optional, defaults to packageName)
 //   - namespace: Kubernetes namespace (optional, defaults to "crossplane-system")
 //   - dataYaml: YAML string with additional template data (optional)
+//
 // Usage: dagger call init-custom-package --package-name my-pvc --kind ClusterResourcePVC --namespace default --data-yaml '{"storage":"10Gi"}'
 func (m *Crossplane) InitCustomPackage(
 	ctx context.Context,
@@ -110,11 +112,8 @@ func (m *Crossplane) InitCustomPackage(
 	return xplane.Directory(workingDir), nil
 }
 
-// Helper function to parse YAML string
+// parseYAMLString accepts JSON-compatible YAML only (no anchors, flow-only).
 func parseYAMLString(yamlStr string, result interface{}) error {
-	// Simple JSON-like YAML parsing (handles basic key:value pairs)
-	// For more complex YAML, consider using gopkg.in/yaml.v2
-	import "encoding/json"
 	return json.Unmarshal([]byte(yamlStr), result)
 }
 

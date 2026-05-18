@@ -99,6 +99,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
       - name: Install Dagger CLI
         env:
           DAGGER_VERSION: 0.20.8
@@ -112,3 +118,14 @@ jobs:
 
       - name: dagger functions -m ./${{ matrix.module }}
         run: dagger functions -m "./${{ matrix.module }}"
+
+      - name: dagger develop -m ./${{ matrix.module }}
+        run: dagger develop -m "./${{ matrix.module }}"
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.12.2
+          working-directory: ${{ matrix.module }}
+          args: --config=${{ github.workspace }}/.golangci.yml
+          only-new-issues: true

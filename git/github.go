@@ -262,7 +262,7 @@ func (m *Git) CloneGithub(
 	// Get the base container with git and gh
 	ctr, err := m.container(ctx)
 	if err != nil {
-		fmt.Errorf("CONTAINER INIT FAILED: %w", err)
+		panic(fmt.Errorf("CONTAINER INIT FAILED: %w", err))
 	}
 
 	// Use gh to clone with authentication and checkout the specific branch.
