@@ -120,9 +120,11 @@ jobs:
       - name: dagger functions -m ./${{ matrix.module }}
         run: dagger functions -m "./${{ matrix.module }}"
 
+      # `dagger develop` regenerates dagger.gen.go + internal/* (both
+      # gitignored) so golangci-lint can typecheck the module.
+      # `only-new-issues` grandfathers pre-existing tech debt; PRs
+      # only fail on issues introduced by the diff vs main.
       - name: dagger develop -m ./${{ matrix.module }}
-        # Regenerates dagger.gen.go + internal/* so golangci-lint can
-        # typecheck the module (both are gitignored).
         run: dagger develop -m "./${{ matrix.module }}"
 
       - name: golangci-lint
@@ -131,7 +133,4 @@ jobs:
           version: v2.12.2
           working-directory: ${{ matrix.module }}
           args: --config=${{ github.workspace }}/.golangci.yml
-          # Grandfather existing tech debt: PRs only fail on issues
-          # *introduced* by the diff vs the merge base. Tracked
-          # cleanup of pre-existing findings → follow-up of #262.
           only-new-issues: true
