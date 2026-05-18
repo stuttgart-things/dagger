@@ -42,7 +42,7 @@ jobs:
           set -euo pipefail
 
           if [[ "$EVENT_NAME" == "pull_request" ]]; then
-            git fetch --no-tags --depth=0 origin "$BASE_REF"
+            git fetch --no-tags origin "$BASE_REF"
             base="origin/${BASE_REF}"
             range="${base}...HEAD"
           else
