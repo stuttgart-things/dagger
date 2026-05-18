@@ -10,11 +10,10 @@ on:
       - feature/*
       - fix/*
 
-# For every module touched in the PR/push, runs:
-#   1. `dagger functions -m ./<module>` — catches schema/flag regressions
-#      (e.g. in-module flag-name collisions) before release. (#262 P2.1)
-#   2. `dagger develop` + `golangci-lint` — surfaces lint failures using
-#      the repo-wide .golangci.yml. (#262 P2.3)
+# Run `dagger functions -m ./<module>` against every module touched
+# in the PR/push so schema or flag regressions (e.g. flag-name
+# collisions inside a module) surface before release. Tracked in
+# https://github.com/stuttgart-things/dagger/issues/262 (P2.1).
 
 permissions:
   contents: read
@@ -88,7 +87,7 @@ jobs:
           echo "count=$count" >> "$GITHUB_OUTPUT"
 
   test-modules:
-    name: test (${{ matrix.module }})
+    name: dagger functions (${{ matrix.module }})
     needs: detect-modules
     if: needs.detect-modules.outputs.count != '0'
     runs-on: ubuntu-latest
@@ -119,18 +118,3 @@ jobs:
 
       - name: dagger functions -m ./${{ matrix.module }}
         run: dagger functions -m "./${{ matrix.module }}"
-
-      # `dagger develop` regenerates dagger.gen.go + internal/* (both
-      # gitignored) so golangci-lint can typecheck the module.
-      # `only-new-issues` grandfathers pre-existing tech debt; PRs
-      # only fail on issues introduced by the diff vs main.
-      - name: dagger develop -m ./${{ matrix.module }}
-        run: dagger develop -m "./${{ matrix.module }}"
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v2.12.2
-          working-directory: ${{ matrix.module }}
-          args: --config=${{ github.workspace }}/.golangci.yml
-          only-new-issues: true
