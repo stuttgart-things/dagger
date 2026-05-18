@@ -1,0 +1,45 @@
+---
+version: "2"
+
+# Repo-wide golangci-lint config. Each top-level module (kcl/, helm/,
+# ansible/, ...) is a separate Go module, so run with the helper from
+# CI / pre-commit that fans out per module. See issue #262 (P2.3).
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+  settings:
+    errcheck:
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (*text/tabwriter.Writer).Flush
+  exclusions:
+    generated: lax
+    paths:
+      - dagger\.gen\.go
+      - internal/dagger
+      - internal/querybuilder
+      - internal/telemetry
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - dagger\.gen\.go
+      - internal/dagger
+      - internal/querybuilder
+      - internal/telemetry

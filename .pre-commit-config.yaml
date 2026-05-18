@@ -34,6 +34,18 @@ repos:
     hooks:
       - id: check-github-workflows
 
+  # Per-module Go lint. Requires the dagger-generated SDK (dagger.gen.go,
+  # internal/dagger, ...) to be present in each touched module — run
+  # `dagger develop` in the module first. Gated to the `manual` stage so
+  # default `pre-commit run` doesn't fail on a fresh clone; invoke with:
+  #   pre-commit run --hook-stage manual golangci-lint --files <module>/...
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v2.12.2
+    hooks:
+      - id: golangci-lint
+        stages: [manual]
+        args: ["--config=.golangci.yml"]
+
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:

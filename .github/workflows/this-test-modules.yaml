@@ -10,10 +10,11 @@ on:
       - feature/*
       - fix/*
 
-# Run `dagger functions -m ./<module>` against every module touched
-# in the PR/push so schema or flag regressions (e.g. flag-name
-# collisions inside a module) surface before release. Tracked in
-# https://github.com/stuttgart-things/dagger/issues/262 (P2.1).
+# For every module touched in the PR/push, runs:
+#   1. `dagger functions -m ./<module>` — catches schema/flag regressions
+#      (e.g. in-module flag-name collisions) before release. (#262 P2.1)
+#   2. `dagger develop` + `golangci-lint` — surfaces lint failures using
+#      the repo-wide .golangci.yml. (#262 P2.3)
 
 permissions:
   contents: read
@@ -87,7 +88,7 @@ jobs:
           echo "count=$count" >> "$GITHUB_OUTPUT"
 
   test-modules:
-    name: dagger functions (${{ matrix.module }})
+    name: test (${{ matrix.module }})
     needs: detect-modules
     if: needs.detect-modules.outputs.count != '0'
     runs-on: ubuntu-latest
@@ -98,6 +99,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache-dependency-path: ${{ matrix.module }}/go.sum
 
       - name: Install Dagger CLI
         env:
@@ -112,3 +119,19 @@ jobs:
 
       - name: dagger functions -m ./${{ matrix.module }}
         run: dagger functions -m "./${{ matrix.module }}"
+
+      - name: dagger develop -m ./${{ matrix.module }}
+        # Regenerates dagger.gen.go + internal/* so golangci-lint can
+        # typecheck the module (both are gitignored).
+        run: dagger develop -m "./${{ matrix.module }}"
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v2.12.2
+          working-directory: ${{ matrix.module }}
+          args: --config=${{ github.workspace }}/.golangci.yml
+          # Grandfather existing tech debt: PRs only fail on issues
+          # *introduced* by the diff vs the merge base. Tracked
+          # cleanup of pre-existing findings → follow-up of #262.
+          only-new-issues: true
