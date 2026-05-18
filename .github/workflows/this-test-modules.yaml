@@ -121,3 +121,11 @@ jobs:
 
       - name: dagger develop -m ./${{ matrix.module }}
         run: dagger develop -m "./${{ matrix.module }}"
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v2.12.2
+          working-directory: ${{ matrix.module }}
+          args: --config=${{ github.workspace }}/.golangci.yml
+          only-new-issues: true
