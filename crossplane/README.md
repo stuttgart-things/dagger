@@ -6,6 +6,7 @@ This module provides Dagger functions for Crossplane package management includin
 
 - ✅ Crossplane package initialization and scaffolding
 - ✅ Package building and validation
+- ✅ Offline three-layer verification (XRD ↔ XR, provider CRD, embedded manifests)
 - ✅ OCI registry publishing with authentication
 - ✅ Custom package type creation
 - ✅ Multi-registry support (GitHub, Harbor, etc.)
@@ -51,6 +52,39 @@ dagger call -m crossplane push \
   --destination ghcr.io/stuttgart-things/xplane-registry \
   --progress plain
 ```
+
+### Verify a Configuration
+
+Offline check of a single Configuration directory before push/PR-merge. Runs
+`crossplane xpkg build`, validates each `examples/xr*.yaml` against the
+Configuration's own XRD, renders the composition, and runs `kubeconform`
+against both the rendered `Object` wrappers and the manifests embedded under
+`spec.forProvider.manifest`. Exits non-zero on any failure.
+
+```bash
+dagger call -m crossplane verify \
+  --src ./k8s/cloud-config
+
+# Pin provider-kubernetes CRD schemas to match dependsOn in crossplane.yaml
+dagger call -m crossplane verify \
+  --src ./k8s/cloud-config \
+  --provider-kubernetes-version v1.2.0
+```
+
+Sample output:
+
+```
+Configuration: cloud-config
+  ✓ xpkg build
+  ✓ xr-min.yaml: XRD-valid, render-ok, object-valid, embedded-valid
+  ✓ xr.yaml:     XRD-valid, render-ok, object-valid, embedded-valid
+  ✗ xr-max.yaml: XRD-valid, render-ok, object-valid, embedded-INVALID
+      Secret/max-cloud-init.stringData.userdata: invalid YAML at line 42
+```
+
+A docker-in-docker service runs inside the call so `crossplane render` can
+pull and execute composition functions without needing a Docker socket on the
+host. No Kubernetes cluster is required.
 
 ### Test Module
 
