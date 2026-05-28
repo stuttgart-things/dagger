@@ -36,16 +36,11 @@ func (m *Ansible) executePlaybooks(
 			WithEnvVariable("ANSIBLE_HOST_KEY_CHECKING", "False")
 	}
 
-	// OPTIONAL VAULT ENVS
-	if vaultAppRoleID != nil {
-		ansible = ansible.WithSecretVariable("VAULT_ROLE_ID", vaultAppRoleID)
-	}
-	if vaultSecretID != nil { // pragma: allowlist secret
-		ansible = ansible.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
-	}
-	if vaultUrl != nil {
-		ansible = ansible.WithSecretVariable("VAULT_ADDR", vaultUrl)
-	}
+	ansible = dag.Vault().WithAppRoleEnv(ansible, dagger.VaultWithAppRoleEnvOpts{
+		RoleID:   vaultAppRoleID,
+		SecretID: vaultSecretID, // pragma: allowlist secret
+		Addr:     vaultUrl,
+	})
 
 	// Set SSH credentials as env vars for lookup inside extra-vars
 	if sshUser != nil {
