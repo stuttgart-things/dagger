@@ -6,6 +6,10 @@ import (
 	"dagger/git/internal/dagger"
 )
 
+var (
+	workDir = "/src"
+)
+
 func (m *Git) container(
 	ctx context.Context) (*dagger.Container, error) {
 	if m.BaseImage == "" {
