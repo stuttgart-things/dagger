@@ -1,3 +1,14 @@
+# [0.115.0](https://github.com/stuttgart-things/dagger/compare/v0.114.0...v0.115.0) (2026-05-28)
+
+
+### Features
+
+* **ci:** add .golangci.yml and wire into per-module CI ([#274](https://github.com/stuttgart-things/dagger/issues/274)) ([bda97c9](https://github.com/stuttgart-things/dagger/commit/bda97c9eefa53163661fb7c18df36b2eae9af2c7)), closes [#262](https://github.com/stuttgart-things/dagger/issues/262) [#262](https://github.com/stuttgart-things/dagger/issues/262)
+* **ci:** add per-module PR test workflow ([#273](https://github.com/stuttgart-things/dagger/issues/273)) ([dd58cae](https://github.com/stuttgart-things/dagger/commit/dd58cae14d70133e8bad89336f0bbb31074a1174)), closes [#262](https://github.com/stuttgart-things/dagger/issues/262)
+* **crossplane:** add Verify for offline Configuration checks ([#278](https://github.com/stuttgart-things/dagger/issues/278)) ([210c6e0](https://github.com/stuttgart-things/dagger/commit/210c6e0cd6d876a5d4f37637807c4bf589335556)), closes [#277](https://github.com/stuttgart-things/dagger/issues/277)
+* feat/add-update-vault-module ([ac9631e](https://github.com/stuttgart-things/dagger/commit/ac9631ee207cfcaddb41894a4e6a70b284ec293d))
+* **vault:** extract shared AppRole env helper module ([#281](https://github.com/stuttgart-things/dagger/issues/281)) ([8f38d23](https://github.com/stuttgart-things/dagger/commit/8f38d238594cbdfb389ec25040f433add08f81b9)), closes [#264](https://github.com/stuttgart-things/dagger/issues/264) [#262](https://github.com/stuttgart-things/dagger/issues/262)
+
 # [0.114.0](https://github.com/stuttgart-things/dagger/compare/v0.113.0...v0.114.0) (2026-05-18)
 
 
