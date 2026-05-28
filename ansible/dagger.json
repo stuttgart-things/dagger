@@ -4,5 +4,11 @@
   "sdk": {
     "source": "go"
   },
+  "dependencies": [
+    {
+      "name": "vault",
+      "source": "../vault"
+    }
+  ],
   "disableDefaultFunctionCaching": true
 }

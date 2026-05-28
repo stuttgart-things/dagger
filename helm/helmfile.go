@@ -62,18 +62,11 @@ func (m *Helm) HelmfileOperation(
 		helmContainer = helmContainer.WithMountedSecret(dockerConfigPath, registrySecret)
 	}
 
-	// OPTIONAL VAULT ENVS
-	if vaultAppRoleID != nil {
-		helmContainer = helmContainer.WithSecretVariable("VAULT_ROLE_ID", vaultAppRoleID)
-	}
-
-	if vaultSecretID != nil { // pragma: allowlist secret
-		helmContainer = helmContainer.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
-	}
-
-	if vaultUrl != nil {
-		helmContainer = helmContainer.WithSecretVariable("VAULT_ADDR", vaultUrl)
-	}
+	helmContainer = dag.Vault().WithAppRoleEnv(helmContainer, dagger.VaultWithAppRoleEnvOpts{
+		RoleID:   vaultAppRoleID,
+		SecretID: vaultSecretID, // pragma: allowlist secret
+		Addr:     vaultUrl,
+	})
 
 	// DOWNLOAD SECRET FILES FROM VAULT WITH VALS
 	if secretPathKubeconfig != "" {
