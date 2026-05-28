@@ -10,8 +10,10 @@ REQUIREMENTS_FILE="/work/requirements.yaml"
 # Function to get latest version from Ansible Galaxy
 get_galaxy_version() {
   local collection=$1
-  local namespace=$(echo $collection | cut -d'.' -f1)
-  local name=$(echo $collection | cut -d'.' -f2)
+  local namespace
+  local name
+  namespace=$(echo "$collection" | cut -d'.' -f1)
+  name=$(echo "$collection" | cut -d'.' -f2)
 
   version=$(curl -s "https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/index/${namespace}/${name}/" \
     | jq -r '.highest_version.version // "unknown"' 2>/dev/null || echo "unknown")
@@ -22,13 +24,13 @@ get_galaxy_version() {
 # Function to get latest GitHub release version
 get_github_release_version() {
   local collection_prefix=$1
-  local auth_header=""
+  local -a auth_header=()
 
   if [ -n "$GITHUB_TOKEN" ]; then
-    auth_header="-H \"Authorization: Bearer $GITHUB_TOKEN\""
+    auth_header=(-H "Authorization: Bearer $GITHUB_TOKEN")
   fi
 
-  version=$(curl -s $auth_header "https://api.github.com/repos/stuttgart-things/ansible/releases" \
+  version=$(curl -s "${auth_header[@]}" "https://api.github.com/repos/stuttgart-things/ansible/releases" \
     | jq -r "[.[] | select(.tag_name | contains(\"${collection_prefix}\")) | .tag_name] | first" 2>/dev/null || echo "unknown")
 
   echo "$version"

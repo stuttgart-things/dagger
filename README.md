@@ -33,6 +33,7 @@ A modular collection of Dagger building blocks for infrastructure, containers, s
 | [Templating](./templating/README.md) | Go Templating                 | Render Go text/template from file or URL with YAML/CLI vars |
 | [Dependencies](./dependencies/README.md) | Dependency Updates        | Renovate dry-run, Ansible requirements update & apply |
 | [Clusterbook](./clusterbook/README.md) | Cluster IPAM                  | Cluster/network registry, IP allocation and release |
+| [Vault](./vault/README.md)         | Vault Plumbing                  | Shared AppRole env helper for `ansible` / `helm` |
 
 ## 🛠️ Quick Start
 
