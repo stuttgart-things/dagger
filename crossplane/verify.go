@@ -112,6 +112,19 @@ if [ ! -f "${PROV_MARK}" ]; then
 fi
 
 
+# ---- Collect EnvironmentConfigs for render (Layer 0.5) -------------------
+# An XR that sets spec.environmentConfig makes function-environment-configs
+# select an EnvironmentConfig by label. Offline crossplane render has no
+# cluster to select from, so it fails fatally with "expected exactly one
+# required resource, got 0". Pass any EnvironmentConfig manifests shipped in
+# examples/ as --extra-resources so the selector resolves. No-op when the
+# Configuration ships none.
+EXTRA_ARGS=""
+yq ea 'select(.kind == "EnvironmentConfig")' examples/*.yaml > /tmp/extra-resources.yaml 2>/dev/null || true
+if [ -s /tmp/extra-resources.yaml ]; then
+  EXTRA_ARGS="--extra-resources /tmp/extra-resources.yaml"
+fi
+
 # ---- Per-XR loop ---------------------------------------------------------
 FOUND_XR=0
 for xr in examples/xr*.yaml; do
@@ -134,7 +147,8 @@ for xr in examples/xr*.yaml; do
   fi
 
   # Render the Composition. Always read functions.yaml from examples/.
-  if RENDERED=$(crossplane render "${xr}" apis/composition.yaml examples/functions.yaml 2>/tmp/render.err); then
+  # ${EXTRA_ARGS} (unquoted, may be empty) supplies EnvironmentConfigs.
+  if RENDERED=$(crossplane render "${xr}" apis/composition.yaml examples/functions.yaml ${EXTRA_ARGS} 2>/tmp/render.err); then
     status="${status}, render-ok"
 
     # Layer 2: Object wrapper
