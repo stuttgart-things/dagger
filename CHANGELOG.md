@@ -1,3 +1,10 @@
+## [0.115.1](https://github.com/stuttgart-things/dagger/compare/v0.115.0...v0.115.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* **crossplane:** skip missing CRD schemas in verify Layer 3 ([#286](https://github.com/stuttgart-things/dagger/issues/286)) ([acac7c5](https://github.com/stuttgart-things/dagger/commit/acac7c5c31469cc670e3e151e8d72e108c320b7b))
+
 # [0.115.0](https://github.com/stuttgart-things/dagger/compare/v0.114.0...v0.115.0) (2026-05-28)
 
 
