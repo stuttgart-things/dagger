@@ -1,3 +1,10 @@
+## [0.115.2](https://github.com/stuttgart-things/dagger/compare/v0.115.1...v0.115.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* **crossplane:** supply EnvironmentConfigs to verify render ([#287](https://github.com/stuttgart-things/dagger/issues/287)) ([eaba3ea](https://github.com/stuttgart-things/dagger/commit/eaba3eafcd7f33dbc437340530fb1d24a1a40c9d))
+
 ## [0.115.1](https://github.com/stuttgart-things/dagger/compare/v0.115.0...v0.115.1) (2026-05-29)
 
 
