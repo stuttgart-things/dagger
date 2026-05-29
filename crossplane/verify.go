@@ -14,7 +14,10 @@ import (
 //  3. Layer 2 — each rendered kubernetes.m.crossplane.io Object validated
 //     against the provider-kubernetes CRD schema
 //  4. Layer 3 — each embedded `spec.forProvider.manifest` validated against
-//     the built-in Kubernetes schemas (kubeconform default)
+//     the built-in Kubernetes schemas (kubeconform default). Embedded
+//     manifests whose kind is a CRD the harness has no schema for (e.g. a
+//     Tekton PipelineRun) are skipped via -ignore-missing-schemas rather
+//     than failing the layer — their correctness is owned by the renderer.
 //
 // `crossplane render` is run inside the container via a docker-in-docker
 // sidecar, so function images are pulled and executed without needing a
@@ -150,9 +153,13 @@ for xr in examples/xr*.yaml; do
     fi
 
     # Layer 3: embedded manifests inside spec.forProvider.manifest
+    # Embedded manifests may be arbitrary CRDs (e.g. Tekton PipelineRun) the
+    # harness has no schema for. -ignore-missing-schemas skips those (so they
+    # don't hard-fail the layer) while still strictly validating any embedded
+    # core Kubernetes resources whose schema kubeconform can resolve.
     echo "${RENDERED}" | yq 'select(.kind == "Object") | .spec.forProvider.manifest' > /tmp/embedded.yaml
     if [ -s /tmp/embedded.yaml ]; then
-      if ERR=$(kubeconform -strict /tmp/embedded.yaml 2>&1); then
+      if ERR=$(kubeconform -strict -ignore-missing-schemas /tmp/embedded.yaml 2>&1); then
         status="${status}, embedded-valid"
       else
         status="${status}, embedded-INVALID"
