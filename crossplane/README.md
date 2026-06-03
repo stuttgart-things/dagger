@@ -8,6 +8,7 @@ This module provides Dagger functions for Crossplane package management includin
 - ✅ Package building and validation
 - ✅ Offline three-layer verification (XRD ↔ XR, provider CRD, embedded manifests)
 - ✅ OCI registry publishing with authentication
+- ✅ Anonymous ephemeral preview publishing (ttl.sh) for per-PR packages
 - ✅ Custom package type creation
 - ✅ Multi-registry support (GitHub, Harbor, etc.)
 - ✅ Package dependency management
@@ -51,6 +52,31 @@ dagger call -m crossplane push \
   --registry ghcr.io \
   --destination ghcr.io/stuttgart-things/xplane-registry \
   --progress plain
+```
+
+### Push a Preview Package
+
+Build a single Configuration and push it **anonymously** to an ephemeral
+registry ([ttl.sh](https://ttl.sh) by default) for try-it-on-a-cluster preview
+iteration — e.g. a per-PR preview package in CI. No credentials are required;
+the image is served publicly for the lifetime encoded in the tag (max `24h`).
+The package name is read from `crossplane.yaml`, so you only pass a path prefix
+and a TTL. Returns the ready-to-apply install manifest.
+
+```bash
+dagger call -m crossplane push-preview \
+  --src tests/registry \
+  --prefix stuttgart-things/crossplane-configurations-pr42-abc1234 \
+  --ttl 1h
+```
+
+```yaml
+apiVersion: pkg.crossplane.io/v1
+kind: Configuration
+metadata:
+  name: registry-preview
+spec:
+  package: ttl.sh/stuttgart-things/crossplane-configurations-pr42-abc1234/registry:1h
 ```
 
 ### Verify a Configuration
