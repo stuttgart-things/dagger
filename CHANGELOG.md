@@ -1,3 +1,10 @@
+# [0.116.0](https://github.com/stuttgart-things/dagger/compare/v0.115.2...v0.116.0) (2026-06-03)
+
+
+### Features
+
+* **crossplane:** add PushPreview for anonymous ttl.sh preview packages ([#290](https://github.com/stuttgart-things/dagger/issues/290)) ([29b888c](https://github.com/stuttgart-things/dagger/commit/29b888c39d5448238f5031a485ccefe84526e139)), closes [#289](https://github.com/stuttgart-things/dagger/issues/289)
+
 ## [0.115.2](https://github.com/stuttgart-things/dagger/compare/v0.115.1...v0.115.2) (2026-05-29)
 
 
