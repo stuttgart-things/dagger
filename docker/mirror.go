@@ -134,7 +134,7 @@ fi
 
 	// Get current timestamp
 	timestamp, err := dag.Container().
-		From("alpine:latest").
+		From("alpine:3.21").
 		WithExec([]string{"date", "+%Y-%m-%d %H:%M:%S UTC"}).
 		Stdout(ctx)
 	if err != nil {
@@ -179,7 +179,7 @@ Usage:
 
 	// STEP 5: Create zip archive with summary
 	zipContainer := dag.Container().
-		From("alpine:latest").
+		From("alpine:3.21").
 		WithExec([]string{"apk", "add", "--no-cache", "zip"}).
 		WithDirectory("/work", mirrorDir).
 		WithWorkdir("/work").
