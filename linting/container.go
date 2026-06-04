@@ -6,7 +6,10 @@ import (
 
 func (m *Linting) container() *dagger.Container {
 	if m.BaseImage == "" {
-		m.BaseImage = "alpine"
+		// Pin the base image (tag, not :latest) so pre-commit runs are
+		// reproducible and don't depend on docker.io resolving a mutable
+		// alpine:latest on every run. Overridable via --base-image. See #288.
+		m.BaseImage = "alpine:3.21"
 	}
 
 	ctr := dag.Container().From(m.BaseImage)
