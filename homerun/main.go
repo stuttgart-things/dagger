@@ -96,7 +96,7 @@ func (m *Homerun) RedisCli(
 	}
 
 	return dag.Container().
-		From("redis:alpine").
+		From("redis:7.4-alpine").
 		WithServiceBinding("redis", redis).
 		WithEntrypoint(args).
 		Terminal()
@@ -124,7 +124,7 @@ func (m *Homerun) TestRedisConnection(
 	}
 
 	return dag.Container().
-		From("alpine:latest").
+		From("alpine:3.21").
 		WithServiceBinding("redis", redis).
 		WithExec(cmd).
 		Stdout(ctx)
