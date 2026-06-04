@@ -44,7 +44,7 @@ creation_rules:
 `, strings.Join(rules, "\n"))
 
 	ctr := dag.Container().
-		From("alpine:latest").
+		From("alpine:3.21").
 		WithNewFile("/tmp/.sops.yaml", configContent)
 
 	return ctr.File("/tmp/.sops.yaml"), nil
