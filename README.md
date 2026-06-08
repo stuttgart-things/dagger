@@ -48,8 +48,8 @@ A modular collection of Dagger building blocks for infrastructure, containers, s
 # Example: Lint Go code
 dagger call -m go lint --src ./my-go-project
 
-# Example: Build Helm chart
-dagger call -m helm build-chart --src ./my-helm-chart
+# Example: Package Helm chart
+dagger call -m helm package --src ./my-helm-chart
 
 # Example: Security scan
 dagger call -m trivy scan-filesystem --src ./my-project
@@ -97,7 +97,7 @@ For comprehensive use cases and advanced configurations, see the individual modu
 dagger call -m release semantic \
 --src ~/projects/k2n/ \
 --token env:GITHUB_TOKEN \
---progress plain -vv \
+--progress plain -vv
 ```
 
 ```bash
@@ -316,11 +316,11 @@ dagger call -m packer bake \
 # w/ VAULT AUTH (PACKER ONLY WORKS WITH VAULT TOKEN, FOR ANSIBLE WE'RE USING APPROLE AUTH)
 export VAULT_ROLE_ID=<>
 export VAULT_TOKEN=<>
-export VAULT_SECRET_ID<>
+export VAULT_SECRET_ID=<>
 
 dagger call -m packer bake \
 --local-dir "/home/sthings/projects/stuttgart-things/packer/builds/ubuntu24-labda-vsphere/" \
---build-path ubuntu24-base-os.pkr.hc\
+--build-path ubuntu24-base-os.pkr.hcl \
 --vault-addr https://vault-vsphere.example.com:8200 \
 --vault-role-id env:VAULT_ROLE_ID \
 --vault-token env:VAULT_TOKEN \
@@ -332,7 +332,7 @@ dagger call -m packer bake \
 # MOVE VM TEMPLATE
 export VCENTER_FQDN=https://10.100.135.50/sdk
 export VCENTER_USER=<>
-export VCENTER_PASSWORD<>
+export VCENTER_PASSWORD=<>
 
 dagger call -m packer vcenteroperation \
 --operation move \
@@ -348,7 +348,7 @@ dagger call -m packer vcenteroperation \
 # RENAME VM TEMPLATE
 export VCENTER_FQDN=https://10.100.135.50/sdk
 export VCENTER_USER=<>
-export VCENTER_PASSWORD<>
+export VCENTER_PASSWORD=<>
 
 dagger call -m packer vcenteroperation \
 --operation rename \
@@ -392,7 +392,7 @@ dagger call -m gitlab get-project-id \
 ```
 
 ```bash
-# GET MERGE REQUEST ID BY PROJECT ID
+# LIST MERGE REQUESTS BY PROJECT ID
 dagger call -m gitlab list-merge-requests \
 --token env:GITLAB_TOKEN \
 --server gitlab.com \
@@ -412,7 +412,8 @@ dagger call -m gitlab get-merge-request-id \
 
 ```bash
 # LIST ALL CHANGES FROM MR INTO (USUALY) MAIN
-dagger call -m gitlab list-merge-request-changes \ --token env:GITLAB_TOKEN \
+dagger call -m gitlab list-merge-request-changes \
+--token env:GITLAB_TOKEN \
 --server gitlab.com \
 --project-id="14466" \
 --merge-request-id="1" \
@@ -420,9 +421,9 @@ dagger call -m gitlab list-merge-request-changes \ --token env:GITLAB_TOKEN \
 ```
 
 ```bash
-# LIST ALL CHANGES FROM MR INTO (USUALY) MAIN
+# CLONE A REPO
 dagger call -m gitlab clone \
---repo-url https://gitlab.com/Lab/stuttgart-things/idp/resource-engines.git
+--repo-url https://gitlab.com/Lab/stuttgart-things/idp/resource-engines.git \
 --token env:GITLAB_TOKEN \
 --branch=main \
 #export --path /tmp/repo \ # IF YOU WANT TO EXPORT TO LOCAL FS
@@ -446,12 +447,12 @@ dagger call -m gitlab print-merge-request-file-changes \
 dagger call -m gitlab list-projects \
 --server gitlab.com \
 --token env:GITLAB_TOKEN \
---group-path "Lab%2Fstuttgart-things"
+--group-path "Lab%2Fstuttgart-things" \
 --progress plain
 ```
 
 ```bash
-# PRINT ALL FILES CHANGED BY A MR
+# UPDATE MERGE REQUEST STATE (MERGE OR CLOSE)
 dagger call -m gitlab update-merge-request-state \
 --server gitlab.com \
 --token env:GITLAB_TOKEN \
@@ -629,7 +630,7 @@ dagger call -m ansible execute \
 -vv --progress plain
 ```
 
-the idea of this module is to create versioned collection artifcat 'on the fly' -
+the idea of this module is to create versioned collection artifact 'on the fly' -
 this module can work with a file structure like this:
 
 ### CREATE A COLLECTION PACKAGE
@@ -765,7 +766,7 @@ task: Available tasks for this project:
 * switch-remote:         Switch to remote branch
 * test:                  Select test to run
 * test-ansible:          Test ansible functions
-* test-crossplane:       Test crossplame functions
+* test-crossplane:       Test crossplane functions
 * test-docker:           Test docker module
 * test-gitlab:           Test gitlab functions
 * test-go:               Test go functions
@@ -821,7 +822,7 @@ dagger init --sdk=go --source=./${MODULE} --name=${MODULE}
 
 </details>
 
-<details><summary><b>INSTAL EXTERNAL DAGGER MODULE</b></summary>
+<details><summary><b>INSTALL EXTERNAL DAGGER MODULE</b></summary>
 
 ```bash
 dagger install github.com/purpleclay/daggerverse/golang@v0.5.0

@@ -604,7 +604,7 @@ tasks:
       MODULE: oci
 
   test-crossplane:
-    desc: Test crossplame functions
+    desc: Test crossplane functions
     cmds:
       - dagger call -m ./{{ .MODULE }} init-package --name test --progress plain export --path={{ .OUTPUT_DIR }}
       - dagger call -m ./{{ .MODULE }} package --src {{ .TEST_PACKAGE }} --progress plain export --path={{ .OUTPUT_DIR_PACKAGE }}
