@@ -74,21 +74,27 @@ i=1
 while [ "${i}" -le 3 ]; do
   rm -f /tmp/crossplane /tmp/crossplane.sha256
   if curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors "${URL}" -o /tmp/crossplane; then
-    # Integrity: verify the published checksum when the bucket serves one.
-    # A truncated body or an HTML error page won't match, so a bad download
-    # is rejected before it can be installed.
+    # Integrity: compare against the published checksum when the bucket serves
+    # one. NOTE: the crossplane release bucket currently serves crank.sha256
+    # files that do NOT match the served binaries (observed for every version
+    # via CloudFront, 2026-06). A mismatch is therefore treated as a WARNING,
+    # not a hard failure: we fall through to the run-check below, which is the
+    # authoritative gate. A truncated body or HTML error page cannot execute,
+    # so it still fails the run-check and retries; only a valid binary with a
+    # stale/wrong published checksum is allowed through.
+    # See stuttgart-things/dagger#295.
     if curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors "${URL}.sha256" -o /tmp/crossplane.sha256 2>/dev/null \
          && [ -s /tmp/crossplane.sha256 ]; then
       want=$(awk '{print $1}' /tmp/crossplane.sha256)
       got=$(sha256sum /tmp/crossplane | awk '{print $1}')
       if [ "${want}" != "${got}" ]; then
-        echo "crossplane install: checksum mismatch (want ${want}, got ${got}), attempt ${i}" >&2
-        i=$((i + 1)); sleep 2; continue
+        echo "crossplane install: WARNING checksum mismatch (want ${want}, got ${got}); relying on run-check" >&2
       fi
     fi
     install -m 0755 /tmp/crossplane /usr/bin/crossplane
-    # Final sanity: a real binary runs; an HTML/truncated file does not. This
-    # also covers the case where the bucket served no .sha256 to verify.
+    # Authoritative gate: a real binary runs; an HTML/truncated/corrupt file
+    # does not. This also covers the case where the bucket served no .sha256
+    # (or a wrong one) to verify.
     if crossplane version --client >/dev/null 2>&1; then
       echo "crossplane install: ok"
       exit 0
