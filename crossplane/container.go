@@ -12,12 +12,29 @@ const (
 	openapi2jsonschemaURL = "https://raw.githubusercontent.com/yannh/kubeconform/" + kubeconformVersion + "/scripts/openapi2jsonschema.py"
 
 	// crossplaneChannel selects the crossplane (crank) CLI release channel.
-	// The channel's `current` marker is resolved to an exact version at
-	// image-build time and the binary is then pulled from the immutable
-	// versioned path so the download and its checksum line up. Pin to an
-	// exact version (e.g. "v1.20.0") here if reproducibility ever matters
-	// more than tracking the latest stable release.
+	// Used only as the bucket path and as the fallback when crossplaneVersion
+	// is empty.
 	crossplaneChannel = "stable"
+
+	// crossplaneVersion pins the crank CLI to an exact release instead of
+	// tracking the channel's floating `current` marker.
+	//
+	// Why this is pinned: crank v2.3.0 changed `crossplane render` to run the
+	// pipeline by re-exec'ing `crossplane internal render` inside the function
+	// Docker container. The crossplane-contrib function images still ship an
+	// older crossplane binary that has no `internal` subcommand, so every
+	// render fails with:
+	//
+	//   cannot run crossplane internal render in Docker: container exited with
+	//   status 1: crossplane: error: unexpected argument internal
+	//
+	// When `current` advanced to v2.3.0 this silently broke Verify for every
+	// function-based Configuration (it tracked the channel, so the same module
+	// tag started failing without any code change). v2.2.2 is the latest
+	// release whose render still runs functions the compatible way. Bump this
+	// once the function images (or a later crank) resolve the skew.
+	// See stuttgart-things/dagger#295.
+	crossplaneVersion = "v2.2.2"
 )
 
 // crossplaneInstall downloads and installs the crossplane (crank) CLI with
@@ -37,9 +54,15 @@ set -u
 CHANNEL="${CROSSPLANE_CHANNEL:-stable}"
 BASE="https://releases.crossplane.io/${CHANNEL}"
 
-# Resolve the channel to an exact version so the binary and its checksum are
-# fetched from the same immutable path.
-VERSION=$(curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors "${BASE}/current/version" | tr -d '[:space:]')
+# Prefer an explicit pin (CROSSPLANE_VERSION). Only fall back to the channel's
+# floating 'current' marker when no pin is set — tracking 'current' is what let
+# crank v2.3.0 silently break render (see crossplaneVersion comment above).
+VERSION="${CROSSPLANE_VERSION:-}"
+if [ -z "${VERSION}" ]; then
+  # Resolve the channel to an exact version so the binary and its checksum are
+  # fetched from the same immutable path.
+  VERSION=$(curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors "${BASE}/current/version" | tr -d '[:space:]')
+fi
 if [ -z "${VERSION}" ]; then
   echo "crossplane install: could not resolve ${CHANNEL} version" >&2
   exit 1
@@ -92,6 +115,7 @@ func (m *Crossplane) GetXplaneContainer(ctx context.Context) *dagger.Container {
 		// download writes any CDN error/truncation straight to the binary, which
 		// then dies as a "line 2: syntax error" the next time it is invoked.
 		WithEnvVariable("CROSSPLANE_CHANNEL", crossplaneChannel).
+		WithEnvVariable("CROSSPLANE_VERSION", crossplaneVersion).
 		WithNewFile("/tmp/install-crossplane.sh", crossplaneInstall).
 		WithExec([]string{"sh", "/tmp/install-crossplane.sh"}).
 		// Install kcl2xrd
