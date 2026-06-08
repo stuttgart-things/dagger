@@ -1,3 +1,18 @@
+# [0.117.0](https://github.com/stuttgart-things/dagger/compare/v0.116.0...v0.117.0) (2026-06-08)
+
+
+### Bug Fixes
+
+* **crossplane:** harden crossplane CLI install against flaky downloads ([#291](https://github.com/stuttgart-things/dagger/issues/291)) ([a5cfb42](https://github.com/stuttgart-things/dagger/commit/a5cfb42145f1e13f1da9c22ba83398642235c4bd))
+* **crossplane:** pin crank CLI to v2.2.2 (render-compatible) [#295](https://github.com/stuttgart-things/dagger/issues/295) ([#296](https://github.com/stuttgart-things/dagger/issues/296)) ([29a1a17](https://github.com/stuttgart-things/dagger/commit/29a1a17d34788114c2d454b14fa57e4e422f46a3))
+* **linting:** pin pre-commit base image to alpine:3.21 ([#292](https://github.com/stuttgart-things/dagger/issues/292)) ([69c7e74](https://github.com/stuttgart-things/dagger/commit/69c7e745bf31cd0b6eb703fe78e68dadf62b0058)), closes [#288](https://github.com/stuttgart-things/dagger/issues/288)
+* pin unpinned alpine/redis base images in docker, sops, homerun ([#288](https://github.com/stuttgart-things/dagger/issues/288) follow-up) ([#293](https://github.com/stuttgart-things/dagger/issues/293)) ([08c52ab](https://github.com/stuttgart-things/dagger/commit/08c52ab261d28a900deca266076a22b0c1d0d6ea))
+
+
+### Features
+
+* feat/update-readme ([464b7c3](https://github.com/stuttgart-things/dagger/commit/464b7c389c69c0352eda03797fee33dd484346e3))
+
 # [0.116.0](https://github.com/stuttgart-things/dagger/compare/v0.115.2...v0.116.0) (2026-06-03)
 
 
