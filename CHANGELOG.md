@@ -1,3 +1,15 @@
+# [0.118.0](https://github.com/stuttgart-things/dagger/compare/v0.117.0...v0.118.0) (2026-06-08)
+
+
+### Bug Fixes
+
+* **crossplane:** tolerate crossplane bucket's mismatched crank.sha256 [#295](https://github.com/stuttgart-things/dagger/issues/295) ([#298](https://github.com/stuttgart-things/dagger/issues/298)) ([e5d19ed](https://github.com/stuttgart-things/dagger/commit/e5d19edf2dc65958c51356996151d6b2c1b19704)), closes [#296](https://github.com/stuttgart-things/dagger/issues/296) [#291](https://github.com/stuttgart-things/dagger/issues/291) [#291](https://github.com/stuttgart-things/dagger/issues/291) [#291](https://github.com/stuttgart-things/dagger/issues/291)
+
+
+### Features
+
+* fix/crossplane-cli ([15d98b3](https://github.com/stuttgart-things/dagger/commit/15d98b3c262de63fc289d92267167bdd0f111d36))
+
 # [0.117.0](https://github.com/stuttgart-things/dagger/compare/v0.116.0...v0.117.0) (2026-06-08)
 
 
