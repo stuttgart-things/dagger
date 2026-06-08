@@ -1,6 +1,6 @@
 # Stuttgart-Things Dagger Modules
 
-A modular collection of Dagger building blocks for infrastructure, containers, security, and DevOps.
+modular collection of Dagger building blocks for infrastructure, containers, security, and DevOps.
 
 ## 🚀 Module Overview
 
