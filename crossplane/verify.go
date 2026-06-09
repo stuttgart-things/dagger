@@ -4,7 +4,13 @@ import (
 	"context"
 	"dagger/crossplane/internal/dagger"
 	"fmt"
+	"strings"
 )
+
+// functionPort is the gRPC port a Composition Function listens on (crossplane's
+// own Docker runtime maps the same port). Functions are served insecurely
+// (plaintext h2c) via the --insecure flag, which the Development runtime dials.
+const functionPort = 9443
 
 // Verify performs offline, container-pinned verification of a Crossplane
 // Configuration package. It runs four checks per example XR:
@@ -19,9 +25,16 @@ import (
 //     Tekton PipelineRun) are skipped via -ignore-missing-schemas rather
 //     than failing the layer — their correctness is owned by the renderer.
 //
-// `crossplane render` is run inside the container via a docker-in-docker
-// sidecar, so function images are pulled and executed without needing a
-// Docker socket on the host.
+// Each Composition Function referenced by examples/functions.yaml is started as
+// a Dagger service container and `crossplane render` is pointed at it via the
+// "Development" runtime. crossplane render's default runtime instead starts each
+// Function as a *nested* Docker container and dials its mapped gRPC port; inside
+// this module's sandbox that nested Docker can't bring the container up (cgroup-v2
+// subtree_control delegation fails on the runner), so render hangs for the full
+// ~60s function-start grace and then fails with DeadlineExceeded / connection
+// refused for any Docker-runtime Function (e.g. function-kcl). Running the
+// Functions as Dagger services removes the nested Docker — and its per-XR 60s
+// penalty — entirely. See stuttgart-things/dagger#300.
 func (m *Crossplane) Verify(
 	ctx context.Context,
 	// a single Configuration directory (containing crossplane.yaml, apis/, examples/)
@@ -37,22 +50,41 @@ func (m *Crossplane) Verify(
 		m.XplaneContainer = m.GetXplaneContainer(ctx)
 	}
 
-	dockerd := dag.Container().
-		From("docker:dind").
-		WithMountedCache("/var/lib/docker", dag.CacheVolume("crossplane-verify-dind")).
-		WithExposedPort(2375).
-		AsService(dagger.ContainerAsServiceOpts{
-			Args:                     []string{"dockerd", "--host=tcp://0.0.0.0:2375", "--tls=false"},
-			InsecureRootCapabilities: true,
-		})
-
-	out, err := m.XplaneContainer.
-		WithServiceBinding("dockerd", dockerd).
-		WithEnvVariable("DOCKER_HOST", "tcp://dockerd:2375").
+	base := m.XplaneContainer.
 		WithEnvVariable("PROVIDER_K8S_VERSION", providerKubernetesVersion).
 		WithDirectory("/src", src).
-		WithWorkdir("/src").
-		WithNewFile("/usr/local/bin/verify.sh", verifyScript).
+		WithWorkdir("/src")
+
+	// Discover the Functions the Configuration's pipeline uses and run each as a
+	// Dagger service. verify.sh rewrites functions.yaml so render dials these
+	// services instead of starting Docker containers (see verifyScript).
+	fns, err := discoverFunctions(ctx, base)
+	if err != nil {
+		return "", fmt.Errorf("verify: discovering functions: %w", err)
+	}
+
+	container := base.WithNewFile("/usr/local/bin/verify.sh", verifyScript)
+	for _, fn := range fns {
+		svc := dag.Container().
+			From(fn.Package).
+			WithExposedPort(functionPort).
+			// crossplane's own Docker runtime runs the function image with
+			// exactly this arg; --insecure serves plaintext gRPC, which the
+			// Development runtime dials. UseEntrypoint:true appends --insecure to
+			// the image's entrypoint (the function server binary) — without it
+			// Dagger would try to exec "--insecure" as the command. Dagger waits
+			// for the exposed port to accept connections before running
+			// verify.sh, so the function is up before render — no readiness race.
+			AsService(dagger.ContainerAsServiceOpts{
+				Args:          []string{"--insecure"},
+				UseEntrypoint: true,
+			})
+		// Bind under the Function's own name so the in-container render target
+		// "dns:///<name>:9443" (set by verify.sh) resolves to this service.
+		container = container.WithServiceBinding(fn.Name, svc)
+	}
+
+	out, err := container.
 		WithExec([]string{"sh", "/usr/local/bin/verify.sh"}).
 		Stdout(ctx)
 
@@ -60,6 +92,41 @@ func (m *Crossplane) Verify(
 		return out, fmt.Errorf("verify failed: %w", err)
 	}
 	return out, nil
+}
+
+// composFunction is a Composition Function discovered in examples/functions.yaml.
+type composFunction struct {
+	Name    string // metadata.name — also the service binding hostname
+	Package string // spec.package — the runnable function runtime image
+}
+
+// discoverFunctions reads examples/functions.yaml and returns the Functions it
+// declares. A missing or Function-less file yields no functions (not an error):
+// render then runs unchanged and surfaces any resulting error itself.
+func discoverFunctions(ctx context.Context, base *dagger.Container) ([]composFunction, error) {
+	// Per-document eval (not `ea`): with evaluate-all, `.metadata.name` and
+	// `.spec.package` each iterate over every Function node and `+` cross-products
+	// them, scrambling name↔package pairs. Default eval runs the expression once
+	// per document, keeping each pair intact. `// ""` guards a Function with no
+	// spec.package against yq's null-string concat error; `|| true` so a missing
+	// functions.yaml (yq exits non-zero) yields empty output, not a failed exec.
+	raw, err := base.
+		WithExec([]string{"sh", "-c",
+			`yq 'select(.kind == "Function") | .metadata.name + " " + (.spec.package // "")' examples/functions.yaml 2>/dev/null || true`}).
+		Stdout(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var fns []composFunction
+	for _, line := range strings.Split(raw, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue // skip blanks and Functions missing a package
+		}
+		fns = append(fns, composFunction{Name: fields[0], Package: fields[1]})
+	}
+	return fns, nil
 }
 
 // verifyScript implements the three-layer pipeline described above. It is
@@ -125,6 +192,24 @@ if [ -s /tmp/extra-resources.yaml ]; then
   EXTRA_ARGS="--extra-resources /tmp/extra-resources.yaml"
 fi
 
+# ---- Point Functions at their Dagger service containers (Layer 0.6) ------
+# The module starts each Function as a Dagger service reachable at
+# "<function-name>:9443" (see Verify in verify.go). crossplane render's default
+# runtime would instead start each Function as a nested Docker container, which
+# can't work inside this sandbox (#300). Rewrite functions.yaml so every Function
+# uses the "Development" runtime targeting its service endpoint; render then
+# dials the already-running service instead of launching a container.
+FUNCTIONS_FILE=examples/functions.yaml
+if [ -f examples/functions.yaml ]; then
+  if yq ea 'with(select(.kind == "Function");
+        .metadata.annotations["render.crossplane.io/runtime"] = "Development" |
+        .metadata.annotations["render.crossplane.io/runtime-development-target"] = ("dns:///" + .metadata.name + ":9443"))' \
+      examples/functions.yaml > /tmp/functions.dev.yaml 2>/dev/null \
+      && [ -s /tmp/functions.dev.yaml ]; then
+    FUNCTIONS_FILE=/tmp/functions.dev.yaml
+  fi
+fi
+
 # ---- Per-XR loop ---------------------------------------------------------
 FOUND_XR=0
 for xr in examples/xr*.yaml; do
@@ -146,9 +231,10 @@ for xr in examples/xr*.yaml; do
     OK=0
   fi
 
-  # Render the Composition. Always read functions.yaml from examples/.
-  # ${EXTRA_ARGS} (unquoted, may be empty) supplies EnvironmentConfigs.
-  if RENDERED=$(crossplane render "${xr}" apis/composition.yaml examples/functions.yaml ${EXTRA_ARGS} 2>/tmp/render.err); then
+  # Render the Composition. ${FUNCTIONS_FILE} is the Development-runtime rewrite
+  # of examples/functions.yaml (falls back to the original if the rewrite was a
+  # no-op). ${EXTRA_ARGS} (unquoted, may be empty) supplies EnvironmentConfigs.
+  if RENDERED=$(crossplane render "${xr}" apis/composition.yaml "${FUNCTIONS_FILE}" ${EXTRA_ARGS} 2>/tmp/render.err); then
     status="${status}, render-ok"
 
     # Layer 2: Object wrapper
