@@ -1,3 +1,10 @@
+## [0.118.1](https://github.com/stuttgart-things/dagger/compare/v0.118.0...v0.118.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* **crossplane:** run render Functions as Dagger services [#300](https://github.com/stuttgart-things/dagger/issues/300) ([0483584](https://github.com/stuttgart-things/dagger/commit/0483584c64a5c75cd9a94b4f5696929dcbb958c5))
+
 # [0.118.0](https://github.com/stuttgart-things/dagger/compare/v0.117.0...v0.118.0) (2026-06-08)
 
 
