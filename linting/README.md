@@ -47,14 +47,14 @@ dagger call -m linting lint-pre-commit --src . --config-path .pre-commit-config.
 
 #### Skip Specific Hooks
 
-Skip hooks that require Docker or other unavailable resources:
+Skip a hook by id (the `SKIP` env var is set for you):
 ```bash
-dagger call -m linting lint-pre-commit --src . --skip-hooks hadolint-docker export --path=/tmp/precommit-findings.txt
+dagger call -m linting lint-pre-commit --src . --skip-hooks hadolint export --path=/tmp/precommit-findings.txt
 ```
 
 Skip multiple hooks:
 ```bash
-dagger call -m linting lint-pre-commit --src . --skip-hooks hadolint-docker --skip-hooks another-hook export --path=/tmp/precommit-findings.txt
+dagger call -m linting lint-pre-commit --src . --skip-hooks hadolint --skip-hooks another-hook export --path=/tmp/precommit-findings.txt
 ```
 
 ### Secret Scanning Example
@@ -110,6 +110,7 @@ Example test data can be found in:
 - `tests/linting/yaml/valid.yaml`
 - `tests/linting/yaml/invalid.yaml`
 - `tests/linting/markdown/` - Markdown test files
+- `tests/linting/dockerfile/` - valid + invalid Dockerfile fixtures (hadolint path)
 - `tests/linting/schemas/` - valid JSON schema fixtures (happy path)
 - `tests/linting/schemas-invalid/` - malformed schema (regression path)
 - `.pre-commit-config.yaml` - Pre-commit configuration
@@ -124,9 +125,28 @@ The module supports common pre-commit hooks including:
 - check-yaml
 - detect-private-key
 - shellcheck
-- hadolint (use `hadolint` instead of `hadolint-docker`)
+- hadolint (see below)
 - check-github-workflows
 - detect-secrets
+
+### Dockerfile linting with hadolint
+
+The module's image **bundles the `hadolint` static binary (v2.12.0)** on `PATH`,
+so Dockerfiles are linted natively — no Docker daemon required. The upstream
+`hadolint/hadolint` hook ids (`hadolint`, `hadolint-docker`) are Docker-based and
+do **not** work inside a Dagger container; wire a `repo: local` / `language: system`
+hook against the bundled binary instead:
+
+```yaml
+  - repo: local
+    hooks:
+      - id: hadolint
+        name: Lint Dockerfiles with hadolint
+        entry: hadolint
+        language: system
+        types: [dockerfile]
+        args: ["--ignore", "DL4006", "--ignore", "DL3015", "--ignore", "DL3007"]
+```
 
 ## 📖 More Modules
 

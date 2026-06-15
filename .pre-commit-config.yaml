@@ -18,10 +18,21 @@ repos:
           - "SC1090"
           - "-e"
           - "SC1091"
-  - repo: https://github.com/hadolint/hadolint
-    rev: "v2.12.0"
+  # hadolint via the on-PATH static binary (bundled in the linting module's
+  # image, see linting/container.go). The upstream hadolint/hadolint hook ids
+  # (`hadolint`, `hadolint-docker`) are both Docker-based — `hadolint-docker`
+  # needs a daemon that doesn't exist inside a Dagger container. A repo: local
+  # system hook runs the native binary instead. See #302.
+  - repo: local
     hooks:
-      - id: hadolint-docker
+      - id: hadolint
+        name: Lint Dockerfiles with hadolint
+        entry: hadolint
+        language: system
+        types: [dockerfile]
+        # tests/linting/dockerfile/invalid/ is a deliberately-broken regression
+        # fixture for the linting module's own tests; don't fail the repo gate on it.
+        exclude: ^tests/linting/dockerfile/invalid/
         args:
           - --ignore
           - DL4006
