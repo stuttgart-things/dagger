@@ -26,8 +26,19 @@ func (m *Linting) container() *dagger.Container {
 		"git",
 		"bash",
 		"shellcheck",
-		"docker-cli",
 		"jq",
+	})
+
+	// Install the hadolint static binary so the `hadolint` pre-commit hook runs
+	// natively in-container. hadolint ships as a static musl binary, so it runs
+	// directly on Alpine — no Docker daemon needed (there is none inside a Dagger
+	// container, which is why the old `hadolint-docker` hook never worked). wget
+	// is already installed above. Pin the version for reproducibility. See #302.
+	ctr = ctr.WithExec([]string{
+		"sh", "-c",
+		"wget -qO /usr/local/bin/hadolint " +
+			"https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 " +
+			"&& chmod +x /usr/local/bin/hadolint",
 	})
 
 	ctr = ctr.WithExec([]string{
