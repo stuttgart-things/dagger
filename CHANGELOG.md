@@ -1,3 +1,10 @@
+# [0.119.0](https://github.com/stuttgart-things/dagger/compare/v0.118.1...v0.119.0) (2026-06-15)
+
+
+### Features
+
+* **linting:** bundle hadolint binary so the pre-commit hook works [#302](https://github.com/stuttgart-things/dagger/issues/302) ([36aa80f](https://github.com/stuttgart-things/dagger/commit/36aa80fa6fa4ae5b8b009aada7ed0556d3ac133d))
+
 ## [0.118.1](https://github.com/stuttgart-things/dagger/compare/v0.118.0...v0.118.1) (2026-06-09)
 
 
