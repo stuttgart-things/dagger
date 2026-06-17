@@ -12,7 +12,7 @@ require (
 )
 
 require (
-	dagger.io/dagger v0.20.8
+	dagger.io/dagger v0.21.7
 	github.com/99designs/gqlgen v0.17.90
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.17.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.17.0
