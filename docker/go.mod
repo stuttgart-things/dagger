@@ -7,7 +7,7 @@ require (
 	github.com/coreos/go-semver v0.3.1
 	github.com/creasty/defaults v1.8.0
 	github.com/dagger/otel-go v1.43.0
-	github.com/gookit/validate v1.5.4
+	github.com/gookit/validate/v2 v2.0.1
 )
 
 require (
