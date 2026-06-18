@@ -122,7 +122,9 @@ func (m *Packer) Proxmoxoperation(
 		if target == "" {
 			return "", fmt.Errorf("target (new VM name) must be specified for rename")
 		}
-		return c.do(ctx, http.MethodPut,
+		// POST (async) on the qemu config endpoint: PVE returns
+		// "501 Method 'PUT ...' not implemented" for PUT here.
+		return c.do(ctx, http.MethodPost,
 			fmt.Sprintf("/nodes/%s/qemu/%s/config", node, vmid),
 			url.Values{"name": {target}})
 
