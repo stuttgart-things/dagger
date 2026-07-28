@@ -1,4 +1,4 @@
-# Stuttgart-Things Dagger Modules
+# stuttgart-things/dagger
 
 modular collection of Dagger building blocks for infrastructure, containers, security, and DevOps.
 
