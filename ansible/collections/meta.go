@@ -19,7 +19,7 @@ authors: {{ .authors }}
 ### OPTIONAL
 description: {{ .description }}
 license: {{ .license }}
-license_file: '{{ .license_file }}'
+license_file: {{ .license_file }}
 tags: {{ .tags }}
 dependencies: {}
 repository: {{ .repository }}
@@ -30,13 +30,13 @@ build_ignore: []
 `
 
 // FALLBACKS FOR GALAXY FIELDS A COLLECTION DOES NOT DECLARE ITSELF.
-// LIST VALUES ARE YAML FLOW SEQUENCES SO THEY CAN BE INLINED AS-IS.
-var GalaxyDefaults = map[string]string{
-	"authors":       `["stuttgart-things"]`,
+// HELD AS NATIVE GO VALUES AND ENCODED ON RENDER, LIKE THE DECLARED ONES.
+var GalaxyDefaults = map[string]interface{}{
+	"authors":       []string{"stuttgart-things"},
 	"description":   "ansible collection built by stuttgart-things",
-	"license":       `["Apache-2.0"]`,
+	"license":       []string{"Apache-2.0"},
 	"license_file":  "",
-	"tags":          "[]",
+	"tags":          []string{},
 	"repository":    "https://github.com/stuttgart-things/ansible",
 	"documentation": "https://github.com/stuttgart-things/ansible",
 	"homepage":      "https://github.com/stuttgart-things/ansible",
@@ -44,7 +44,9 @@ var GalaxyDefaults = map[string]string{
 }
 
 // BUILDS THE RENDER DATA FOR GalaxyConfig FROM THE PARSED COLLECTION META,
-// FALLING BACK TO GalaxyDefaults FOR EVERY FIELD THE COLLECTION LEAVES UNSET
+// FALLING BACK TO GalaxyDefaults FOR EVERY FIELD THE COLLECTION LEAVES UNSET.
+// OPTIONAL FIELDS ARE ENCODED YAML FRAGMENTS SO A COLON, '#' OR QUOTE IN A
+// VALUE CANNOT BREAK OR TRUNCATE THE RENDERED galaxy.yml
 func BuildGalaxyMeta(meta map[string]string, version string) map[string]interface{} {
 	galaxyMeta := map[string]interface{}{
 		"namespace": meta["namespace"],
@@ -53,11 +55,17 @@ func BuildGalaxyMeta(meta map[string]string, version string) map[string]interfac
 	}
 
 	for field, fallback := range GalaxyDefaults {
+		// meta HOLDS VALUES ALREADY ENCODED BY setMetaString/setMetaList
 		if value := meta[field]; value != "" {
 			galaxyMeta[field] = value
 			continue
 		}
-		galaxyMeta[field] = fallback
+
+		encoded, ok := encodeGalaxyValue(field, fallback)
+		if !ok {
+			continue
+		}
+		galaxyMeta[field] = encoded
 	}
 
 	return galaxyMeta
