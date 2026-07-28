@@ -1,3 +1,23 @@
+# [0.120.0](https://github.com/stuttgart-things/dagger/compare/v0.119.0...v0.120.0) (2026-07-28)
+
+
+### Bug Fixes
+
+* **ansible:** derive galaxy.yml metadata from collection.yaml ([#320](https://github.com/stuttgart-things/dagger/issues/320)) ([18aadb0](https://github.com/stuttgart-things/dagger/commit/18aadb07a89d2aa4f6f7d266a735ca2d729549bd)), closes [#34](https://github.com/stuttgart-things/dagger/issues/34) [#34](https://github.com/stuttgart-things/dagger/issues/34)
+* **deps:** update dependency @semantic-release/changelog to v7 ([#319](https://github.com/stuttgart-things/dagger/issues/319)) ([8134533](https://github.com/stuttgart-things/dagger/commit/8134533215ea1ab21ff5b8d2a7725976979cf259))
+* **deps:** update module github.com/99designs/gqlgen to v0.17.91 ([#305](https://github.com/stuttgart-things/dagger/issues/305)) ([e21c26f](https://github.com/stuttgart-things/dagger/commit/e21c26fd81bb988bfb95c7fc52ef6582a2c7dced))
+* **deps:** update module github.com/99designs/gqlgen to v0.17.94 ([#314](https://github.com/stuttgart-things/dagger/issues/314)) ([8af0322](https://github.com/stuttgart-things/dagger/commit/8af03222aa4bedef9c8c81d11ed83c7b2b5d82d7))
+* **deps:** update module github.com/dagger/otel-go to v1.43.0 ([#259](https://github.com/stuttgart-things/dagger/issues/259)) ([9afa3f6](https://github.com/stuttgart-things/dagger/commit/9afa3f6b991764cd9bd253b5fbaec44197004705))
+* **deps:** update module go.opentelemetry.io/otel/sdk to v1.43.0 [security] ([#199](https://github.com/stuttgart-things/dagger/issues/199)) ([1a6ed14](https://github.com/stuttgart-things/dagger/commit/1a6ed14b5752343e9fffde7a588580f466203858))
+* **deps:** update module golang.org/x/sync to v0.21.0 ([#307](https://github.com/stuttgart-things/dagger/issues/307)) ([d5e4e38](https://github.com/stuttgart-things/dagger/commit/d5e4e38e141a84cda7630d750f3014ae4121e186))
+* **deps:** update module golang.org/x/sync to v0.22.0 ([#316](https://github.com/stuttgart-things/dagger/issues/316)) ([5e4f6ac](https://github.com/stuttgart-things/dagger/commit/5e4f6ac1c84ac741d2f326a47e1ff0787c11a0d8))
+* **packer:** use POST for proxmox template rename ([#312](https://github.com/stuttgart-things/dagger/issues/312)) ([a1b245f](https://github.com/stuttgart-things/dagger/commit/a1b245fc3968acba0f3b94affb64fb9705228969))
+
+
+### Features
+
+* feat/update-readme-ansible-lic ([b3d915e](https://github.com/stuttgart-things/dagger/commit/b3d915e244a6c4a8f77ace34348c9e41cd4cca78))
+
 # [0.119.0](https://github.com/stuttgart-things/dagger/compare/v0.118.1...v0.119.0) (2026-06-15)
 
 
