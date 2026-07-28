@@ -6,8 +6,8 @@ package collections
 
 import (
 	"bytes"
-	"html/template"
 	"log"
+	"text/template"
 )
 
 func RenderTemplate(templateData string, data map[string]interface{}) (renderTemplate string) {

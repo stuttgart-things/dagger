@@ -33,8 +33,6 @@ func (m *Ansible) InitCollection(
 	ctx context.Context,
 	src *dagger.Directory) (*CollectionResult, error) {
 
-	metaInformation := make(map[string]interface{})
-
 	allCollectionFiles, err := src.Entries(ctx)
 	if err != nil {
 		fmt.Println("ERROR GETTING ENTRIES: ", err)
@@ -49,10 +47,7 @@ func (m *Ansible) InitCollection(
 		playbooks, vars, modules, templates, meta, requirements = collections.ProcessCollectionFile([]byte(content), playbooks, vars, modules, templates, meta, requirements)
 	}
 
-	metaInformation["namespace"] = meta["namespace"]
-	metaInformation["name"] = meta["name"]
-	metaInformation["authors"] = meta["authors"]
-	metaInformation["version"] = collections.GenerateSemanticVersion()
+	metaInformation := collections.BuildGalaxyMeta(meta, collections.GenerateSemanticVersion())
 
 	collectionContentDir := collectionWorkDir + "/" + metaInformation["namespace"].(string) + "/" + metaInformation["name"].(string)
 
