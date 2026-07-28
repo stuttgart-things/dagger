@@ -1,3 +1,10 @@
+# [0.121.0](https://github.com/stuttgart-things/dagger/compare/v0.120.0...v0.121.0) (2026-07-28)
+
+
+### Features
+
+* **ansible:** accept a caller-supplied collection version ([#322](https://github.com/stuttgart-things/dagger/issues/322)) ([dc536d4](https://github.com/stuttgart-things/dagger/commit/dc536d40e6aa3af4923b3f4d027a3eb399c5e4a2)), closes [stuttgart-things/ansible#1043](https://github.com/stuttgart-things/ansible/issues/1043)
+
 # [0.120.0](https://github.com/stuttgart-things/dagger/compare/v0.119.0...v0.120.0) (2026-07-28)
 
 
