@@ -15,10 +15,14 @@ func (m *Ansible) RunCollectionBuildPipeline(
 	// +optional
 	// +default="11.11.0"
 	ansibleVersion string,
+	// Collection version, passed through to InitCollection. Falls back to a
+	// generated calendar version, which is NOT monotonic.
+	// +optional
+	version string,
 ) (*dagger.Directory, error) {
 
 	// INIT COLLECTION
-	collection, err := m.InitCollection(ctx, src)
+	collection, err := m.InitCollection(ctx, src, version)
 	if err != nil {
 		fmt.Println("Failed to initialize collection: %v", err)
 	}
