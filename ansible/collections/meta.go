@@ -14,22 +14,54 @@ namespace: {{ .namespace }}
 name: {{ .name }}
 version: {{ .version }}
 readme: README.md
-authors:
-- your name <example@domain.com>
+authors: {{ .authors }}
 
 ### OPTIONAL
-description: your collection description
-license:
-- GPL-2.0-or-later
-license_file: ''
-tags: []
+description: {{ .description }}
+license: {{ .license }}
+license_file: '{{ .license_file }}'
+tags: {{ .tags }}
 dependencies: {}
-repository: http://example.com/repository
-documentation: http://docs.example.com
-homepage: http://example.com
-issues: http://example.com/issue/tracker
+repository: {{ .repository }}
+documentation: {{ .documentation }}
+homepage: {{ .homepage }}
+issues: {{ .issues }}
 build_ignore: []
 `
+
+// FALLBACKS FOR GALAXY FIELDS A COLLECTION DOES NOT DECLARE ITSELF.
+// LIST VALUES ARE YAML FLOW SEQUENCES SO THEY CAN BE INLINED AS-IS.
+var GalaxyDefaults = map[string]string{
+	"authors":       `["stuttgart-things"]`,
+	"description":   "ansible collection built by stuttgart-things",
+	"license":       `["Apache-2.0"]`,
+	"license_file":  "",
+	"tags":          "[]",
+	"repository":    "https://github.com/stuttgart-things/ansible",
+	"documentation": "https://github.com/stuttgart-things/ansible",
+	"homepage":      "https://github.com/stuttgart-things/ansible",
+	"issues":        "https://github.com/stuttgart-things/ansible/issues",
+}
+
+// BUILDS THE RENDER DATA FOR GalaxyConfig FROM THE PARSED COLLECTION META,
+// FALLING BACK TO GalaxyDefaults FOR EVERY FIELD THE COLLECTION LEAVES UNSET
+func BuildGalaxyMeta(meta map[string]string, version string) map[string]interface{} {
+	galaxyMeta := map[string]interface{}{
+		"namespace": meta["namespace"],
+		"name":      meta["name"],
+		"version":   version,
+	}
+
+	for field, fallback := range GalaxyDefaults {
+		if value := meta[field]; value != "" {
+			galaxyMeta[field] = value
+			continue
+		}
+		galaxyMeta[field] = fallback
+	}
+
+	return galaxyMeta
+}
 
 func GenerateSemanticVersion() string {
 	// GET THE CURRENT DATE AND TIME
