@@ -26,12 +26,6 @@ import (
 )
 
 var (
-	playbooks         = make(map[string]string)
-	vars              = make(map[string]string)
-	templates         = make(map[string]string)
-	modules           = make(map[string]string)
-	meta              = make(map[string]string)
-	requirements      = make(map[string]string)
 	collectionWorkDir = "/collection"
 	workDir           = "/src"
 )

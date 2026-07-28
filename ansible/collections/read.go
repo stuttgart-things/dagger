@@ -81,8 +81,8 @@ func ProcessCollectionFile(data []byte, playbooks, vars, modules, templates, met
 		meta["name"] = config.Meta.Name
 		meta["namespace"] = config.Meta.Namespace
 
-		// meta IS REUSED ACROSS FILES AND CALLS, SO DROP THE PREVIOUS
-		// COLLECTION'S OPTIONAL FIELDS BEFORE THEY CAN LEAK INTO THIS ONE
+		// meta ACCUMULATES ACROSS THE FILES OF ONE COLLECTION, SO DROP ANY
+		// OPTIONAL FIELDS A PREVIOUS FILE SET BEFORE APPLYING THIS ONE'S
 		for field := range GalaxyDefaults {
 			delete(meta, field)
 		}

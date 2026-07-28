@@ -31,7 +31,22 @@ func (m *Ansible) Build(
 // INIT ANSIBLE COLLECTION STRUCTURE
 func (m *Ansible) InitCollection(
 	ctx context.Context,
-	src *dagger.Directory) (*CollectionResult, error) {
+	src *dagger.Directory,
+	// Collection version. src is a plain directory with no git history, so a
+	// monotonic version has to be supplied by the caller. Falls back to a
+	// generated calendar version, which is NOT monotonic.
+	// +optional
+	version string,
+) (*CollectionResult, error) {
+
+	// SCOPED PER CALL. THESE WERE PACKAGE-LEVEL, SO BUILDING TWO COLLECTIONS IN
+	// ONE SESSION MERGED THE FIRST ONE'S CONTENT INTO THE SECOND ONE'S ARTIFACT
+	playbooks := make(map[string]string)
+	vars := make(map[string]string)
+	templates := make(map[string]string)
+	modules := make(map[string]string)
+	meta := make(map[string]string)
+	requirements := make(map[string]string)
 
 	allCollectionFiles, err := src.Entries(ctx)
 	if err != nil {
@@ -47,7 +62,12 @@ func (m *Ansible) InitCollection(
 		playbooks, vars, modules, templates, meta, requirements = collections.ProcessCollectionFile([]byte(content), playbooks, vars, modules, templates, meta, requirements)
 	}
 
-	metaInformation := collections.BuildGalaxyMeta(meta, collections.GenerateSemanticVersion())
+	if version == "" {
+		version = collections.GenerateSemanticVersion()
+		fmt.Println("NO VERSION SUPPLIED, GENERATED (NON-MONOTONIC):", version)
+	}
+
+	metaInformation := collections.BuildGalaxyMeta(meta, version)
 
 	collectionContentDir := collectionWorkDir + "/" + metaInformation["namespace"].(string) + "/" + metaInformation["name"].(string)
 
