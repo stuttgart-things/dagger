@@ -1,3 +1,10 @@
+# [0.122.0](https://github.com/stuttgart-things/dagger/compare/v0.121.0...v0.122.0) (2026-08-16)
+
+
+### Features
+
+* **crossplane:** verify the rendered status against the XRD (Layer 4) ([#323](https://github.com/stuttgart-things/dagger/issues/323)) ([3f2e668](https://github.com/stuttgart-things/dagger/commit/3f2e66846162c7e7dc5c0b7a84b1276c56e18f9e)), closes [stuttgart-things/crossplane-configurations#283](https://github.com/stuttgart-things/crossplane-configurations/issues/283)
+
 # [0.121.0](https://github.com/stuttgart-things/dagger/compare/v0.120.0...v0.121.0) (2026-07-28)
 
 
