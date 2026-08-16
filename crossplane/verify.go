@@ -24,6 +24,12 @@ const functionPort = 9443
 //     manifests whose kind is a CRD the harness has no schema for (e.g. a
 //     Tekton PipelineRun) are skipped via -ignore-missing-schemas rather
 //     than failing the layer — their correctness is owned by the renderer.
+//  5. Layer 4 — the RENDERED composite's status validated against the status
+//     subtree of the Configuration's own XRD. Layer 1 checks what goes in;
+//     this checks what the Composition writes back out, which nothing else
+//     did. A status field the Composition sets but the XRD does not declare
+//     is not pruned — it fails the whole status apply, and with it every
+//     compose, on the first live apply. See stuttgart-things/crossplane-configurations#283.
 //
 // Each Composition Function referenced by examples/functions.yaml is started as
 // a Dagger service container and `crossplane render` is pointed at it via the
@@ -161,6 +167,52 @@ if [ -f apis/definition.yaml ]; then
   fi
 fi
 
+# ---- Generate a status-only JSON schema (Layer 4) ------------------------
+# Validating the whole rendered XR against the XRD does NOT work. Crossplane
+# injects fields into both spec (resourceRefs, compositionRef, ...) and status
+# (conditions, connectionDetails) when it generates the CRD, and none of them
+# appear in the XRD an author writes — so every Configuration would fail on
+# fields nobody wrote. Build instead a synthetic CRD whose single property IS
+# the XRD's status subtree, plus the status fields Crossplane adds, and later
+# validate only the rendered status against it.
+mkdir -p /schemas/status
+XR_KIND=$(yq -r '.spec.names.kind // ""' apis/definition.yaml 2>/dev/null)
+if [ -f apis/definition.yaml ] && [ -n "${XR_KIND}" ]; then
+  if ! STGEN=$(python3 -c '
+import yaml, sys
+d = yaml.safe_load(open("apis/definition.yaml")) or {}
+versions = []
+for v in (d.get("spec") or {}).get("versions") or []:
+    schema = (((v.get("schema") or {}).get("openAPIV3Schema") or {}).get("properties") or {}).get("status")
+    if not schema:
+        continue
+    # Crossplane adds these to every composite status. They are not in the
+    # XRD, so without them a strict check flags them on every Configuration.
+    props = schema.setdefault("properties", {})
+    props.setdefault("conditions", {"type": "array", "items": {"type": "object", "x-kubernetes-preserve-unknown-fields": True}})
+    props.setdefault("connectionDetails", {"type": "object", "properties": {"lastPublishedTime": {"type": "string"}}})
+    props.setdefault("claimConditions", {"type": "object", "x-kubernetes-preserve-unknown-fields": True})
+    versions.append({"name": v["name"], "served": True, "storage": not versions,
+                     "schema": {"openAPIV3Schema": {"type": "object", "properties": {"status": schema}}}})
+if not versions:
+    sys.exit(0)
+yaml.safe_dump({"apiVersion": "apiextensions.k8s.io/v1", "kind": "CustomResourceDefinition",
+                "metadata": {"name": "renderedstatuses.verify.local"},
+                "spec": {"group": "verify.local", "scope": "Namespaced",
+                         "names": {"kind": "RenderedStatus", "plural": "renderedstatuses"},
+                         "versions": versions}},
+               open("/tmp/status-crd.yaml", "w"))
+' 2>&1); then
+    echo "  ! status schema generation failed:"
+    printf "%s\n" "${STGEN}" | sed "s/^/      /"
+  elif [ -s /tmp/status-crd.yaml ]; then
+    if ! STJSON=$(cd /schemas/status && openapi2jsonschema /tmp/status-crd.yaml 2>&1); then
+      echo "  ! status schema conversion failed:"
+      printf "%s\n" "${STJSON}" | sed "s/^/      /"
+    fi
+  fi
+fi
+
 # ---- Generate JSON schemas for provider-kubernetes (Layer 2) -------------
 # Cached per provider version via a marker file.
 PROV_MARK="/schemas/provider/.ready-${PROVIDER_K8S_VERSION}"
@@ -249,6 +301,36 @@ for xr in examples/xr*.yaml; do
         status="${status}, object-INVALID"
         details="${details}\n${ERR}"
         OK=0
+      fi
+    fi
+
+    # Layer 4: the rendered composite's status ↔ the XRD's status schema
+    # Layer 1 checked what goes IN; this checks what the Composition writes
+    # back OUT. Only the status subtree is validated, wrapped in a synthetic
+    # kind — see the schema generation above for why the whole XR cannot be.
+    # A status the Composition never sets yields an empty file and is skipped.
+    if [ -n "${XR_KIND}" ] && [ -s /tmp/status-crd.yaml ]; then
+      XR_VER=$(echo "${RENDERED}" | XR_KIND="${XR_KIND}" yq 'select(.kind == env(XR_KIND)) | .apiVersion' 2>/dev/null | head -1 | sed 's|.*/||')
+      echo "${RENDERED}" | XR_KIND="${XR_KIND}" yq 'select(.kind == env(XR_KIND)) | .status' > /tmp/xr-status.yaml 2>/dev/null
+      if [ -n "${XR_VER}" ] && [ -s /tmp/xr-status.yaml ] && [ "$(cat /tmp/xr-status.yaml)" != "null" ]; then
+        {
+          echo "apiVersion: verify.local/${XR_VER}"
+          echo "kind: RenderedStatus"
+          echo "metadata:"
+          echo "  name: rendered-status"
+          echo "status:"
+          sed 's/^/  /' /tmp/xr-status.yaml
+        } > /tmp/xr-status-doc.yaml
+        if ERR=$(kubeconform -strict \
+            -schema-location default \
+            -schema-location '/schemas/status/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            /tmp/xr-status-doc.yaml 2>&1); then
+          status="${status}, status-valid"
+        else
+          status="${status}, status-INVALID"
+          details="${details}\n${ERR}"
+          OK=0
+        fi
       fi
     fi
 
