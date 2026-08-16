@@ -84,8 +84,24 @@ spec:
 Offline check of a single Configuration directory before push/PR-merge. Runs
 `crossplane xpkg build`, validates each `examples/xr*.yaml` against the
 Configuration's own XRD, renders the composition, and runs `kubeconform`
-against both the rendered `Object` wrappers and the manifests embedded under
-`spec.forProvider.manifest`. Exits non-zero on any failure.
+against the rendered `Object` wrappers, the manifests embedded under
+`spec.forProvider.manifest`, and the **rendered composite's status**. Exits
+non-zero on any failure.
+
+That last one closes a gap that cost a live cluster. Layer 1 checks what goes
+*into* a Configuration; nothing checked what the Composition writes back *out*.
+A status field the Composition sets but the XRD does not declare is not pruned
+— the structural schema fails the whole status apply, and with it every
+compose. `Ready` then stays `True` on the last good result while `Synced` goes
+`False`, so `kubectl get` shows a healthy-looking XR that has silently stopped
+reconciling ([crossplane-configurations#283](https://github.com/stuttgart-things/crossplane-configurations/issues/283)).
+
+Only the status subtree is validated, wrapped in a synthetic kind. The whole XR
+cannot be: Crossplane injects fields into both `spec` (`resourceRefs`,
+`compositionRef`, …) and `status` (`conditions`, `connectionDetails`) when it
+generates the CRD, and none of them appear in the XRD an author writes — a
+strict check of the full object would fail every Configuration on fields nobody
+wrote. Those two status fields are added to the schema for the same reason.
 
 ```bash
 dagger call -m crossplane verify \
@@ -102,10 +118,21 @@ Sample output:
 ```
 Configuration: cloud-config
   ✓ xpkg build
-  ✓ xr-min.yaml: XRD-valid, render-ok, object-valid, embedded-valid
-  ✓ xr.yaml:     XRD-valid, render-ok, object-valid, embedded-valid
-  ✗ xr-max.yaml: XRD-valid, render-ok, object-valid, embedded-INVALID
+  ✓ xr-min.yaml: XRD-valid, render-ok, object-valid, status-valid, embedded-valid
+  ✓ xr.yaml:     XRD-valid, render-ok, object-valid, status-valid, embedded-valid
+  ✗ xr-max.yaml: XRD-valid, render-ok, object-valid, status-valid, embedded-INVALID
       Secret/max-cloud-init.stringData.userdata: invalid YAML at line 42
+```
+
+A status the XRD does not declare reads like this — the field is named, so the
+fix is the line to add to `apis/definition.yaml`:
+
+```
+  ✗ xr.yaml: XRD-valid, render-ok, status-INVALID
+      RenderedStatus rendered-status is invalid: jsonschema:
+      '/status/components/fluxApps' does not validate with
+      .../renderedstatus_v1alpha1.json#/properties/status/properties/components/properties/fluxApps/additionalProperties:
+      additionalProperties 'pendingSubstitutions' not allowed
 ```
 
 A docker-in-docker service runs inside the call so `crossplane render` can
