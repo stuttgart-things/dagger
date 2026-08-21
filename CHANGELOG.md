@@ -1,3 +1,10 @@
+# [0.125.0](https://github.com/stuttgart-things/dagger/compare/v0.124.0...v0.125.0) (2026-08-21)
+
+
+### Features
+
+* **ansible:** pass extra environment into the container as secrets ([#332](https://github.com/stuttgart-things/dagger/issues/332)) ([542632c](https://github.com/stuttgart-things/dagger/commit/542632c282ee7b8fd69b4f7134c143d4477b911d))
+
 # [0.124.0](https://github.com/stuttgart-things/dagger/compare/v0.123.0...v0.124.0) (2026-08-21)
 
 
