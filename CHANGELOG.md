@@ -1,3 +1,10 @@
+# [0.124.0](https://github.com/stuttgart-things/dagger/compare/v0.123.0...v0.124.0) (2026-08-21)
+
+
+### Features
+
+* **crossplane:** CLI v2.4.1 plus gepinntes Core-Binary statt Docker-Container ([#331](https://github.com/stuttgart-things/dagger/issues/331)) ([e2d7a06](https://github.com/stuttgart-things/dagger/commit/e2d7a06637cfa2432639eebe1da9ddd1ae5f40db)), closes [#295](https://github.com/stuttgart-things/dagger/issues/295) [#300](https://github.com/stuttgart-things/dagger/issues/300) [#295](https://github.com/stuttgart-things/dagger/issues/295) [stuttgart-things/crossplane-configurations#349](https://github.com/stuttgart-things/crossplane-configurations/issues/349) [#295](https://github.com/stuttgart-things/dagger/issues/295) [#300](https://github.com/stuttgart-things/dagger/issues/300)
+
 # [0.123.0](https://github.com/stuttgart-things/dagger/compare/v0.122.0...v0.123.0) (2026-08-21)
 
 
