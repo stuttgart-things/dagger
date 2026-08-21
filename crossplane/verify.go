@@ -251,6 +251,25 @@ fi
 # can't work inside this sandbox (#300). Rewrite functions.yaml so every Function
 # uses the "Development" runtime targeting its service endpoint; render then
 # dials the already-running service instead of launching a container.
+# ---- Render ohne Core-Container (Layer 0.7) ------------------------------
+# Ab CLI v2.3.0 ruft render "crossplane internal render" auf und startet dafuer
+# per Default einen Docker-Container aus dem floating Tag
+# xpkg.crossplane.io/crossplane/crossplane:stable. Beides ist hier falsch:
+# verschachteltes Docker geht in diesem Sandbox nicht (#300, der Grund fuer die
+# Development-Runtime unten), und ein floating Tag im Ausfuehrungspfad ist genau
+# das, was Verify im Juni umgeworfen hat (#295).
+#
+# Gemessen (2026-08-21): die Development-Runtime allein hilft NICHT — auch mit
+# allen Functions als Services startet die CLI den Core-Container.
+#
+# /usr/bin/crossplane-core ist der gepinnte Core (siehe container.go). Geprueft
+# wird auf das FLAG, nicht auf die Version: eine aeltere CROSSPLANE_VERSION
+# rendert in-process und kennt --crossplane-binary nicht.
+CORE_ARGS=""
+if crossplane render --help 2>&1 | grep -q -- '--crossplane-binary' && [ -x /usr/bin/crossplane-core ]; then
+  CORE_ARGS="--crossplane-binary=/usr/bin/crossplane-core"
+fi
+
 FUNCTIONS_FILE=examples/functions.yaml
 if [ -f examples/functions.yaml ]; then
   if yq ea 'with(select(.kind == "Function");
@@ -286,7 +305,7 @@ for xr in examples/xr*.yaml; do
   # Render the Composition. ${FUNCTIONS_FILE} is the Development-runtime rewrite
   # of examples/functions.yaml (falls back to the original if the rewrite was a
   # no-op). ${EXTRA_ARGS} (unquoted, may be empty) supplies EnvironmentConfigs.
-  if RENDERED=$(crossplane render "${xr}" apis/composition.yaml "${FUNCTIONS_FILE}" ${EXTRA_ARGS} 2>/tmp/render.err); then
+  if RENDERED=$(crossplane render "${xr}" apis/composition.yaml "${FUNCTIONS_FILE}" ${EXTRA_ARGS} ${CORE_ARGS} 2>/tmp/render.err); then
     status="${status}, render-ok"
 
     # Layer 2: Object wrapper
