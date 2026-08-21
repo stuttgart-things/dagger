@@ -1,3 +1,10 @@
+# [0.123.0](https://github.com/stuttgart-things/dagger/compare/v0.122.0...v0.123.0) (2026-08-21)
+
+
+### Features
+
+* **ansible,terraform:** bump to ansible 14.3.1 / terraform 1.15.9, fix CI engine pin ([#325](https://github.com/stuttgart-things/dagger/issues/325)) ([b3e5abd](https://github.com/stuttgart-things/dagger/commit/b3e5abd83a4afa80a0812d61cf32de2ed74975b6))
+
 # [0.122.0](https://github.com/stuttgart-things/dagger/compare/v0.121.0...v0.122.0) (2026-08-16)
 
 
