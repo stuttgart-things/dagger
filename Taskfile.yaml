@@ -564,6 +564,11 @@ tasks:
     vars:
       MODULE: oci
 
+  test-crossplane-smoke:
+    desc: Smoke-test the crossplane container (no secrets needed; this is what CI runs)
+    cmds:
+      - ./tests/smoke/crossplane.sh
+
   test-crossplane:
     desc: Test crossplane functions
     cmds:
