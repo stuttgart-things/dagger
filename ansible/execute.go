@@ -22,6 +22,7 @@ func (m *Ansible) executePlaybooks(
 	vaultUrl *dagger.Secret,
 	sshUser *dagger.Secret,
 	sshPassword *dagger.Secret, // pragma: allowlist secret
+	envSecrets *dagger.Secret,
 	ansibleVersion string,
 ) (*dagger.Container, error) {
 
@@ -48,6 +49,37 @@ func (m *Ansible) executePlaybooks(
 	}
 	if sshPassword != nil { // pragma: allowlist secret
 		ansible = ansible.WithSecretVariable("ANSIBLE_PASSWORD", sshPassword)
+	}
+
+	// Caller-supplied environment. Playbooks that resolve values with
+	// lookup('env', ...) read them on the controller -- this container -- not on
+	// the target, so they have to be set here.
+	//
+	// This takes one dotenv-formatted secret rather than a list of secrets
+	// because a []Secret parameter cannot be passed from the dagger CLI: even a
+	// well-formed env://NAME is rejected with "malformed secret config at index
+	// 0", while the same URI works for a scalar Secret.
+	if envSecrets != nil {
+		dotenv, err := envSecrets.Plaintext(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read env secrets: %w", err)
+		}
+
+		for i, line := range strings.Split(dotenv, "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue
+			}
+
+			name, value, found := strings.Cut(line, "=")
+			name = strings.TrimSpace(name)
+			if !found || name == "" {
+				return nil, fmt.Errorf("env secrets line %d is not NAME=value", i+1)
+			}
+
+			// Re-wrap as its own secret so the value stays masked downstream.
+			ansible = ansible.WithSecretVariable(name, dag.SetSecret(name, value))
+		}
 	}
 
 	// MOUNT AND INSTALL REQUIREMENTS
@@ -127,12 +159,20 @@ func (m *Ansible) Execute(
 	sshUser *dagger.Secret,
 	// +optional
 	sshPassword *dagger.Secret,
+	// Extra environment variables for the Ansible container, as a secret in
+	// dotenv format (NAME=value per line, # comments and blanks ignored). For
+	// playbooks that resolve values with lookup('env', ...), which is evaluated
+	// on the controller, not on the target. Each entry is re-wrapped as its own
+	// secret, so values stay masked in logs.
+	// Example: --env-secrets env:ANSIBLE_ENV
+	// +optional
+	envSecrets *dagger.Secret,
 	// The Ansible version, defaults to defaultAnsibleVersion
 	// +optional
 	ansibleVersion string,
 ) (bool, error) {
 
-	_, err := m.executePlaybooks(ctx, src, playbooks, requirements, inventory, parameters, vaultAppRoleID, vaultSecretID, vaultUrl, sshUser, sshPassword, ansibleVersion)
+	_, err := m.executePlaybooks(ctx, src, playbooks, requirements, inventory, parameters, vaultAppRoleID, vaultSecretID, vaultUrl, sshUser, sshPassword, envSecrets, ansibleVersion)
 	if err != nil {
 		return false, err
 	}
@@ -165,12 +205,20 @@ func (m *Ansible) ExecuteAndExport(
 	sshUser *dagger.Secret,
 	// +optional
 	sshPassword *dagger.Secret,
+	// Extra environment variables for the Ansible container, as a secret in
+	// dotenv format (NAME=value per line, # comments and blanks ignored). For
+	// playbooks that resolve values with lookup('env', ...), which is evaluated
+	// on the controller, not on the target. Each entry is re-wrapped as its own
+	// secret, so values stay masked in logs.
+	// Example: --env-secrets env:ANSIBLE_ENV
+	// +optional
+	envSecrets *dagger.Secret,
 	// The Ansible version, defaults to defaultAnsibleVersion
 	// +optional
 	ansibleVersion string,
 ) (*dagger.Directory, error) {
 
-	ctr, err := m.executePlaybooks(ctx, src, playbooks, requirements, inventory, parameters, vaultAppRoleID, vaultSecretID, vaultUrl, sshUser, sshPassword, ansibleVersion)
+	ctr, err := m.executePlaybooks(ctx, src, playbooks, requirements, inventory, parameters, vaultAppRoleID, vaultSecretID, vaultUrl, sshUser, sshPassword, envSecrets, ansibleVersion)
 	if err != nil {
 		return nil, err
 	}
