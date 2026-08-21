@@ -33,7 +33,7 @@ func (m *Ansible) ModifyRoleIncludes(
 		if strings.Contains(roleDir, "-") {
 
 			// SET NEW COLLECTION ROLE NAME
-			collectionRoleName := strings.Replace(roleDir, "-", "_", -1)
+			collectionRoleName := strings.ReplaceAll(roleDir, "-", "_")
 
 			// RENAME ROLE DIR
 			ansible = ansible.WithExec([]string{"mv", collectionWorkDir + "/roles/" + roleDir, collectionWorkDir + "/roles/" + collectionRoleName})

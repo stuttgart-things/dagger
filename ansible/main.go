@@ -27,7 +27,6 @@ import (
 
 var (
 	collectionWorkDir = "/collection"
-	workDir           = "/src"
 )
 
 type Ansible struct {
