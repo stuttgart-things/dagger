@@ -107,7 +107,7 @@ jobs:
 
       - name: Install Dagger CLI
         env:
-          DAGGER_VERSION: 0.21.7
+          DAGGER_VERSION: 0.21.8
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"
@@ -129,3 +129,19 @@ jobs:
           working-directory: ${{ matrix.module }}
           args: --config=${{ github.workspace }}/.golangci.yml
           only-new-issues: true
+
+      # Smoke tests: run the module's `task test-<module>` fixtures against the
+      # real container. Allowlisted rather than dynamic because several
+      # test-* tasks need secrets (SOPS_AGE_KEY, registry creds) that are not
+      # available here. Add a module once its task runs without secrets.
+      - name: Install Task
+        if: contains(fromJSON('["ansible", "terraform"]'), matrix.module)
+        run: |
+          set -euo pipefail
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- \
+            -d -b "$HOME/.local/bin"
+          task --version
+
+      - name: task test-${{ matrix.module }}
+        if: contains(fromJSON('["ansible", "terraform"]'), matrix.module)
+        run: task "test-${{ matrix.module }}"
