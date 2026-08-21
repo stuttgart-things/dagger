@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-
 )
 
 func (m *Terraform) Version(ctx context.Context) (string, error) {

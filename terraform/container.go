@@ -12,7 +12,7 @@ func (m *Terraform) container(ctx context.Context) (*dagger.Container, error) {
 		m.BaseImage = "cgr.dev/chainguard/wolfi-base:latest"
 	}
 
-	const terraformVersion = "1.12.1"
+	const terraformVersion = "1.15.9"
 	terraformURL := fmt.Sprintf("https://releases.hashicorp.com/terraform/%s/terraform_%s_linux_amd64.zip", terraformVersion, terraformVersion)
 
 	ctr := dag.Container().
