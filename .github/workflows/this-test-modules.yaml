@@ -130,18 +130,15 @@ jobs:
           args: --config=${{ github.workspace }}/.golangci.yml
           only-new-issues: true
 
-      # Smoke tests: run the module's `task test-<module>` fixtures against the
-      # real container. Allowlisted rather than dynamic because several
-      # test-* tasks need secrets (SOPS_AGE_KEY, registry creds) that are not
-      # available here. Add a module once its task runs without secrets.
-      - name: Install Task
+      # Smoke tests: run the module's fixtures against the real container.
+      # Invoked as scripts rather than via `task` because the Taskfile has a
+      # remote `includes:` that Task refuses to load non-interactively
+      # ("not trusted by user"), and auto-trusting a mutable remote ref in CI
+      # is not worth it. `task test-<module>` runs the same scripts locally.
+      #
+      # Allowlisted rather than dynamic because several modules' tests need
+      # secrets (SOPS_AGE_KEY, registry creds) unavailable here. Add a module
+      # once tests/smoke/<module>.sh exists and runs without secrets.
+      - name: smoke test ${{ matrix.module }}
         if: contains(fromJSON('["ansible", "terraform"]'), matrix.module)
-        run: |
-          set -euo pipefail
-          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- \
-            -d -b "$HOME/.local/bin"
-          task --version
-
-      - name: task test-${{ matrix.module }}
-        if: contains(fromJSON('["ansible", "terraform"]'), matrix.module)
-        run: task "test-${{ matrix.module }}"
+        run: ./tests/smoke/${{ matrix.module }}.sh

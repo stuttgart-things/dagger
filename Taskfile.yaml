@@ -405,81 +405,12 @@ tasks:
   test-ansible:
     desc: Test ansible functions
     cmds:
-      # ASSERT THE CONTAINER SHIPS THE PINNED ANSIBLE. THE EXPECTED VERSION IS
-      # READ FROM defaultAnsibleVersion SO THE PIN STAYS SINGLE-SOURCED.
-      - |
-        set -euo pipefail
-        expected=$(sed -n 's/.*defaultAnsibleVersion = "\(.*\)".*/\1/p' {{ .MODULE }}/container.go)
-        if [ -z "${expected}" ]; then
-          echo "FAIL: could not read defaultAnsibleVersion from {{ .MODULE }}/container.go"
-          exit 1
-        fi
-        actual=$(dagger call -m {{ .MODULE }} version)
-        echo "${actual}"
-        if ! echo "${actual}" | grep -q "^ansible package: ${expected}$"; then
-          echo "FAIL: expected ansible package ${expected}"
-          exit 1
-        fi
-        echo "OK: ansible ${expected}"
-
-      - |
-        dagger call -m {{ .MODULE }} execute \
-        --src . \
-        --playbooks tests/ansible/hello.yaml,tests/ansible/hello2.yaml \
-        -vv --progress plain
-
-      - |
-        rm -rf {{ .OUTPUT_COLLECTION_FOLDER }} || true
-        dagger call -m ./{{ .MODULE }} run-collection-build-pipeline \
-        --src {{ .TEST_ANSIBLE_CODE }} \
-        --progress plain export \
-        --path={{ .OUTPUT_COLLECTION_FOLDER }}
-        ls -lta {{ .OUTPUT_COLLECTION_FOLDER }}
-    vars:
-      TEST_ANSIBLE_CODE: tests/ansible/collection # tests/ansible/collection #tests
-      MODULE: ansible
-      OUTPUT_COLLECTION_FOLDER: /tmp/dagger/ansible
+      - ./tests/smoke/ansible.sh
 
   test-terraform:
     desc: Test terraform functions
     cmds:
-      # ASSERT THE CONTAINER SHIPS THE PINNED TERRAFORM. THE EXPECTED VERSION IS
-      # READ FROM terraformVersion SO THE PIN STAYS SINGLE-SOURCED.
-      - |
-        set -euo pipefail
-        expected=$(sed -n 's/.*const terraformVersion = "\(.*\)".*/\1/p' {{ .MODULE }}/container.go)
-        if [ -z "${expected}" ]; then
-          echo "FAIL: could not read terraformVersion from {{ .MODULE }}/container.go"
-          exit 1
-        fi
-        actual=$(dagger call -m {{ .MODULE }} version)
-        echo "${actual}"
-        if ! echo "${actual}" | grep -q "^Terraform v${expected}$"; then
-          echo "FAIL: expected Terraform v${expected}"
-          exit 1
-        fi
-        echo "OK: terraform ${expected}"
-      - |
-        dagger call -m {{ .MODULE }} \
-        execute \
-        --terraform-dir {{ .TEST_TERRAFORM_CODE }} \
-        --operation apply \
-        -vv --progress plain \
-        export --path={{ .OUTPUT_STATE_FOLDER }}
-      - |
-        dagger call -m {{ .MODULE }} \
-        output \
-        --terraform-dir {{ .TEST_TERRAFORM_CODE }} \
-        -vv --progress plain
-      - |
-        dagger call -m {{ .MODULE }} \
-        execute --operation destroy \
-        --terraform-dir {{ .OUTPUT_STATE_FOLDER }} \
-        -vv --progress plain
-    vars:
-      TEST_TERRAFORM_CODE: tests/terraform
-      MODULE: terraform
-      OUTPUT_STATE_FOLDER: /tmp/dagger/{{ .MODULE }}
+      - ./tests/smoke/terraform.sh
 
   test-kyverno:
     desc: Test Kyverno
