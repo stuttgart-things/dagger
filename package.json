@@ -1,5 +1,10 @@
 {
-  "dependencies": {
-    "@semantic-release/changelog": "^7.0.0"
+  "name": "stuttgart-things-dagger",
+  "private": true,
+  "description": "Release tooling for the dagger module monorepo. Not published.",
+  "devDependencies": {
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^10.0.1",
+    "semantic-release": "^24.2.9"
   }
 }

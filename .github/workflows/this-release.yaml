@@ -1,0 +1,59 @@
+---
+name: Release
+
+# Cuts a release from main with semantic-release: tag, GitHub release,
+# CHANGELOG update and the `chore(release)` bump commit.
+#
+# Until now this repo had no release workflow at all -- every release was cut
+# by hand with `npx semantic-release --no-ci`, which only worked on a machine
+# that happened to have the plugins installed globally. The plugins are now
+# declared in package.json, so `npm ci` gives a reproducible run here.
+#
+# No loop: semantic-release's own commit carries `[skip ci]`, and pushes made
+# with GITHUB_TOKEN do not trigger workflows anyway.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Never cut two releases at once; queue instead of cancelling, so a run that
+# is midway through tagging is not killed.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write # tag, release, push the bump commit
+  issues: write # comment on released issues
+  pull-requests: write # comment on and label released PRs
+
+jobs:
+  release:
+    name: semantic-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # semantic-release reads the whole tag history to work out the
+          # previous version.
+          fetch-depth: 0
+          # Leave the token out of .git/config so @semantic-release/git pushes
+          # with GITHUB_TOKEN rather than the checkout credentials.
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install release tooling
+        run: npm ci
+
+      - name: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release

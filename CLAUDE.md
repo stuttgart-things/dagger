@@ -16,19 +16,33 @@ Commit prefix → bump:
 - `BREAKING CHANGE:` footer or `feat!:` → major
 - `chore:`, `docs:`, `refactor:`, `test:` → no release
 
+`ci:`, `build:`, `style:`, `perf:` follow the angular preset too — only
+`perf:` releases (patch).
+
 ### Standard flow (CI cuts the release)
 
 1. Branch off `main` with `fix/<slug>` or `feat/<slug>`.
 2. Commit with a conventional message. Scope by module: `fix(kcl): ...`.
 3. `gh pr create --base main`, merge when green.
-4. CI runs semantic-release and publishes the tag + GitHub release + `chore(release)` bump commit. No manual step.
+4. `.github/workflows/this-release.yaml` runs semantic-release on the push to
+   `main` and publishes the tag + GitHub release + `chore(release)` bump
+   commit. No manual step.
+
+The bump commit carries `[skip ci]`, and pushes made with `GITHUB_TOKEN` do
+not trigger workflows, so the release does not re-trigger itself.
 
 ### Local release (when CI is down or you need to force a cut)
 
 ```bash
 git checkout main && git pull
+npm ci
 npx semantic-release --debug --no-ci
 ```
+
+`npm ci` is not optional. `.releaserc` uses `@semantic-release/changelog` and
+`@semantic-release/git`, neither of which ships with semantic-release; both
+are declared in `package.json`. Skipping `npm ci` only appears to work on a
+machine that has them installed globally — elsewhere plugin resolution fails.
 
 Requires `GITHUB_TOKEN` in env. `--no-ci` bypasses the CI-env guard; semantic-release still refuses to run on a dirty tree or non-release branch.
 
