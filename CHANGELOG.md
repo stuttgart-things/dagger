@@ -1,3 +1,10 @@
+# [0.126.0](https://github.com/stuttgart-things/dagger/compare/v0.125.0...v0.126.0) (2026-08-21)
+
+
+### Features
+
+* **ansible:** install the kubernetes python library in the container ([#333](https://github.com/stuttgart-things/dagger/issues/333)) ([117dafb](https://github.com/stuttgart-things/dagger/commit/117dafb5fa4f22c1c020470f822590aa97b74d58))
+
 # [0.125.0](https://github.com/stuttgart-things/dagger/compare/v0.124.0...v0.125.0) (2026-08-21)
 
 
