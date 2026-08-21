@@ -59,7 +59,13 @@ func (m *Ansible) container(
 		"ansible==" + version,
 		"hvac",
 		"passlib",
-		"jmespath"})
+		"jmespath",
+		// Runtime dependency of the kubernetes.core collection, which ships with
+		// ansible but is unusable without it: every module fails with "Failed to
+		// import the required Python library (kubernetes)". Needed by playbooks
+		// like sthings.container.kind_secrets that talk to a cluster through
+		// kubernetes.core rather than kubectl.
+		"kubernetes"})
 
 	// Create ansible.cfg with proper settings
 	ctr = ctr.WithNewFile("/etc/ansible/ansible.cfg", `[defaults]
