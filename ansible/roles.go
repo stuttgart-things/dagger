@@ -11,9 +11,8 @@ import (
 func (m *Ansible) ModifyRoleIncludes(
 	ctx context.Context,
 	src *dagger.Directory,
-	// The Ansible version
+	// The Ansible version, defaults to defaultAnsibleVersion
 	// +optional
-	// +default="11.11.0"
 	ansibleVersion string,
 ) *dagger.Directory {
 

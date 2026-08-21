@@ -4,20 +4,31 @@ import (
 	"dagger/ansible/internal/dagger"
 )
 
+// defaultAnsibleVersion is the single pin for the Ansible release installed into
+// the module container. Bump it here; every function picks it up.
+const defaultAnsibleVersion = "14.3.1"
+
 func (m *Ansible) container(
 	// The base image
 	// +optional
 	// +default="cgr.dev/chainguard/wolfi-base:latest"
 	baseImage string,
-	// The Ansible version
+	// The Ansible version, defaults to defaultAnsibleVersion
 	// +optional
-	// +default="11.11.0"
 	version string,
 ) *dagger.Container {
 
+	if baseImage == "" {
+		baseImage = "cgr.dev/chainguard/wolfi-base:latest"
+	}
+
+	if version == "" {
+		version = defaultAnsibleVersion
+	}
+
 	ctr := dag.
 		Container().
-		From("cgr.dev/chainguard/wolfi-base:latest")
+		From(baseImage)
 
 	// INSTALL BASE PACKAGES + ANSIBLE DEPENDENCIES WITH WOLFI-COMPATIBLE NAMES
 	ctr = ctr.WithExec([]string{
