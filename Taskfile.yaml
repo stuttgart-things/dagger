@@ -405,52 +405,12 @@ tasks:
   test-ansible:
     desc: Test ansible functions
     cmds:
-      - |
-        dagger call -m {{ .MODULE }} execute \
-        --src . \
-        --playbooks tests/ansible/hello.yaml,tests/ansible/hello2.yaml \
-        -vv --progress plain
-
-      - |
-        rm -rf {{ .OUTPUT_COLLECTION_FOLDER }} || true
-        dagger call -m ./{{ .MODULE }} run-collection-build-pipeline \
-        --src {{ .TEST_ANSIBLE_CODE }} \
-        --progress plain export \
-        --path={{ .OUTPUT_COLLECTION_FOLDER }}
-        ls -lta {{ .OUTPUT_COLLECTION_FOLDER }}
-    vars:
-      TEST_ANSIBLE_CODE: tests/ansible/collection # tests/ansible/collection #tests
-      MODULE: ansible
-      OUTPUT_COLLECTION_FOLDER: /tmp/dagger/ansible
+      - ./tests/smoke/ansible.sh
 
   test-terraform:
     desc: Test terraform functions
     cmds:
-      - |
-        dagger call -m {{ .MODULE }} \
-        version \
-        -vv --progress plain
-      - |
-        dagger call -m {{ .MODULE }} \
-        execute \
-        --terraform-dir {{ .TEST_TERRAFORM_CODE }} \
-        --operation apply \
-        -vv --progress plain \
-        export --path={{ .OUTPUT_STATE_FOLDER }}
-      - |
-        dagger call -m {{ .MODULE }} \
-        output \
-        --terraform-dir {{ .TEST_TERRAFORM_CODE }} \
-        -vv --progress plain
-      - |
-        dagger call -m {{ .MODULE }} \
-        execute --operation destroy \
-        --terraform-dir {{ .OUTPUT_STATE_FOLDER }} \
-        -vv --progress plain
-    vars:
-      TEST_TERRAFORM_CODE: tests/terraform
-      MODULE: terraform
-      OUTPUT_STATE_FOLDER: /tmp/dagger/{{ .MODULE }}
+      - ./tests/smoke/terraform.sh
 
   test-kyverno:
     desc: Test Kyverno

@@ -127,9 +127,8 @@ func (m *Ansible) Execute(
 	sshUser *dagger.Secret,
 	// +optional
 	sshPassword *dagger.Secret,
-	// The Ansible version
+	// The Ansible version, defaults to defaultAnsibleVersion
 	// +optional
-	// +default="11.11.0"
 	ansibleVersion string,
 ) (bool, error) {
 
@@ -166,9 +165,8 @@ func (m *Ansible) ExecuteAndExport(
 	sshUser *dagger.Secret,
 	// +optional
 	sshPassword *dagger.Secret,
-	// The Ansible version
+	// The Ansible version, defaults to defaultAnsibleVersion
 	// +optional
-	// +default="11.11.0"
 	ansibleVersion string,
 ) (*dagger.Directory, error) {
 

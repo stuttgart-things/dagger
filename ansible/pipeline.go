@@ -11,9 +11,8 @@ import (
 func (m *Ansible) RunCollectionBuildPipeline(
 	ctx context.Context,
 	src *dagger.Directory,
-	// The Ansible version
+	// The Ansible version, defaults to defaultAnsibleVersion
 	// +optional
-	// +default="11.11.0"
 	ansibleVersion string,
 	// Collection version, passed through to InitCollection. Falls back to a
 	// generated calendar version, which is NOT monotonic.
