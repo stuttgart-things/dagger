@@ -24,7 +24,7 @@ func (m *Ansible) RunCollectionBuildPipeline(
 	// INIT COLLECTION
 	collection, err := m.InitCollection(ctx, src, version)
 	if err != nil {
-		fmt.Println("Failed to initialize collection: %v", err)
+		return nil, fmt.Errorf("failed to initialize collection: %w", err)
 	}
 	fmt.Println("Collection initialized with namespace:", collection.Namespace, "and name:", collection.Name)
 
