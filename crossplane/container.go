@@ -68,8 +68,14 @@ const (
 // publishes a usable checksum, is executed as a final gate, and is retried as
 // a whole on any failure.
 //
-//	core  STRICT   releases.crossplane.io publishes a matching sha256
-//	              (verified 2026-08-21: dfe07a50… published == served).
+//	core  STRICT   releases.crossplane.io publishes a matching sha256 for the
+//	              pinned release (verified 2026-08-21: dfe07a50… published ==
+//	              served). NOTE: older core releases do NOT verify — v2.2.2
+//	              serves df012171… while publishing 336aabd0…, so pinning
+//	              crossplaneCoreVersion back below v2.3 makes this install
+//	              refuse with a checksum error. That is the right outcome for
+//	              the wrong-looking reason: those cores have no `internal
+//	              render` either, so they could never serve this purpose.
 //	CLI   WARN     cli.crossplane.io publishes a sha256 that does NOT match
 //	              the served binary — and not through CDN mangling: the
 //	              checksum shipped INSIDE the official bundle tarball
