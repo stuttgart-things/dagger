@@ -196,11 +196,23 @@ func (m *Kcl) Run(
 	// line, flattening nested lists like a Dapr Component's `spec.metadata`
 	// into top-level keys, which then breaks downstream yq-based tooling).
 	//
-	// Detect multi-doc output and pass it through unchanged.
+	// Detect output that is already a rendered manifest and pass it through
+	// unchanged.
+	//
+	// The leading-`---` test alone is not enough: a module that renders a
+	// single resource emits a document that starts directly with
+	// `apiVersion:` and contains no `---` at all. That fell through to the
+	// sed pipeline below, where `sed '1d'` removed the apiVersion line and
+	// `sed 's/^  //'` flattened metadata and spec into top-level keys -- the
+	// manifest still looked plausible but no longer applied. A top-level
+	// `apiVersion:` at column 0 is only possible when the document is already
+	// flat, because in the items-list shape every resource key is indented
+	// underneath `- `.
 	if formatOutput {
 		postProcess := `
-  if head -c 4 /output.yaml | grep -q '^---' || grep -q '^---[[:space:]]*$' /output.yaml; then
-    # kcl already produced multi-document YAML (e.g. via manifests.yaml_stream).
+  if head -c 4 /output.yaml | grep -q '^---' || grep -q '^---[[:space:]]*$' /output.yaml || grep -q '^apiVersion:' /output.yaml; then
+    # kcl already produced a rendered manifest (multi-document via
+    # manifests.yaml_stream, or a single document starting with apiVersion).
     # Pass through unchanged — the sed pipeline below would corrupt it.
     cp /output.yaml /output-processed.yaml
   else
