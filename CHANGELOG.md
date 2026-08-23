@@ -1,3 +1,10 @@
+## [0.126.1](https://github.com/stuttgart-things/dagger/compare/v0.126.0...v0.126.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* **kcl:** run mit formatOutput zerstoerte einzelne Manifeste ([#334](https://github.com/stuttgart-things/dagger/issues/334)) ([ddeb614](https://github.com/stuttgart-things/dagger/commit/ddeb614d2a13f1e91860b8986811807b0e388a33))
+
 # [0.126.0](https://github.com/stuttgart-things/dagger/compare/v0.125.0...v0.126.0) (2026-08-21)
 
 
