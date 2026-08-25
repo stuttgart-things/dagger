@@ -1,3 +1,10 @@
+# [0.127.0](https://github.com/stuttgart-things/dagger/compare/v0.126.1...v0.127.0) (2026-08-25)
+
+
+### Features
+
+* add idempotent reserve-ip and https support to clusterbook module ([#335](https://github.com/stuttgart-things/dagger/issues/335)) ([06a1d21](https://github.com/stuttgart-things/dagger/commit/06a1d21cdf5a49b692cdeca2c25fe423cb6f74a6))
+
 ## [0.126.1](https://github.com/stuttgart-things/dagger/compare/v0.126.0...v0.126.1) (2026-08-23)
 
 
