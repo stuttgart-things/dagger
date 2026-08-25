@@ -2,7 +2,16 @@
 
 Thin Dagger wrapper around the [clusterbook](https://github.com/stuttgart-things/clusterbook) HTTP API for managing cluster IP allocations. Use it from CI to query networks, allocate IPs to a cluster, and release them on teardown.
 
-All functions take `--server <host:port>` (HTTP) and return the raw JSON response from the server.
+All functions take `--server` and return the raw JSON response from the server.
+
+`--server` accepts either a bare `host:port` (assumed `http://`, the historical
+behaviour) or a full URL. Pass `--insecure` **before** the function name when the
+server is behind a certificate signed by an internal CA:
+
+```bash
+dagger call -m clusterbook --insecure list-networks \
+  --server https://clusterbook.infra.sthings-vsphere.labul.sva.de
+```
 
 ## Functions
 
@@ -24,7 +33,8 @@ All functions take `--server <host:port>` (HTTP) and return the raw JSON respons
 ### IPs
 | Function | Purpose |
 |----------|---------|
-| `assign-ip` | Assign an IP to a cluster (`PENDING` or `ASSIGNED`), optionally creating a DNS record. |
+| `assign-ip` | Assign a **specific** IP to a cluster (`PENDING` or `ASSIGNED`), optionally creating a DNS record. |
+| `reserve-ip` | Allocate the **next free** IP to a cluster, optionally creating its wildcard DNS record. Idempotent. |
 | `release-ip` | Release an IP back to the pool. |
 | `add-ips` | Add IPs to an existing network. |
 | `delete-ip` | Remove an IP from a network. |
@@ -66,3 +76,27 @@ dagger call -m clusterbook list-networks --server $CB
 dagger call -m clusterbook get-network-ips --server $CB --network-key 10.31.103
 dagger call -m clusterbook get-cluster --server $CB --cluster-name sthings-app-4
 ```
+
+## reserve-ip
+
+Picks the next free address in a pool and, with `--create-dns`, has clusterbook
+write the wildcard `*.{cluster}.{zone}` for it — IPAM and DNS in one call.
+
+```bash
+dagger call -m clusterbook --insecure reserve-ip \
+  --server https://clusterbook.infra.sthings-vsphere.labul.sva.de \
+  --network-key 10.31.104 \
+  --cluster my-cluster \
+  --create-dns
+# → {"cluster":"my-cluster","digit":"15","ip":"10.31.104.15","reused":false,"status":"ASSIGNED:DNS"}
+```
+
+**It is idempotent, and that is the point.** The bare `POST /reserve` endpoint
+hands out a *new* address on every call, so a pipeline retry silently leaks an
+IP and a second DNS record — with nothing anywhere reporting a failure.
+`reserve-ip` first asks whether the cluster already holds an address in that
+network and returns it if so, marked `"reused": true`. Both paths return the
+same five keys, so a caller never has to know which one ran.
+
+Use `assign-ip` instead when the address is already decided; use `reserve-ip`
+when clusterbook should decide.
