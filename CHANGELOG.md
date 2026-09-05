@@ -1,3 +1,10 @@
+## [0.128.5](https://github.com/stuttgart-things/dagger/compare/v0.128.4...v0.128.5) (2026-09-05)
+
+
+### Bug Fixes
+
+* **deps:** require go 1.26.5 in all modules ([#347](https://github.com/stuttgart-things/dagger/issues/347)) ([d9d6f1d](https://github.com/stuttgart-things/dagger/commit/d9d6f1dbd0b6135d10a1fb0277bca7e2640480fe)), closes [#27](https://github.com/stuttgart-things/dagger/issues/27)
+
 ## [0.128.4](https://github.com/stuttgart-things/dagger/compare/v0.128.3...v0.128.4) (2026-09-05)
 
 
