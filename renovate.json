@@ -5,5 +5,17 @@
   ],
   "ignorePaths": [
     "tests/go/vulnerable/**"
+  ],
+  "packageRules": [
+    {
+      "description": "The otel log packages are pinned via `replace` directives written by the Dagger SDK codegen. github.com/dagger/otel-go uses log.KeyValue and log.Value, which v0.22.0 removed, so bumping these breaks every module. Renovate cannot tell a deliberate pin from a stale one. See #27.",
+      "matchPackageNames": [
+        "go.opentelemetry.io/otel/log",
+        "go.opentelemetry.io/otel/sdk/log",
+        "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc",
+        "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+      ],
+      "enabled": false
+    }
   ]
 }
