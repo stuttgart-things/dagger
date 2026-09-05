@@ -1,3 +1,10 @@
+## [0.129.2](https://github.com/stuttgart-things/dagger/compare/v0.129.1...v0.129.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* **ci:** upgrade Dagger engine to v0.21.9 and Go to 1.26.7 ([#352](https://github.com/stuttgart-things/dagger/issues/352)) ([f4c73f9](https://github.com/stuttgart-things/dagger/commit/f4c73f931537bca7600e54f5cd2c9da137eb14fd)), closes [#347](https://github.com/stuttgart-things/dagger/issues/347) [#350](https://github.com/stuttgart-things/dagger/issues/350)
+
 ## [0.129.1](https://github.com/stuttgart-things/dagger/compare/v0.129.0...v0.129.1) (2026-09-05)
 
 
