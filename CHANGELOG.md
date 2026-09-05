@@ -1,3 +1,10 @@
+## [0.127.3](https://github.com/stuttgart-things/dagger/compare/v0.127.2...v0.127.3) (2026-09-05)
+
+
+### Bug Fixes
+
+* **ci:** align engineVersion across all modules and guard against drift ([#341](https://github.com/stuttgart-things/dagger/issues/341)) ([691556a](https://github.com/stuttgart-things/dagger/commit/691556a7e356df11d7acf588a9edb1058c511919)), closes [#338](https://github.com/stuttgart-things/dagger/issues/338)
+
 ## [0.127.2](https://github.com/stuttgart-things/dagger/compare/v0.127.1...v0.127.2) (2026-09-05)
 
 
