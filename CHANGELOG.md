@@ -1,3 +1,10 @@
+## [0.128.3](https://github.com/stuttgart-things/dagger/compare/v0.128.2...v0.128.3) (2026-09-05)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/vektah/gqlparser/v2 to v2.5.37 ([#306](https://github.com/stuttgart-things/dagger/issues/306)) ([767c88d](https://github.com/stuttgart-things/dagger/commit/767c88dce1b4689a89573ecbd5b07741fe054604))
+
 ## [0.128.2](https://github.com/stuttgart-things/dagger/compare/v0.128.1...v0.128.2) (2026-09-05)
 
 
