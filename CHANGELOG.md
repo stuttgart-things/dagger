@@ -1,3 +1,10 @@
+## [0.129.1](https://github.com/stuttgart-things/dagger/compare/v0.129.0...v0.129.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **ci:** move repository linting off its v0.19.3 pin ([#356](https://github.com/stuttgart-things/dagger/issues/356)) ([c9e4fa1](https://github.com/stuttgart-things/dagger/commit/c9e4fa1173f9b3b915edcd9e7689452fadb76560)), closes [#352](https://github.com/stuttgart-things/dagger/issues/352)
+
 # [0.129.0](https://github.com/stuttgart-things/dagger/compare/v0.128.6...v0.129.0) (2026-09-05)
 
 
