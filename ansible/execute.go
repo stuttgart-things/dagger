@@ -59,7 +59,7 @@ func (m *Ansible) executePlaybooks(
 	// because a []Secret parameter cannot be passed from the dagger CLI: even a
 	// well-formed env://NAME is rejected with "malformed secret config at index
 	// 0", while the same URI works for a scalar Secret.
-	if envSecrets != nil {
+	if envSecrets != nil { // pragma: allowlist secret
 		dotenv, err := envSecrets.Plaintext(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read env secrets: %w", err)
