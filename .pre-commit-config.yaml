@@ -67,11 +67,19 @@ repos:
         language: python
         # for backward compatibility
         files: .*  # all files
-        args: ["--exclude-files", "git/dagger.json|tests/vm/terraform.tfvars.enc.json|repository-linting/dagger.json",
+        # Files that legitimately contain high-entropy strings. A dagger.json
+        # is listed because the `pin` field is a 40-char commit hash, which
+        # trips the hex-entropy plugin. Prefer an inline
+        # `# pragma: allowlist secret` for a single line; a file-level exclude
+        # here hides every future finding in that file too.
+        #
+        # `--exclude-files` is argparse action='append', so repeating the flag
+        # accumulates. Each value is a regex matched against the path.
+        args: ["--exclude-files", "git/dagger.json",
                "--exclude-files", "ansible/dagger.json",
                "--exclude-files", "argocd/dagger.json",
                "--exclude-files", "go/dagger.json",
-               "--exclude-files", hugo/dagger.json",
+               "--exclude-files", "hugo/dagger.json",
                "--exclude-files", "tests/sops/tfvars.json",
                "--exclude-files", "hugo/dagger.gen.go"
                ]
