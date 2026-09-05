@@ -1,3 +1,10 @@
+## [0.128.6](https://github.com/stuttgart-things/dagger/compare/v0.128.5...v0.128.6) (2026-09-05)
+
+
+### Bug Fixes
+
+* **deps:** bump otel otlp exporters to v1.46.0 ([#350](https://github.com/stuttgart-things/dagger/issues/350)) ([79a7345](https://github.com/stuttgart-things/dagger/commit/79a73453d492af6b87cb205540824dbd395de277)), closes [#27](https://github.com/stuttgart-things/dagger/issues/27)
+
 ## [0.128.5](https://github.com/stuttgart-things/dagger/compare/v0.128.4...v0.128.5) (2026-09-05)
 
 
