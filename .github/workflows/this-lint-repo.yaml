@@ -21,7 +21,7 @@ jobs:
       app-directory: "./"
       output-file: "/tmp/dagger-linting-findings.txt"
       continue-error: "true"
-      dagger-version: v0.19.3
-      dagger-module-version: v1.17.0
+      dagger-version: 0.21.9
+      dagger-module-version: v3.2.1
       branch-name: ${{ github.head_ref || github.ref_name }}
     secrets: inherit # pragma: allowlist secret
