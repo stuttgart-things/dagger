@@ -40,7 +40,7 @@ func (m *Trivy) ScanFilesystem(
 	}
 
 	// Extract parsed vulnerabilities
-	vulns, err := report.SearchVulnerabilities(ctx, reportStr, severity)
+	vulns, err := report.SearchSecrets(ctx, reportStr, severity)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse vulnerabilities: %w", err)
 	}
