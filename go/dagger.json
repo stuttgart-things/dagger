@@ -1,24 +1,14 @@
 {
   "name": "go",
-  "engineVersion": "v0.21.7",
+  "engineVersion": "v0.21.8",
   "sdk": {
     "source": "go"
   },
   "dependencies": [
     {
-      "name": "docker",
-      "source": "github.com/purpleclay/daggerverse/docker@docker/v0.6.0",
-      "pin": "2a439e2b327ff561bea05a4edddd5276ac42407f"
-    },
-    {
       "name": "golangci-lint",
       "source": "github.com/sagikazarmark/daggerverse/golangci-lint@b45dbd7448bb967aca4a538af9ce7f042abf0316",
       "pin": "b45dbd7448bb967aca4a538af9ce7f042abf0316"
-    },
-    {
-      "name": "trivy",
-      "source": "github.com/luanmtruong/daggerverse/trivy@main",
-      "pin": "96c13b929c636316317f745ff36cda4e4c66f680"
     }
   ]
 }
