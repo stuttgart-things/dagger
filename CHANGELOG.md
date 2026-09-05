@@ -1,3 +1,10 @@
+## [0.129.4](https://github.com/stuttgart-things/dagger/compare/v0.129.3...v0.129.4) (2026-09-05)
+
+
+### Bug Fixes
+
+* **tests:** repair the curl pin in the valid Dockerfile fixture ([#357](https://github.com/stuttgart-things/dagger/issues/357)) ([fa8303e](https://github.com/stuttgart-things/dagger/commit/fa8303e71816e47a172d5f012c3b74e117b43ed9)), closes [#349](https://github.com/stuttgart-things/dagger/issues/349)
+
 ## [0.129.3](https://github.com/stuttgart-things/dagger/compare/v0.129.2...v0.129.3) (2026-09-05)
 
 
