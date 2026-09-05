@@ -1,3 +1,10 @@
+## [0.128.4](https://github.com/stuttgart-things/dagger/compare/v0.128.3...v0.128.4) (2026-09-05)
+
+
+### Bug Fixes
+
+* **deps:** bump otel core to v1.46.0, keep the SDK's log pins ([#27](https://github.com/stuttgart-things/dagger/issues/27)) ([3510388](https://github.com/stuttgart-things/dagger/commit/3510388b64073cfb79f23d00998a811b74dec0d0)), closes [#72](https://github.com/stuttgart-things/dagger/issues/72) [#306](https://github.com/stuttgart-things/dagger/issues/306) [#72](https://github.com/stuttgart-things/dagger/issues/72) [#306](https://github.com/stuttgart-things/dagger/issues/306)
+
 ## [0.128.3](https://github.com/stuttgart-things/dagger/compare/v0.128.2...v0.128.3) (2026-09-05)
 
 
