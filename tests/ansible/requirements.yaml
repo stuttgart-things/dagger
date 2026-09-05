@@ -15,7 +15,7 @@ collections:
   - name: awx.awx
     version: 24.6.1
   - name: community.hashi_vault
-    version: 6.2.0
+    version: 6.2.1
   - name: ansible.netcommon
     version: 8.0.0
   - name: https://github.com/stuttgart-things/ansible/releases/download/sthings-container-25.4.425.tar.gz/sthings-container-25.4.425.tar.gz
