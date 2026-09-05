@@ -6,7 +6,7 @@ releases:
   - name: postgresserver
     namespace: test2
     chart: bitnami/postgresql
-    version: 18.6.2
+    version: 18.8.17
     createNamespace: true
     values:
       - postgresqlPassword: supersecurepassword # pragma: allowlist secret
