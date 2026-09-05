@@ -14,11 +14,59 @@ on:
 # in the PR/push so schema or flag regressions (e.g. flag-name
 # collisions inside a module) surface before release. Tracked in
 # https://github.com/stuttgart-things/dagger/issues/262 (P2.1).
+#
+# `engine-version` sits alongside it and covers what per-module testing
+# structurally cannot: an invariant that holds *between* modules. The
+# matrix below only ever sees changed modules, one at a time, so it
+# cannot notice that the module next door declares a different engine.
+# See https://github.com/stuttgart-things/dagger/issues/338.
 
 permissions:
   contents: read
 
 jobs:
+  engine-version:
+    name: engineVersion agreement
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Every module must declare the same engineVersion. Deliberately
+      # does NOT pin the expected value: a bump PR should be able to move
+      # all modules together without also editing this workflow. What is
+      # rejected is *disagreement* -- one module drifting away from the
+      # rest, which is how https://github.com/stuttgart-things/dagger/issues/338
+      # came back after being swept once in #264.
+      - name: All modules declare one engineVersion
+        run: |
+          set -euo pipefail
+
+          versions=$(jq -r '.engineVersion // "<missing>"' */dagger.json | sort -u)
+          count=$(printf '%s\n' "$versions" | wc -l)
+
+          if [[ "$count" -eq 1 ]]; then
+            echo "OK: all $(ls -d */dagger.json | wc -l) modules on ${versions}"
+            exit 0
+          fi
+
+          echo "::error::engineVersion drift: ${count} distinct values across */dagger.json"
+          echo
+          echo "Declared versions and the modules declaring them:"
+          for v in $versions; do
+            echo "  $v"
+            for f in */dagger.json; do
+              [[ "$(jq -r '.engineVersion // "<missing>"' "$f")" == "$v" ]] \
+                && echo "    - ${f%/dagger.json}"
+            done
+          done
+          echo
+          echo "Pick one version and set it in every */dagger.json."
+          echo "Note that 'dagger develop' rewrites engineVersion to the version"
+          echo "of the CLI that runs it, so a develop on an outdated CLI is a"
+          echo "common way for a single module to drift."
+          exit 1
+
   detect-modules:
     name: Detect changed modules
     runs-on: ubuntu-latest
