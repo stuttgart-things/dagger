@@ -1,3 +1,10 @@
+## [0.127.2](https://github.com/stuttgart-things/dagger/compare/v0.127.1...v0.127.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* **deps:** drop three unused module dependencies ([#340](https://github.com/stuttgart-things/dagger/issues/340)) ([c898af4](https://github.com/stuttgart-things/dagger/commit/c898af4007c3b736e4638417cd5c0610808469df)), closes [#339](https://github.com/stuttgart-things/dagger/issues/339)
+
 ## [0.127.1](https://github.com/stuttgart-things/dagger/compare/v0.127.0...v0.127.1) (2026-09-05)
 
 
