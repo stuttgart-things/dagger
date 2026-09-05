@@ -1,3 +1,10 @@
+# [0.129.0](https://github.com/stuttgart-things/dagger/compare/v0.128.6...v0.129.0) (2026-09-05)
+
+
+### Features
+
+* **trivy:** gate ScanImage on findings, and parse them for real ([#351](https://github.com/stuttgart-things/dagger/issues/351)) ([9e69829](https://github.com/stuttgart-things/dagger/commit/9e6982996a0383a162770732600df631b61b943c))
+
 ## [0.128.6](https://github.com/stuttgart-things/dagger/compare/v0.128.5...v0.128.6) (2026-09-05)
 
 
