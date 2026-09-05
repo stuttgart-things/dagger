@@ -1,6 +1,6 @@
 module dagger/kubernetes
 
-go 1.26.1
+go 1.26.5
 
 require (
 	github.com/Khan/genqlient v0.8.1
