@@ -155,7 +155,7 @@ jobs:
 
       - name: Install Dagger CLI
         env:
-          DAGGER_VERSION: 0.21.8
+          DAGGER_VERSION: 0.21.9
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"

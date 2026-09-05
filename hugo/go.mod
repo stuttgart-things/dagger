@@ -1,19 +1,18 @@
 module dagger/hugo
 
-go 1.26.5
+go 1.26.7
 
 require (
-	github.com/99designs/gqlgen v0.17.95
 	github.com/Khan/genqlient v0.8.1
 	github.com/dagger/otel-go v1.43.0
 	github.com/vektah/gqlparser/v2 v2.5.37
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/sdk v1.46.0
 	go.opentelemetry.io/otel/trace v1.46.0
-	golang.org/x/sync v0.22.0
 )
 
 require (
+	github.com/99designs/gqlgen v0.17.95 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.17.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.17.0 // indirect
@@ -26,6 +25,7 @@ require (
 	go.opentelemetry.io/otel/sdk/log v0.17.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.46.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
 	google.golang.org/grpc v1.83.1 // indirect
 )
 

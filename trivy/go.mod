@@ -1,6 +1,6 @@
 module dagger/trivy
 
-go 1.26.5
+go 1.26.7
 
 require (
 	github.com/Khan/genqlient v0.8.1
