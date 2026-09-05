@@ -1,3 +1,10 @@
+## [0.128.2](https://github.com/stuttgart-things/dagger/compare/v0.128.1...v0.128.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/gookit/validate to v1.6.0 ([#72](https://github.com/stuttgart-things/dagger/issues/72)) ([7b2e7a1](https://github.com/stuttgart-things/dagger/commit/7b2e7a1ec2b941fe6ff2861946dae9f6e31553a9)), closes [#310](https://github.com/stuttgart-things/dagger/issues/310)
+
 ## [0.128.1](https://github.com/stuttgart-things/dagger/compare/v0.128.0...v0.128.1) (2026-09-05)
 
 
