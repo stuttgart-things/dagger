@@ -1,3 +1,10 @@
+## [0.128.1](https://github.com/stuttgart-things/dagger/compare/v0.128.0...v0.128.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **ci:** repair the detect-secrets exclude list and allowlist a false positive ([#346](https://github.com/stuttgart-things/dagger/issues/346)) ([0ff2fd9](https://github.com/stuttgart-things/dagger/commit/0ff2fd93551912db310ddc6fae1c288b828fecb0))
+
 # [0.128.0](https://github.com/stuttgart-things/dagger/compare/v0.127.3...v0.128.0) (2026-09-05)
 
 
