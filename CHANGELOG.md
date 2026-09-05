@@ -1,3 +1,10 @@
+## [0.127.1](https://github.com/stuttgart-things/dagger/compare/v0.127.0...v0.127.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/99designs/gqlgen to v0.17.95 ([#336](https://github.com/stuttgart-things/dagger/issues/336)) ([e4a9653](https://github.com/stuttgart-things/dagger/commit/e4a96537e1edd358cac254793a11fd005db1a707))
+
 # [0.127.0](https://github.com/stuttgart-things/dagger/compare/v0.126.1...v0.127.0) (2026-08-25)
 
 
