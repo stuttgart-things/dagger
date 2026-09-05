@@ -594,9 +594,28 @@ tasks:
       - dagger call -m ./{{ .MODULE }} build-binary --src {{ .TEST_GO_CODE }} --goMainFile main.go --binName calc --progress plain export --path={{ .OUTPUT_DIR }} && ls -lta {{ .OUTPUT_DIR }} && rm -rf {{ .OUTPUT_DIR }}
       - dagger call -m ./{{ .MODULE }} ko-build --src {{ .TEST_GO_CODE }} --token=env:GITHUB_TOKEN --repo "{{ .KO_REPO }}" --ko-version {{ .KO_VERSION }} --push true --progress plain
       - dagger call -m ./{{ .MODULE }} security-scan --src {{ .TEST_GO_CODE }} --progress plain
+      - |
+        # happy path: a dependency-free tree has nothing reachable, so the
+        # gate must stay quiet and the report must still be exported.
+        dagger call -m ./{{ .MODULE }} \
+        govulncheck --src {{ .TEST_GO_CODE }} --fail-on-finding \
+        export --path={{ .VULN_REPORT_PATH }}
+      - |
+        # regression path: the fixture pins gopkg.in/yaml.v2 v2.2.1 and calls
+        # yaml.Unmarshal, so --fail-on-finding must fail the step. Run it in
+        # sarif as well: govulncheck exits 0 in machine formats even when it
+        # finds something, so this is what proves the text-mode gate pass is
+        # wired up. See #337.
+        ! dagger call -m ./{{ .MODULE }} \
+        govulncheck --src {{ .VULN_TEST_CODE }} --fail-on-finding
+      - |
+        ! dagger call -m ./{{ .MODULE }} \
+        govulncheck --src {{ .VULN_TEST_CODE }} --format sarif --fail-on-finding
     vars:
       MODULE: go
       TEST_GO_CODE: tests/go/calculator/
+      VULN_TEST_CODE: tests/go/vulnerable/
+      VULN_REPORT_PATH: /tmp/govulncheck.txt
       OUTPUT_DIR: /tmp/calc
       KO_REPO: ttl.sh #ghcr.io/stuttgart-things/dagger
       KO_VERSION: 3979dd70544adde24d336d5b605f4cf6f0ea9479 # pragma: allowlist secret
