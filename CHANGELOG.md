@@ -1,3 +1,10 @@
+# [0.128.0](https://github.com/stuttgart-things/dagger/compare/v0.127.3...v0.128.0) (2026-09-05)
+
+
+### Features
+
+* **go:** add Govulncheck for reachable vulnerability scanning ([#342](https://github.com/stuttgart-things/dagger/issues/342)) ([55c5dac](https://github.com/stuttgart-things/dagger/commit/55c5dac18288439a35b0d1c609d6d72b751a6aa4)), closes [#337](https://github.com/stuttgart-things/dagger/issues/337)
+
 ## [0.127.3](https://github.com/stuttgart-things/dagger/compare/v0.127.2...v0.127.3) (2026-09-05)
 
 
