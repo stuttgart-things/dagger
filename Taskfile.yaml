@@ -55,6 +55,7 @@ tasks:
       - task: test-templating
       - task: test-python
       - task: test-oci
+      - task: test-trivy
       - task: git:pr
       - semantic-release --dry-run
       - semantic-release --debug --no-ci
@@ -547,6 +548,36 @@ tasks:
       TEST_SLIDEV_EXTRAS: tests/slidev
       OUTPUT_SLIDEV_EXPORT: /tmp/dagger/slidev/out
       FORMAT: '{{ .FORMAT | default "pdf" }}'
+
+  test-trivy:
+    desc: Test trivy scanning functions
+    cmds:
+      - |
+        # happy path: a dependency-free tree has nothing to find, so the gate
+        # must stay quiet and the report must still be exported.
+        dagger call -m {{ .MODULE }} \
+        scan-filesystem --src {{ .CLEAN_SRC }} --fail-on-finding \
+        export --path={{ .FS_REPORT_PATH }}
+      - |
+        # the summary has to carry what the raw report carries. This is the
+        # regression that shipped: ParsedSummary was null while the report
+        # listed a HIGH CVE, because only secrets were ever parsed. See #355.
+        dagger call -m {{ .MODULE }} \
+        scan-filesystem --src {{ .VULN_SRC }} \
+        export --path={{ .FS_VULN_REPORT_PATH }}
+        test "$(jq '.ParsedSummary | length' {{ .FS_VULN_REPORT_PATH }})" -gt 0
+      - |
+        # regression path: the fixture pins gopkg.in/yaml.v2 v2.2.1, which
+        # trivy reports as a HIGH finding, so --fail-on-finding must fail the
+        # step. Without this the gate can silently never fire.
+        ! dagger call -m {{ .MODULE }} \
+        scan-filesystem --src {{ .VULN_SRC }} --fail-on-finding
+    vars:
+      MODULE: trivy
+      CLEAN_SRC: tests/go/calculator/
+      VULN_SRC: tests/go/vulnerable/
+      FS_REPORT_PATH: /tmp/trivy-fs-clean.json
+      FS_VULN_REPORT_PATH: /tmp/trivy-fs-vuln.json
 
   test-oci:
     desc: Test OCI functions (uses local zot registry, no credentials needed)
