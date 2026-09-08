@@ -82,7 +82,11 @@ func (m *Kcl) Run(
 	// Local source directory (optional if using OCI source)
 	// +optional
 	source *dagger.Directory,
-	// OCI source path (e.g., oci://ghcr.io/stuttgart-things/kcl-flux-instance)
+	// OCI source path (e.g., oci://ghcr.io/stuttgart-things/kcl-flux-instance).
+	// A version may be given as ?tag=0.3.0 or as an inline :0.3.0 -- the
+	// inline form is rewritten to the query form, because kcl reads the
+	// version only from a tag query parameter and would otherwise resolve to
+	// the newest published tag.
 	// +optional
 	ociSource string,
 	// KCL parameters as comma-separated key=value pairs
@@ -145,13 +149,12 @@ func (m *Kcl) Run(
 	// Build the kcl run command with --quiet and -o options
 	cmd := "kcl run --quiet "
 
-	// Add source (OCI or local entrypoint)
+	// Add source (OCI or local entrypoint). The source is single-quoted
+	// because normalizeOciSource emits a `?`, which is a shell glob character:
+	// an unmatched glob happens to pass through unchanged in this container's
+	// sh, but that is luck, not a guarantee.
 	if ociSource != "" {
-		// Normalize OCI source - add oci:// prefix if missing
-		if !strings.HasPrefix(ociSource, "oci://") {
-			ociSource = "oci://" + ociSource
-		}
-		cmd += ociSource
+		cmd += shellQuote(normalizeOciSource(ociSource))
 	} else {
 		cmd += entrypoint
 	}
@@ -241,4 +244,47 @@ func (m *Kcl) Run(
 
 	// Return raw YAML
 	return ctr.File("/output.yaml"), nil
+}
+
+// normalizeOciSource returns src as an oci:// reference, rewriting an inline
+// `:tag` into the `?tag=` query form that kcl actually honours.
+//
+// kcl parses an OCI source with url.Parse and reads the version only from a
+// `tag` query parameter (kpm, pkg/downloader/source.go, Oci.FromString). An
+// inline `:0.2.0` therefore stays part of the repository path and the
+// reference silently resolves to the newest published tag -- kcl even logs
+// "the latest version '0.3.0' will be downloaded" while the caller's string
+// still reads as pinned. Measured against ghcr.io/stuttgart-things/harvester-vm
+// on kcl 0.12.4. See stuttgart-things/kcl#231 and #237.
+//
+// Deliberately left alone:
+//   - a source that already carries a query, or a digest reference (@sha256:...)
+//   - a reference with no repository path at all, which cannot be a module
+//   - the colon in a registry port, which is why only the final path segment
+//     is examined: localhost:5000/foo/bar keeps its port
+func normalizeOciSource(src string) string {
+	const scheme = "oci://"
+
+	ref := strings.TrimPrefix(src, scheme)
+	if strings.ContainsAny(ref, "?@") {
+		return scheme + ref
+	}
+
+	slash := strings.LastIndex(ref, "/")
+	if slash < 0 {
+		return scheme + ref
+	}
+
+	name := ref[slash+1:]
+	colon := strings.LastIndex(name, ":")
+	if colon <= 0 || colon == len(name)-1 {
+		return scheme + ref
+	}
+
+	return scheme + ref[:slash+1] + name[:colon] + "?tag=" + name[colon+1:]
+}
+
+// shellQuote wraps s in single quotes for `sh -c`, escaping any it contains.
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'"'"'`) + "'"
 }
