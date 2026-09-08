@@ -1,3 +1,12 @@
+## [0.129.5](https://github.com/stuttgart-things/dagger/compare/v0.129.4...v0.129.5) (2026-09-08)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/redis/go-redis/v9 to v9.22.0 ([#365](https://github.com/stuttgart-things/dagger/issues/365)) ([4daabc6](https://github.com/stuttgart-things/dagger/commit/4daabc6c3e07071ba1993578a2a7b099fc3b05f9))
+* **kcl:** rewrite an inline :tag in an OCI source to the ?tag= form ([#369](https://github.com/stuttgart-things/dagger/issues/369)) ([8791f47](https://github.com/stuttgart-things/dagger/commit/8791f47a2706b646ae5466d8a1d9d7f160987b30)), closes [stuttgart-things/kcl#231](https://github.com/stuttgart-things/kcl/issues/231) [stuttgart-things/kcl#237](https://github.com/stuttgart-things/kcl/issues/237)
+* **trivy:** make ScanFilesystem parse vulnerabilities and gate on findings ([#360](https://github.com/stuttgart-things/dagger/issues/360)) ([92f6128](https://github.com/stuttgart-things/dagger/commit/92f612809848e13df733eaf5157ec1bc6f8484c1)), closes [#355](https://github.com/stuttgart-things/dagger/issues/355) [#351](https://github.com/stuttgart-things/dagger/issues/351)
+
 ## [0.129.4](https://github.com/stuttgart-things/dagger/compare/v0.129.3...v0.129.4) (2026-09-05)
 
 
