@@ -5,7 +5,7 @@ go 1.26.7
 require (
 	emperror.dev/errors v0.8.1
 	github.com/coreos/go-semver v0.3.1
-	github.com/creasty/defaults v1.8.0
+	github.com/creasty/defaults v1.10.0
 	github.com/dagger/otel-go v1.43.0
 	github.com/gookit/validate v1.6.0
 )
