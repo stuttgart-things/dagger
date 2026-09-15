@@ -1,3 +1,12 @@
+# [0.130.0](https://github.com/stuttgart-things/dagger/compare/v0.129.5...v0.130.0) (2026-09-15)
+
+
+### Features
+
+* **crane:** add Digest and SameDigest, and make Version pin crane ([#381](https://github.com/stuttgart-things/dagger/issues/381)) ([06cd2d4](https://github.com/stuttgart-things/dagger/commit/06cd2d48963c7174f7396dd3013d43615d2e8694)), closes [stuttgart-things/schmetterpause#177](https://github.com/stuttgart-things/schmetterpause/issues/177) [#179](https://github.com/stuttgart-things/dagger/issues/179) [#378](https://github.com/stuttgart-things/dagger/issues/378)
+* **kyverno:** add Test and pin the CLI per call ([#382](https://github.com/stuttgart-things/dagger/issues/382)) ([e344519](https://github.com/stuttgart-things/dagger/commit/e3445199fde8f550eb8e200ea5e55297b8fdbffb)), closes [#379](https://github.com/stuttgart-things/dagger/issues/379)
+* **trivy:** add Sbom for one platform of a digest-pinned image ([#380](https://github.com/stuttgart-things/dagger/issues/380)) ([7912175](https://github.com/stuttgart-things/dagger/commit/7912175fabe8f7199b2c7471dbd6afa9985a35da)), closes [stuttgart-things/schmetterpause#230](https://github.com/stuttgart-things/schmetterpause/issues/230) [#377](https://github.com/stuttgart-things/dagger/issues/377)
+
 ## [0.129.5](https://github.com/stuttgart-things/dagger/compare/v0.129.4...v0.129.5) (2026-09-08)
 
 
