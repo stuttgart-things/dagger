@@ -455,6 +455,11 @@ tasks:
     cmds:
       - ./tests/smoke/kyverno.sh
 
+  test-cosign:
+    desc: Test cosign verification and signing refusals (public registries, no credentials needed)
+    cmds:
+      - ./tests/smoke/cosign.sh
+
   test-hugo:
     desc: Test hugo
     cmds:
