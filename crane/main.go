@@ -1,7 +1,8 @@
 // Crane module for cross-registry image transfers
 //
 // This module provides functionality for copying container images between
-// registries using Google’s `crane` CLI, wrapped in a Dagger pipeline.
+// registries, and for resolving a tag to the digest it currently points at,
+// using Google’s `crane` CLI, wrapped in a Dagger pipeline.
 // It supports authentication, platform targeting, and insecure registry access.
 //
 // The module is ideal for scenarios where images need to be promoted between
@@ -30,10 +31,28 @@ type Crane struct {
 	// +optional
 	// +default="cgr.dev/chainguard/wolfi-base:latest"
 	BaseImage string
-	// Crane version to install (e.g., "latest" or specific version)
+	// Crane version to install, as a go-containerregistry release (e.g.,
+	// "0.22.1") or "latest". The binary comes from that release's image, so
+	// the version does not depend on the day the container is built.
 	// +optional
-	// +default="latest"
+	// +default="0.22.1"
 	Version string
+}
+
+// defaultVersion is the crane release used when Version is empty. Keep it in
+// step with the +default above, which has to be a literal.
+const defaultVersion = "0.22.1"
+
+// craneImage returns the go-containerregistry image of a crane release. Its
+// tags are v-prefixed; a bare "0.22.1" is accepted as well.
+func craneImage(version string) string {
+	if version == "" {
+		version = defaultVersion
+	}
+	if version[0] >= '0' && version[0] <= '9' {
+		version = "v" + version
+	}
+	return "gcr.io/go-containerregistry/crane:" + version
 }
 
 // RegistryAuth contains authentication details for a registry
@@ -49,11 +68,13 @@ func (m *Crane) container(insecure bool) *dagger.Container {
 		m.BaseImage = "cgr.dev/chainguard/wolfi-base:latest"
 	}
 
-	ctr := dag.Container().From(m.BaseImage)
+	// Copied out of the release image rather than installed with apk, which
+	// took whatever crane Wolfi shipped that day and ignored Version.
+	crane := dag.Container().From(craneImage(m.Version)).File("/ko-app/crane")
 
-	pkg := "crane"
-	ctr = ctr.WithExec([]string{"apk", "add", "--no-cache", pkg})
-	ctr = ctr.WithEntrypoint([]string{"crane"})
+	ctr := dag.Container().From(m.BaseImage).
+		WithFile("/usr/bin/crane", crane, dagger.ContainerWithFileOpts{Permissions: 0o755}).
+		WithEntrypoint([]string{"crane"})
 
 	if insecure {
 		ctr = ctr.WithEnvVariable("SSL_CERT_DIR", "/nonexistent")

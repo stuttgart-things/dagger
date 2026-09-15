@@ -5,6 +5,7 @@ A Dagger module for copying container images between registries using Google's [
 ## Features
 
 - Copy container images between registries
+- Resolve a tag to the digest it currently points at, and check that two tags agree
 - Support for source and target registry authentication
 - Platform-specific image copying
 - Insecure registry support (for self-hosted/air-gapped setups)
@@ -21,7 +22,7 @@ A Dagger module for copying container images between registries using Google's [
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `base-image` | string | `cgr.dev/chainguard/wolfi-base:latest` | Base image for crane container |
-| `version` | string | `latest` | Crane version to install |
+| `version` | string | `0.22.1` | Crane release (or `latest`); the binary is copied from `gcr.io/go-containerregistry/crane:v<version>` |
 
 ## Copy Function
 
@@ -42,6 +43,46 @@ The `copy` function copies an image from a source registry to a target registry.
 | `insecure` | bool | No | `false` | Allow insecure registries |
 | `platform` | string | No | `linux/amd64` | Target platform |
 | `docker-config-secret` | Secret | No | - | Docker config.json for authentication |
+
+## Digest Function
+
+The `digest` function resolves a reference to the digest it points at right
+now and prints it bare (`sha256:…`), so it can be used as `repo@$(…)`.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `ref` | string | Yes | - | Reference to resolve |
+| `platform` | string | No | *(empty)* | Resolve one platform's manifest instead of the index |
+| `registry` | string | No | Auto-detected | Registry to log in to |
+| `username` | string | No | - | Registry username |
+| `password` | Secret | No | - | Registry password |
+| `insecure` | bool | No | `false` | Allow insecure registries |
+
+`platform` defaults to empty, **unlike `copy`**. A multi-arch release is signed
+on its index digest; resolving one platform's manifest returns a digest nothing
+signed. For a single-manifest image crane ignores `platform` altogether.
+
+A reference that does not exist is an error with the registry's message
+(`MANIFEST_UNKNOWN`), never an empty string. The result is never served from
+Dagger's cache, since a tag can move between runs.
+
+```bash
+DIGEST=$(dagger call -m crane digest --ref ghcr.io/myorg/app:1.2.3)
+cosign sign "ghcr.io/myorg/app@${DIGEST}"
+```
+
+## SameDigest Function
+
+The `same-digest` function checks that two references point at the same digest
+and returns it; otherwise it fails and names both digests. It takes the same
+`platform`, credential and `insecure` flags as `digest`.
+
+```bash
+# fails when latest and the release tag name different images
+dagger call -m crane same-digest \
+  --ref-a ghcr.io/myorg/app:latest \
+  --ref-b ghcr.io/myorg/app:1.2.3
+```
 
 ## Usage Examples
 
