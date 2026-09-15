@@ -20,6 +20,7 @@ modular collection of Dagger building blocks for infrastructure, containers, sec
 | [Packer](./packer/README.md)       | Image Building                  | VM templates, vCenter, Vault |
 | [Kyverno](./kyverno/README.md)     | Policy Management               | Policy validation, compliance, GitOps |
 | [Trivy](./trivy/README.md)         | Security Scanning               | Vulnerability scan, container, compliance |
+| [Cosign](./cosign/README.md)       | Supply-Chain Signing            | Keyless sign by digest, SBOM attestation, verify and prove refusal |
 | [SOPS](./sops/README.md)           | Secret Management               | Encryption, K8s secrets, key management |
 | [Release](./release/README.md)     | Release Automation              | Semver, changelog, GitHub release |
 | [Git](./git/README.md)             | Git Operations                  | Repo, branch, tag, remote, sync |
@@ -494,6 +495,28 @@ dagger call -m crane copy \
 --platform linux/amd64 \
 --progress plain
 ```
+
+</details>
+
+<details><summary><b>COSIGN</b></summary>
+
+```bash
+# VERIFY A SIGNATURE (NO TOKEN, NO LOCAL COSIGN NEEDED)
+dagger call -m cosign verify \
+--ref ghcr.io/stuttgart-things/schmetterpause@sha256:72be6d814478927f4894ac586fd88bd19cb0a570792e84dda3bfc4147a07c852 \
+--certificate-oidc-issuer https://token.actions.githubusercontent.com \
+--certificate-identity-regexp '^https://github\.com/stuttgart-things/schmetterpause/\.github/workflows/ci\.yml@refs/'
+```
+
+```bash
+# PROVE THE VERIFICATION REFUSES AN IDENTITY THAT IS NOT OURS
+dagger call -m cosign verify-refuses \
+--ref ghcr.io/stuttgart-things/schmetterpause@sha256:72be6d814478927f4894ac586fd88bd19cb0a570792e84dda3bfc4147a07c852 \
+--certificate-oidc-issuer https://token.actions.githubusercontent.com \
+--certificate-identity-regexp '^https://github\.com/stuttgart-things/not-this-repository/'
+```
+
+Signing (`sign`, `attest`) needs an OIDC token from CI; see [cosign/README.md](./cosign/README.md#github-actions).
 
 </details>
 
