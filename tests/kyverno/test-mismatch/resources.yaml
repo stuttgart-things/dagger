@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pinned-tag
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.25
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: latest-tag
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest

@@ -30,12 +30,50 @@ dagger call -m kyverno validate \
   --progress plain
 ```
 
+### Test Policies
+
+`validate` answers "do these resources pass these policies?". `test` answers
+the question a policy change raises: does the policy still refuse what it must
+refuse, and still admit what it must admit? It runs `kyverno test` over every
+`kyverno-test.yaml` below `--path` and fails on any result that does not match
+its expectation — and on a path without a single test.
+
+```bash
+dagger call -m kyverno test \
+  --src tests/kyverno/test \
+  --progress plain
+```
+
+`tests/kyverno/test/kyverno-test.yaml` is a minimal example covering both a
+refusal and an admission.
+
+Add `--warnings-as-errors` (CLI 1.19 or later) to fail on deprecations, such as
+the warning every `kyverno.io/v1` ClusterPolicy draws from 1.19 on.
+
+Policies that verify image signatures reach the registry and Rekor during the
+test, so a signed fixture image has to stay in its registry. `test` is never
+served from Dagger's cache for that reason.
+
 ### Check Version
 
 ```bash
 # Get Kyverno CLI version
 dagger call -m kyverno version \
   --progress plain
+```
+
+## CLI Version
+
+Every function takes `--kyverno-version` (default `1.19.1`). Match it to the
+Kyverno running on the cluster: 1.19 refuses policies earlier releases accepted.
+The CLI is copied out of `ghcr.io/kyverno/kyverno-cli:v<version>` into
+`--base-image`, so any release can be pinned and the result does not depend on
+the day the container is built.
+
+```bash
+dagger call -m kyverno test \
+  --src ./policy-tests \
+  --kyverno-version 1.18.1
 ```
 
 ### Test Module
