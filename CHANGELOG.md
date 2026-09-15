@@ -1,3 +1,10 @@
+# [0.131.0](https://github.com/stuttgart-things/dagger/compare/v0.130.0...v0.131.0) (2026-09-15)
+
+
+### Features
+
+* **cosign:** add a module to sign, attest and verify keylessly ([#384](https://github.com/stuttgart-things/dagger/issues/384)) ([bde856a](https://github.com/stuttgart-things/dagger/commit/bde856ab00709813f83bf72b5f181123bb0217fe)), closes [stuttgart-things/schmetterpause#230](https://github.com/stuttgart-things/schmetterpause/issues/230) [#318](https://github.com/stuttgart-things/dagger/issues/318) [#376](https://github.com/stuttgart-things/dagger/issues/376)
+
 # [0.130.0](https://github.com/stuttgart-things/dagger/compare/v0.129.5...v0.130.0) (2026-09-15)
 
 
