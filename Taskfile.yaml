@@ -413,6 +413,43 @@ tasks:
     cmds:
       - ./tests/smoke/terraform.sh
 
+  test-crane:
+    desc: Test crane digest functions (public registry, no credentials needed)
+    cmds:
+      - |
+        set -e
+        # the default is the index digest -- the one a multi-arch release is
+        # signed on -- so it has to differ from one platform's manifest digest.
+        index=$(dagger call -m {{ .MODULE }} digest --ref {{ .REF }})
+        amd64=$(dagger call -m {{ .MODULE }} digest --ref {{ .REF }} --platform linux/amd64)
+        echo "index=${index} amd64=${amd64}"
+        echo "$index" | grep -Eq '^sha256:[0-9a-f]{64}$'
+        echo "$amd64" | grep -Eq '^sha256:[0-9a-f]{64}$'
+        test "$index" != "$amd64"
+      - |
+        set -e
+        # a tag and its own digest agree, and the common digest comes back
+        index=$(dagger call -m {{ .MODULE }} digest --ref {{ .REF }})
+        same=$(dagger call -m {{ .MODULE }} same-digest --ref-a {{ .REF }} --ref-b "{{ .REPO }}@${index}")
+        test "$same" = "$index"
+      - |
+        # two tags naming different images fail, and the error names both
+        out=$(dagger call -m {{ .MODULE }} same-digest --ref-a {{ .REF }} --ref-b {{ .OTHER_REF }} 2>&1) \
+        && { echo "same-digest accepted two different images"; exit 1; }
+        echo "$out" | grep -q "point at different digests"
+      - |
+        # a tag that does not exist is an error carrying the registry's
+        # message, never an empty digest a caller would turn into "repo@"
+        out=$(dagger call -m {{ .MODULE }} digest --ref {{ .MISSING_REF }} 2>&1) \
+        && { echo "digest resolved a missing tag"; exit 1; }
+        echo "$out" | grep -q MANIFEST_UNKNOWN
+    vars:
+      MODULE: crane
+      REPO: alpine
+      REF: alpine:3.20
+      OTHER_REF: alpine:3.19
+      MISSING_REF: alpine:does-not-exist
+
   test-kyverno:
     desc: Test Kyverno
     cmds:
