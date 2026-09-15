@@ -6,6 +6,7 @@ This module provides Dagger functions for Trivy security scanning including file
 
 - ✅ Filesystem vulnerability scanning (local and remote)
 - ✅ Container image security scanning
+- ✅ SBOM generation (CycloneDX, SPDX) for one platform of a published image
 - ✅ Registry authentication support
 - ✅ Git repository scanning
 - ✅ JSON report generation
@@ -91,6 +92,29 @@ dagger call -m trivy scan-image \
   --registry-password env:REGISTRY_PASSWORD \
   export --path=/tmp/private-scan.json
 ```
+
+### SBOM
+
+`sbom` writes a software bill of materials for **one platform** of a published
+image — the document a signed attestation on the image digest carries.
+
+```bash
+dagger call -m trivy sbom \
+  --image-ref ghcr.io/myorg/app@sha256:… \
+  --platform linux/amd64 \
+  export --path=/tmp/sbom.cdx.json
+```
+
+- `--image-ref` has to be pinned to a digest; a tag is refused. Resolve one
+  with `dagger call -m crane digest --ref ghcr.io/myorg/app:1.2.3`.
+- `--platform` (default `linux/amd64`) selects the image inside a multi-arch
+  index. The document covers that platform only; call again for another. A
+  platform the index does not carry is an error.
+- `--format` is `cyclonedx` (default) or `spdx-json`.
+- Unlike `scan-image`, trivy's exit code is honoured: an image that cannot be
+  pulled is an error, never an empty document.
+- Registry credentials go in as `--registry-user` / `--registry-password`
+  secrets, as for `scan-image`.
 
 ## Report Analysis
 

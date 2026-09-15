@@ -8,8 +8,10 @@
 //
 // The `ScanFilesystem` function scans a directory for vulnerabilities and returns
 // a Trivy report as a file. The `ScanImage` function scans a container image by
-// reference and returns the vulnerability report as plain text. These functions
-// serve as a reference for integrating Trivy into secure CI/CD pipelines using Dagger.
+// reference and returns the vulnerability report as plain text. The `Sbom`
+// function writes a CycloneDX or SPDX bill of materials for one platform of a
+// digest-pinned image. These functions serve as a reference for integrating
+// Trivy into secure CI/CD pipelines using Dagger.
 
 package main
 
