@@ -572,12 +572,42 @@ tasks:
         # step. Without this the gate can silently never fire.
         ! dagger call -m {{ .MODULE }} \
         scan-filesystem --src {{ .VULN_SRC }} --fail-on-finding
+      - |
+        set -e
+        # sbom happy path: one platform of a digest-pinned image, as a
+        # CycloneDX document that actually lists packages.
+        dagger call -m {{ .MODULE }} \
+        sbom --image-ref {{ .SBOM_REF }} \
+        export --path={{ .SBOM_PATH }}
+        test "$(jq -r '.bomFormat' {{ .SBOM_PATH }})" = CycloneDX
+        test "$(jq '.components | length' {{ .SBOM_PATH }})" -gt 0
+      - |
+        # a tag names nothing in particular, so sbom refuses it before trivy runs
+        out=$(dagger call -m {{ .MODULE }} sbom --image-ref {{ .SBOM_TAG_REF }} 2>&1) \
+        && { echo "sbom accepted a tag"; exit 1; }
+        echo "$out" | grep -q "not pinned to a digest"
+      - |
+        # an image that cannot be pulled is an error, never an empty document:
+        # attested and signed, that would claim the image contains nothing.
+        out=$(dagger call -m {{ .MODULE }} sbom --image-ref {{ .SBOM_MISSING_REF }} 2>&1) \
+        && { echo "sbom returned a document for a missing image"; exit 1; }
+        echo "$out" | grep -q MANIFEST_UNKNOWN
+      - |
+        # a platform the index does not carry is an error, not another platform
+        out=$(dagger call -m {{ .MODULE }} sbom --image-ref {{ .SBOM_REF }} --platform linux/mips64 2>&1) \
+        && { echo "sbom returned a document for a platform the index lacks"; exit 1; }
+        echo "$out" | grep -q "no child with platform"
     vars:
       MODULE: trivy
       CLEAN_SRC: tests/go/calculator/
       VULN_SRC: tests/go/vulnerable/
       FS_REPORT_PATH: /tmp/trivy-fs-clean.json
       FS_VULN_REPORT_PATH: /tmp/trivy-fs-vuln.json
+      # alpine:3.20, the multi-arch index
+      SBOM_REF: alpine@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
+      SBOM_TAG_REF: alpine:3.20
+      SBOM_MISSING_REF: alpine@sha256:0000000000000000000000000000000000000000000000000000000000000000
+      SBOM_PATH: /tmp/trivy-sbom.cdx.json
 
   test-oci:
     desc: Test OCI functions (uses local zot registry, no credentials needed)
