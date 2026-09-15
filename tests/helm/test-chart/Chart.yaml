@@ -27,4 +27,4 @@ dependencies:
     alias: redis-stack
     condition: redis-stack.enabled
     repository: https://charts.bitnami.com/bitnami
-    version: 17.17.1
+    version: 28.1.0
