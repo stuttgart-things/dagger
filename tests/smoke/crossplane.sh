@@ -42,7 +42,9 @@ for pair in "crossplaneVersion:${cli_want}" "crossplaneCoreVersion:${core_want}"
     exit 1
   fi
 done
-echo "pins from container.go: CLI ${cli_want}, core ${core_want}"
+# No ".go: " in output: setup-go's problem matcher turns such a line into a
+# failure annotation on a green job.
+echo "pins (read from ${MODULE}/container.go) are CLI ${cli_want}, core ${core_want}"
 
 # One container build, one exec: cheaper than four round trips, and it keeps
 # the assertions below reading against a single captured output.

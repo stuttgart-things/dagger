@@ -30,7 +30,9 @@ if [ -z "${want}" ]; then
   echo "FAIL: could not read defaultKyvernoVersion from ${MODULE}/main.go"
   exit 1
 fi
-echo "pin from main.go: kyverno CLI ${want}"
+# No ".go: " in output: setup-go's problem matcher turns such a line into a
+# failure annotation on a green job.
+echo "kyverno CLI pin (read from ${MODULE}/main.go) is ${want}"
 
 fail=0
 
