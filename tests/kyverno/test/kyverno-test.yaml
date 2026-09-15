@@ -1,0 +1,19 @@
+# Covers both directions a policy change can break: the policy has to refuse
+# latest-tag and still admit pinned-tag. Needs no network.
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: disallow-latest-tag
+policies: [policy.yaml]
+resources: [resources.yaml]
+results:
+  - policy: disallow-latest-tag
+    isValidatingPolicy: true
+    kind: Pod
+    resources: [pinned-tag]
+    result: pass
+  - policy: disallow-latest-tag
+    isValidatingPolicy: true
+    kind: Pod
+    resources: [latest-tag]
+    result: fail

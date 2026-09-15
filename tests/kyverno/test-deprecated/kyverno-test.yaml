@@ -1,0 +1,19 @@
+# A correct test of a kyverno.io/v1 ClusterPolicy, a kind 1.19 deprecates.
+# It passes as is and must fail with --warnings-as-errors.
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: disallow-latest-tag-deprecated
+policies: [policy.yaml]
+resources: [resources.yaml]
+results:
+  - policy: disallow-latest-tag
+    rule: no-latest-tag
+    kind: Pod
+    resources: [pinned-tag]
+    result: pass
+  - policy: disallow-latest-tag
+    rule: no-latest-tag
+    kind: Pod
+    resources: [latest-tag]
+    result: fail
