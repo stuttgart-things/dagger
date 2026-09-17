@@ -1,3 +1,10 @@
+# [0.132.0](https://github.com/stuttgart-things/dagger/compare/v0.131.0...v0.132.0) (2026-09-17)
+
+
+### Features
+
+* **crossplane:** verify passes every non-XR example manifest as an extra resource ([#388](https://github.com/stuttgart-things/dagger/issues/388)) ([26b76f4](https://github.com/stuttgart-things/dagger/commit/26b76f445aad3395d47913ca4edd422d078f2c2a)), closes [stuttgart-things/crossplane-configurations#470](https://github.com/stuttgart-things/crossplane-configurations/issues/470) [crossplane-configurations#470](https://github.com/crossplane-configurations/issues/470)
+
 # [0.131.0](https://github.com/stuttgart-things/dagger/compare/v0.130.0...v0.131.0) (2026-09-15)
 
 
