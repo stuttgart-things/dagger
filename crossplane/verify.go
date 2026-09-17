@@ -231,15 +231,32 @@ if [ ! -f "${PROV_MARK}" ]; then
 fi
 
 
-# ---- Collect EnvironmentConfigs for render (Layer 0.5) -------------------
-# An XR that sets spec.environmentConfig makes function-environment-configs
-# select an EnvironmentConfig by label. Offline crossplane render has no
-# cluster to select from, so it fails fatally with "expected exactly one
-# required resource, got 0". Pass any EnvironmentConfig manifests shipped in
-# examples/ as --extra-resources so the selector resolves. No-op when the
-# Configuration ships none.
+# ---- Collect extra resources for render (Layer 0.5) ----------------------
+# Offline crossplane render has no cluster to read from, so anything a
+# Composition looks up must be handed over as --extra-resources:
+#   - an XR that sets spec.environmentConfig makes function-environment-configs
+#     select an EnvironmentConfig by label ("expected exactly one required
+#     resource, got 0" without it);
+#   - a function requesting resources dynamically (function-kcl ExtraResources,
+#     e.g. the cluster Configuration fetching AppSecretProfiles by name) gets an
+#     empty answer and may fail the render on purpose.
+# So every manifest in examples/ that is not an input XR (xr*.yaml) and not
+# package metadata (Function, Configuration, Provider) is passed. Resources
+# nobody requests are ignored by render. No-op when the Configuration ships none.
 EXTRA_ARGS=""
-yq ea 'select(.kind == "EnvironmentConfig")' examples/*.yaml > /tmp/extra-resources.yaml 2>/dev/null || true
+EXTRA_FILES=""
+for f in examples/*.yaml; do
+  [ -f "${f}" ] || continue
+  case "$(basename "${f}")" in xr*.yaml) continue ;; esac
+  EXTRA_FILES="${EXTRA_FILES} ${f}"
+done
+: > /tmp/extra-resources.yaml
+if [ -n "${EXTRA_FILES}" ]; then
+  # One evaluate-all over every file, like before: yq separates the selected
+  # documents itself, so no empty document reaches render.
+  # shellcheck disable=SC2086
+  yq ea 'select(.kind != null and .kind != "Function" and .kind != "Configuration" and .kind != "Provider" and .kind != "DeploymentRuntimeConfig")' ${EXTRA_FILES} > /tmp/extra-resources.yaml 2>/dev/null || true
+fi
 if [ -s /tmp/extra-resources.yaml ]; then
   EXTRA_ARGS="--extra-resources /tmp/extra-resources.yaml"
 fi
@@ -304,7 +321,7 @@ for xr in examples/xr*.yaml; do
 
   # Render the Composition. ${FUNCTIONS_FILE} is the Development-runtime rewrite
   # of examples/functions.yaml (falls back to the original if the rewrite was a
-  # no-op). ${EXTRA_ARGS} (unquoted, may be empty) supplies EnvironmentConfigs.
+  # no-op). ${EXTRA_ARGS} (unquoted, may be empty) supplies the extra resources.
   if RENDERED=$(crossplane render "${xr}" apis/composition.yaml "${FUNCTIONS_FILE}" ${EXTRA_ARGS} ${CORE_ARGS} 2>/tmp/render.err); then
     status="${status}, render-ok"
 
