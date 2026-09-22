@@ -98,6 +98,45 @@ dagger call -m terraform execute \
   export --path=/tmp/terraform/
 ```
 
+### Apply Part Of A Shared State, Safely
+
+For a configuration that manages more than the caller owns. For example, one
+list of secrets for many clusters: an untargeted apply with only the caller's
+entries would plan to delete everyone else's.
+
+```bash
+dagger call -m terraform execute \
+  --terraform-dir /path/to/terraform \
+  --operation apply \
+  --targets 'vault_kv_secret_v2.this["kv-a/app"],vault_kv_secret_v2.this["kv-a/db"]' \
+  --refuse-destroy \
+  export --path=/tmp/terraform/
+```
+
+- `--targets`: comma-separated resource addresses, one `-target` each. Also honoured by `destroy`.
+- `--refuse-destroy` (apply only): plans to a file and aborts with
+  `REFUSING TO APPLY` if any resource change contains `delete` (a replace
+  does too). Otherwise it applies **that** plan, not a fresh one. The plan
+  files hold values and are removed before the directory is returned.
+
+### Pin A Hostname (`--bind-service`)
+
+`/etc/hosts` is read-only inside a Dagger exec. When the engine's resolver
+cannot answer a name reliably (a lab zone without public NS records), let
+the caller's host forward the port and bind it under the real name. TLS and
+SNI still see that name:
+
+```bash
+dagger call -m terraform execute \
+  --terraform-dir /path/to/terraform \
+  --bind-service tcp://10.31.103.9:443 \
+  --bind-service-alias openbao.example.lab \
+  --vault-addr https://openbao.example.lab \
+  --operation apply
+```
+
+The two flags go together. One name per call; the service forwards the one port it was given.
+
 ### Output Extraction
 
 ```bash
