@@ -1,3 +1,10 @@
+# [0.133.0](https://github.com/stuttgart-things/dagger/compare/v0.132.0...v0.133.0) (2026-09-22)
+
+
+### Features
+
+* **terraform:** targets, refuse-destroy and bind-service for Execute ([#390](https://github.com/stuttgart-things/dagger/issues/390)) ([0ef8ebb](https://github.com/stuttgart-things/dagger/commit/0ef8ebbb97c2f51d8f25851c328991f4a1202098))
+
 # [0.132.0](https://github.com/stuttgart-things/dagger/compare/v0.131.0...v0.132.0) (2026-09-17)
 
 
