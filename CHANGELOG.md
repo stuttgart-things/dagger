@@ -1,3 +1,10 @@
+# [0.134.0](https://github.com/stuttgart-things/dagger/compare/v0.133.1...v0.134.0) (2026-09-29)
+
+
+### Features
+
+* **kcl:** resolve kcl-lang dependencies from the stuttgart-things mirror ([#395](https://github.com/stuttgart-things/dagger/issues/395)) ([8de8549](https://github.com/stuttgart-things/dagger/commit/8de85490d9a19fb17fc3cdbec165aca890b879a7)), closes [stuttgart-things/kcl#323](https://github.com/stuttgart-things/kcl/issues/323)
+
 ## [0.133.1](https://github.com/stuttgart-things/dagger/compare/v0.133.0...v0.133.1) (2026-09-29)
 
 
