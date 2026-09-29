@@ -121,8 +121,26 @@ func (m *Kcl) Run(
 	// the sub-package path as subpath.
 	// +optional
 	subpath string) (*dagger.File, error) {
+	return m.run(ctx, source, ociSource, parameters, parametersFile, formatOutput, outputFormat, entrypoint, subpath, nil)
+}
 
-	ctr := m.container()
+// run is Run with optional registry credentials. With them, kcl logs in
+// before rendering, so its dependency pulls are authenticated instead of
+// anonymous (and throttled) -- see registryAuth.
+func (m *Kcl) run(
+	ctx context.Context,
+	source *dagger.Directory,
+	ociSource string,
+	parameters string,
+	parametersFile *dagger.File,
+	formatOutput bool,
+	outputFormat string,
+	entrypoint string,
+	subpath string,
+	auth *registryAuth,
+) (*dagger.File, error) {
+
+	ctr := auth.login(m.container())
 
 	// Mount parameters file if provided
 	if parametersFile != nil {
@@ -186,8 +204,13 @@ func (m *Kcl) Run(
 	// Use -o option to write output to file
 	cmd += " -o /output.yaml"
 
-	// Execute and write /output.yaml
-	ctr = ctr.WithExec([]string{"sh", "-c", cmd})
+	// Execute and write /output.yaml. A registry rate limit on a dependency
+	// pull is retried; any other failure is reported now, with kcl's own
+	// message, rather than later by whatever reads the output.
+	ctr = ctr.WithExec([]string{"sh", "-c", withRegistryRetry(cmd)})
+	if err := syncRender(ctx, ctr); err != nil {
+		return nil, err
+	}
 
 	// Post-process into clean YAML if formatOutput is enabled.
 	//
