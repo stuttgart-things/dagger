@@ -39,9 +39,24 @@ func (m *Kcl) RenderKustomizeBase(
 	// +optional
 	subpath string,
 ) (*dagger.Directory, error) {
+	return m.renderKustomizeBase(ctx, source, ociSource, parameters, parametersFile, entrypoint, subpath, nil)
+}
+
+// renderKustomizeBase is RenderKustomizeBase with optional registry
+// credentials for the kcl render (see registryAuth).
+func (m *Kcl) renderKustomizeBase(
+	ctx context.Context,
+	source *dagger.Directory,
+	ociSource string,
+	parameters string,
+	parametersFile *dagger.File,
+	entrypoint string,
+	subpath string,
+	auth *registryAuth,
+) (*dagger.Directory, error) {
 
 	// Run KCL with formatOutput=true and outputFormat="yaml" to get clean multi-doc YAML
-	renderedFile, err := m.Run(ctx, source, ociSource, parameters, parametersFile, true, "yaml", entrypoint, subpath)
+	renderedFile, err := m.run(ctx, source, ociSource, parameters, parametersFile, true, "yaml", entrypoint, subpath, auth)
 	if err != nil {
 		return nil, err
 	}
@@ -227,19 +242,16 @@ func (m *Kcl) PushKustomizeBase(
 	password *dagger.Secret,
 ) (string, error) {
 
-	// Render the kustomize base directory
-	baseDir, err := m.RenderKustomizeBase(ctx, source, ociSource, parameters, parametersFile, entrypoint, subpath)
+	// Extract registry host from address (e.g., "ghcr.io/org/repo" -> "ghcr.io")
+	registry := registryHost(address)
+
+	// Render with the push's credentials: kcl pulls its dependencies while it
+	// renders, and anonymous pulls from ghcr are throttled into 429s
+	// (stuttgart-things/dagger#391).
+	auth := &registryAuth{registry: registry, userName: userName, user: user, passwordName: passwordName, password: password}
+	baseDir, err := m.renderKustomizeBase(ctx, source, ociSource, parameters, parametersFile, entrypoint, subpath, auth)
 	if err != nil {
 		return "", err
-	}
-
-	// Extract registry host from address (e.g., "ghcr.io/org/repo" -> "ghcr.io")
-	registry := "ghcr.io"
-	for i, c := range address {
-		if c == '/' {
-			registry = address[:i]
-			break
-		}
 	}
 
 	ref := fmt.Sprintf("%s:%s", address, tag)
