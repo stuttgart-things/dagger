@@ -1,3 +1,10 @@
+## [0.133.1](https://github.com/stuttgart-things/dagger/compare/v0.133.0...v0.133.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **kcl:** render with the push's credentials, retry registry rate limits, surface kcl's error ([#392](https://github.com/stuttgart-things/dagger/issues/392)) ([f49f635](https://github.com/stuttgart-things/dagger/commit/f49f635bca62cc5fdbbad0f2e204a2ca76f9851c)), closes [#391](https://github.com/stuttgart-things/dagger/issues/391)
+
 # [0.133.0](https://github.com/stuttgart-things/dagger/compare/v0.132.0...v0.133.0) (2026-09-22)
 
 
