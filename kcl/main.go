@@ -10,4 +10,7 @@ package main
 
 type Kcl struct {
 	BaseImage string
+	// DependencyRepo is where kcl resolves kcl-lang dependencies
+	// (ghcr.io/<DependencyRepo>/k8s and friends), see container().
+	DependencyRepo string
 }
