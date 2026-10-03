@@ -1,3 +1,10 @@
+# [0.135.0](https://github.com/stuttgart-things/dagger/compare/v0.134.0...v0.135.0) (2026-10-03)
+
+
+### Features
+
+* **terraform:** Terraform 1.16.5, terraformVersion as a constructor arg, resolvConf for Execute/Output ([#398](https://github.com/stuttgart-things/dagger/issues/398)) ([6e4c863](https://github.com/stuttgart-things/dagger/commit/6e4c8639cd7bcb3d65c2234a1d42471c53d63d30))
+
 # [0.134.0](https://github.com/stuttgart-things/dagger/compare/v0.133.1...v0.134.0) (2026-09-29)
 
 
