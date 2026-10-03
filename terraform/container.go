@@ -7,12 +7,22 @@ import (
 	"dagger/terraform/internal/dagger"
 )
 
+// Keep in step with the +default of New's terraformVersion (main.go); Renovate
+// bumps both.
+// renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.*)$
+const defaultTerraformVersion = "1.16.5"
+
 func (m *Terraform) container(ctx context.Context) (*dagger.Container, error) {
 	if m.BaseImage == "" {
 		m.BaseImage = "cgr.dev/chainguard/wolfi-base:latest"
 	}
+	// Default again for callers that build the struct directly rather than
+	// through New (tests, other Go code in this module).
+	terraformVersion := m.TerraformVersion
+	if terraformVersion == "" {
+		terraformVersion = defaultTerraformVersion
+	}
 
-	const terraformVersion = "1.15.9"
 	terraformURL := fmt.Sprintf("https://releases.hashicorp.com/terraform/%s/terraform_%s_linux_amd64.zip", terraformVersion, terraformVersion)
 
 	ctr := dag.Container().
