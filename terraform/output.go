@@ -20,6 +20,13 @@ func (m *Terraform) Output(
 	// +optional
 	// +default="/root/.kube/config"
 	kubeConfigPath string,
+	// A resolv.conf to use instead of the engine's resolver, e.g. the caller's
+	// own split-DNS servers for a lab zone the engine cannot resolve. Covers a
+	// whole zone, where bindService pins a single name. Not together with
+	// bindService: the alias is answered by the engine's resolver, which this
+	// replaces.
+	// +optional
+	resolvConf *dagger.File,
 ) (string, error) {
 	ctr, err := m.container(ctx)
 	if err != nil {
@@ -35,6 +42,11 @@ func (m *Terraform) Output(
 	}
 	// Prevent attempts to use IMDS, which can cause noisy errors in CI
 	ctr = ctr.WithEnvVariable("AWS_EC2_METADATA_DISABLED", "true")
+
+	// REPLACE THE ENGINE'S RESOLVER
+	if resolvConf != nil {
+		ctr = ctr.WithMountedFile("/etc/resolv.conf", resolvConf)
+	}
 
 	// MOUNT KUBECONFIG FOR KUBERNETES BACKEND
 	if kubeConfig != nil {

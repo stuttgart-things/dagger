@@ -17,5 +17,17 @@
       ],
       "enabled": false
     }
+  ],
+  "customManagers": [
+    {
+      "description": "Tool versions in Dagger module Go code, annotated with `// renovate:` above a `// +default=\"...\"` or a `const ... = \"...\"` (e.g. terraform/main.go, terraform/container.go)",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)[^/]+\\.go$/"
+      ],
+      "matchStrings": [
+        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+?)(?: extractVersion=(?<extractVersion>\\S+))?\\s*\\n(?:\\s*//[^\\n]*\\n)*?\\s*(?://\\s*\\+default=\"|const \\w+ = \")(?<currentValue>[^\"]+)\""
+      ]
+    }
   ]
 }

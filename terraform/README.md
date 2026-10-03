@@ -60,12 +60,35 @@ task test-terraform
 
 ## API Reference
 
-### Version Check
+### Terraform version
+
+The module installs Terraform **1.16.5** by default. Renovate bumps it
+through the `// renovate:` annotations in `main.go` and `container.go`. Pin
+another version with the constructor argument:
 
 ```bash
-dagger call -m terraform version \
-  --progress plain
+dagger call -m terraform version --progress plain                               # Terraform v1.16.5
+dagger call -m terraform --terraform-version 1.15.9 version --progress plain    # Terraform v1.15.9
 ```
+
+### Names the engine cannot resolve (lab zones, split DNS)
+
+The Dagger engine has its own resolver. A zone that the host resolves through
+split DNS (e.g. systemd-resolved with `~lab.example` routed to an internal
+server) does not resolve inside the container. Two ways around it:
+
+```bash
+# a whole zone: hand the container your own resolv.conf
+printf 'nameserver 10.100.136.115\nnameserver 10.100.101.5\n' > /tmp/lab-resolv.conf
+dagger call -m terraform execute ... --resolv-conf /tmp/lab-resolv.conf
+
+# a single name: pin it to an address, TLS/SNI still see the real name
+dagger call -m terraform execute ... \
+  --bind-service tcp://10.100.136.223:443 --bind-service-alias minio.lab.example
+```
+
+The two are exclusive: the bind alias is answered by the engine's resolver,
+which `--resolv-conf` replaces. `output` takes `--resolv-conf` too.
 
 ### Execute Operations
 

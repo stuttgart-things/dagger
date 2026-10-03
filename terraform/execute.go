@@ -43,6 +43,13 @@ func (m *Terraform) Execute(
 	// +optional
 	// +default="/root/.kube/config"
 	kubeConfigPath string,
+	// A resolv.conf to use instead of the engine's resolver, e.g. the caller's
+	// own split-DNS servers for a lab zone the engine cannot resolve. Covers a
+	// whole zone, where bindService pins a single name. Not together with
+	// bindService: the alias is answered by the engine's resolver, which this
+	// replaces.
+	// +optional
+	resolvConf *dagger.File,
 	// Run terraform output --json after the operation and write result to output.json
 	// +optional
 	exportTfOutput bool,
@@ -73,6 +80,9 @@ func (m *Terraform) Execute(
 	}
 	if (bindService == nil) != (bindServiceAlias == "") {
 		return nil, fmt.Errorf("bindService and bindServiceAlias go together")
+	}
+	if resolvConf != nil && bindService != nil {
+		return nil, fmt.Errorf("resolvConf and bindService are exclusive: the bind alias needs the engine's resolver")
 	}
 	if refuseDestroy && operation != "apply" {
 		return nil, fmt.Errorf("refuseDestroy only applies to operation apply, got %q", operation)
@@ -105,6 +115,11 @@ func (m *Terraform) Execute(
 	}
 	if vaultAddr != "" {
 		ctr = ctr.WithEnvVariable("VAULT_ADDR", vaultAddr)
+	}
+
+	// REPLACE THE ENGINE'S RESOLVER
+	if resolvConf != nil {
+		ctr = ctr.WithMountedFile("/etc/resolv.conf", resolvConf)
 	}
 
 	// MOUNT KUBECONFIG FOR KUBERNETES BACKEND
