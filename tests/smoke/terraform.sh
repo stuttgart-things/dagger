@@ -13,10 +13,11 @@ TEST_TERRAFORM_CODE=tests/terraform
 OUTPUT_STATE_FOLDER=${OUTPUT_STATE_FOLDER:-/tmp/dagger/terraform}
 
 # ASSERT THE CONTAINER SHIPS THE PINNED TERRAFORM. THE EXPECTED VERSION IS READ
-# FROM terraformVersion SO THE PIN STAYS SINGLE-SOURCED.
-expected=$(sed -n 's/.*const terraformVersion = "\(.*\)".*/\1/p' "${MODULE}/container.go")
+# FROM defaultTerraformVersion SO THE PIN STAYS SINGLE-SOURCED (Renovate keeps
+# it and New's +default in step).
+expected=$(sed -n 's/.*const defaultTerraformVersion = "\(.*\)".*/\1/p' "${MODULE}/container.go")
 if [ -z "${expected}" ]; then
-  echo "FAIL: could not read terraformVersion from ${MODULE}/container.go"
+  echo "FAIL: could not read defaultTerraformVersion from ${MODULE}/container.go"
   exit 1
 fi
 
@@ -95,3 +96,44 @@ if [ -z "${status}" ] || [ "${status}" = "null" ]; then
   exit 1
 fi
 echo "OK: bind-service (HTTP ${status} from ${BIND_IP})"
+
+# RESOLV-CONF: THE MOUNTED FILE REPLACES THE ENGINE'S RESOLVER. A resolv.conf
+# POINTING NOWHERE MUST BREAK RESOLUTION (PROVES IT IS USED), A PUBLIC ONE
+# MUST RESOLVE example.com AGAIN.
+printf 'nameserver 127.0.0.1\noptions timeout:1 attempts:1\n' > /tmp/resolv-nowhere.conf
+printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' > /tmp/resolv-public.conf
+if dagger call -m "${MODULE}" execute \
+  --terraform-dir tests/terraform-bind \
+  --operation apply \
+  --variables "url=http://example.com" \
+  --resolv-conf /tmp/resolv-nowhere.conf \
+  --progress plain >/tmp/resolv-nowhere.log 2>&1; then
+  echo "FAIL: example.com resolved with a resolv.conf that points nowhere"
+  exit 1
+fi
+status=$(dagger call -m "${MODULE}" execute \
+  --terraform-dir tests/terraform-bind \
+  --operation apply \
+  --variables "url=http://example.com" \
+  --resolv-conf /tmp/resolv-public.conf \
+  --export-tf-output \
+  --progress plain \
+  file --path output.json contents | jq -r .status_code.value)
+if [ -z "${status}" ] || [ "${status}" = "null" ]; then
+  echo "FAIL: example.com not reachable with a public --resolv-conf"
+  exit 1
+fi
+echo "OK: resolv-conf (HTTP ${status})"
+
+# RESOLV-CONF AND BIND-SERVICE ARE EXCLUSIVE
+if dagger call -m "${MODULE}" execute \
+  --terraform-dir tests/terraform-bind \
+  --resolv-conf /tmp/resolv-public.conf \
+  --bind-service "tcp://${BIND_IP}:80" \
+  --bind-service-alias pinned.dagger-smoke.test \
+  --progress plain >/tmp/resolv-bind.log 2>&1; then
+  echo "FAIL: --resolv-conf together with --bind-service was accepted"
+  exit 1
+fi
+grep -q "resolvConf and bindService are exclusive" /tmp/resolv-bind.log || { echo "FAIL: rejected for the wrong reason"; exit 1; }
+echo "OK: resolv-conf/bind-service exclusive"
