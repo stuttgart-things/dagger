@@ -137,3 +137,41 @@ if dagger call -m "${MODULE}" execute \
 fi
 grep -q "resolvConf and bindService are exclusive" /tmp/resolv-bind.log || { echo "FAIL: rejected for the wrong reason"; exit 1; }
 echo "OK: resolv-conf/bind-service exclusive"
+
+# EXTRA-FILES: A FILE FROM OUTSIDE terraform-dir IS READ AS ${path.module}/<name>,
+# IS NOT HANDED BACK IN THE RETURNED DIRECTORY, AND A NAME CLASH IS AN ERROR
+EXTRA_FOLDER=${OUTPUT_STATE_FOLDER}-extra
+rm -rf "${EXTRA_FOLDER}"
+dagger call -m "${MODULE}" execute \
+  --terraform-dir tests/terraform-extra-files/code \
+  --operation apply \
+  --refuse-destroy \
+  --extra-files tests/terraform-extra-files/extra/extra.txt \
+  --export-tf-output \
+  --progress plain \
+  export --path="${EXTRA_FOLDER}"
+value=$(jq -r .extra.value "${EXTRA_FOLDER}/output.json")
+if [ "${value}" != "hello from an extra file" ]; then
+  echo "FAIL: --extra-files content not readable at \${path.module}/extra.txt (got '${value}')"
+  exit 1
+fi
+if [ -e "${EXTRA_FOLDER}/extra.txt" ]; then
+  echo "FAIL: --extra-files leaked extra.txt into the returned directory"
+  exit 1
+fi
+out=$(dagger call -m "${MODULE}" output \
+  --terraform-dir "${EXTRA_FOLDER}" \
+  --extra-files tests/terraform-extra-files/extra/extra.txt \
+  --progress plain)
+echo "${out}" | jq -e '.extra.value == "hello from an extra file"' >/dev/null \
+  || { echo "FAIL: output with --extra-files"; exit 1; }
+if dagger call -m "${MODULE}" execute \
+  --terraform-dir tests/terraform-extra-files/code \
+  --operation init \
+  --extra-files tests/terraform-extra-files/extra/main.tf \
+  --progress plain >/tmp/extra-clash.log 2>&1; then
+  echo "FAIL: --extra-files overwrote main.tf in terraform-dir"
+  exit 1
+fi
+grep -q 'already exists in terraformDir' /tmp/extra-clash.log || { echo "FAIL: rejected for the wrong reason"; exit 1; }
+echo "OK: extra-files"

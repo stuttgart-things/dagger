@@ -74,6 +74,13 @@ func (m *Terraform) Execute(
 	// Hostname bindService is reachable under, e.g. the host in VAULT_ADDR.
 	// +optional
 	bindServiceAlias string,
+	// Files placed next to the Terraform code, each under its base name, for
+	// a provider that wants a file at "${path.module}/<name>" (e.g. a CA
+	// bundle) without copying it into terraformDir. A name already in
+	// terraformDir is an error, never overwritten. They are not part of the
+	// returned directory.
+	// +optional
+	extraFiles []*dagger.File,
 ) (*dagger.Directory, error) {
 	if operation == "" {
 		operation = "init"
@@ -136,6 +143,16 @@ func (m *Terraform) Execute(
 	ctr = ctr.WithDirectory(workDir, terraformDir).
 		WithWorkdir(workDir).
 		WithEnvVariable("VAULT_SKIP_VERIFY", "TRUE")
+
+	// PLACE THE CALLER'S EXTRA FILES NEXT TO THE CODE
+	reserved := []string{}
+	if secretJsonVariables != nil { // pragma: allowlist secret
+		reserved = append(reserved, "terraform.tfvars.json")
+	}
+	ctr, extraNames, err := withExtraFiles(ctx, ctr, workDir, terraformDir, extraFiles, reserved...)
+	if err != nil {
+		return nil, err
+	}
 
 	// ALWAYS RUN INIT FIRST WITH --UPGRADE
 	ctr = ctr.WithExec([]string{"terraform", "init", "-upgrade", "-input=false", "-no-color"})
@@ -212,5 +229,5 @@ fi`})
 		ctr = ctr.WithExec([]string{"sh", "-c", "terraform output --json > output.json"})
 	}
 
-	return ctr.Directory(workDir), nil
+	return ctr.Directory(workDir).WithoutFiles(extraNames), nil
 }

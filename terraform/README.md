@@ -9,6 +9,7 @@ This module provides Dagger functions for Terraform infrastructure automation in
 - ✅ Vault integration for secure secret management
 - ✅ State file handling and export capabilities
 - ✅ Output extraction and processing
+- ✅ Extra files (e.g. a CA bundle) next to the code via `--extra-files`
 - ✅ Multi-environment support
 
 ## Prerequisites
@@ -159,6 +160,30 @@ dagger call -m terraform execute \
 ```
 
 The two flags go together. One name per call; the service forwards the one port it was given.
+
+### Files Next To The Code (`--extra-files`)
+
+Some providers want a file, not a string, e.g. a CA bundle
+(`ca_cert_file = "${path.module}/ca.crt"`). Instead of keeping a copy in the
+Terraform directory, hand it in; each file lands in the working directory
+under its base name:
+
+```bash
+dagger call -m terraform execute \
+  --terraform-dir /path/to/terraform \
+  --extra-files /path/to/ca.crt \
+  --operation apply \
+  --refuse-destroy \
+  export --path=/tmp/terraform/
+```
+
+- Comma-separated for several: `--extra-files a.crt,b.crt`.
+- Works for every operation and for `output`.
+- A name that already exists in `--terraform-dir`, two extra files with the
+  same name, or `terraform.tfvars.json` together with
+  `--secret-json-variables` is an error: nothing is shadowed silently.
+- The files are not part of the returned directory, so an exported state
+  folder can be fed back as `--terraform-dir` with the same `--extra-files`.
 
 ### Output Extraction
 
