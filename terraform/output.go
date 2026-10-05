@@ -27,6 +27,10 @@ func (m *Terraform) Output(
 	// replaces.
 	// +optional
 	resolvConf *dagger.File,
+	// Files placed next to the Terraform code, each under its base name (see
+	// execute). A name already in terraformDir is an error.
+	// +optional
+	extraFiles []*dagger.File,
 ) (string, error) {
 	ctr, err := m.container(ctx)
 	if err != nil {
@@ -59,7 +63,14 @@ func (m *Terraform) Output(
 		WithDirectory(workDir, terraformDir, dagger.ContainerWithDirectoryOpts{
 			Exclude: []string{}, // Don't exclude anything - we need .terraform if it exists
 		}).
-		WithWorkdir(workDir).
+		WithWorkdir(workDir)
+
+	ctr, _, err = withExtraFiles(ctx, ctr, workDir, terraformDir, extraFiles)
+	if err != nil {
+		return "", err
+	}
+
+	ctr = ctr.
 		WithExec([]string{"terraform", "init", "-reconfigure"}). // Reinitialize backend to restore state connection
 		WithExec([]string{"terraform", "output", "--json"})
 
