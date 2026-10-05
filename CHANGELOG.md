@@ -1,3 +1,10 @@
+# [0.136.0](https://github.com/stuttgart-things/dagger/compare/v0.135.0...v0.136.0) (2026-10-05)
+
+
+### Features
+
+* **terraform:** --extra-files places files next to the Terraform code ([#399](https://github.com/stuttgart-things/dagger/issues/399)) ([8a80248](https://github.com/stuttgart-things/dagger/commit/8a80248d9d82a7aa8bc8aa0db4e14dfa49ad630d)), closes [stuttgart-things/harvester#364](https://github.com/stuttgart-things/harvester/issues/364)
+
 # [0.135.0](https://github.com/stuttgart-things/dagger/compare/v0.134.0...v0.135.0) (2026-10-03)
 
 
