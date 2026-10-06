@@ -114,7 +114,7 @@ dagger call -m go build-binary \
   --package-name github.com/stuttgart-things/myapp \
   --go-main-file main.go \
   --bin-name myapp \
-  --go-version 1.25.5 \
+  --go-version 1.27.1 \
   export --path=/tmp/go/build/
 ```
 
@@ -180,7 +180,7 @@ dagger call -m go govulncheck \
 | --- | --- | --- |
 | `--format` | `text` | `text`, `json`, `sarif` or `openvex` |
 | `--govulncheck-version` | `v1.7.0` | Version installed via `go install` |
-| `--go-version` | `1.25.5` | A floor, not a pin -- `GOTOOLCHAIN=auto`, so a `go.mod` requiring something newer wins |
+| `--go-version` | `1.27.1` | A floor, not a pin -- `GOTOOLCHAIN=auto`, so a `go.mod` requiring something newer wins |
 | `--variant` | `alpine` | Base image variant |
 | `--fail-on-finding` | `false` | Return an error when something reachable is found |
 | `--no-cache` | `false` | Bypass Dagger's result cache; the vulnerability database moves independently of your source |

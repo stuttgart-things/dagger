@@ -62,8 +62,9 @@ func (m *Go) KoBuild(
 
 // GetGoLangContainer returns the golang build container
 func (m *Go) GetGoLangContainer(
+	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.25.5"
+	// +default="1.27.1"
 	goVersion string,
 
 	// +optional

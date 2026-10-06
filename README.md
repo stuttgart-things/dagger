@@ -592,7 +592,7 @@ build-binary \
 --package-name github.com/stuttgart-things/k2n \
 --go-main-file main.go \
 --bin-name k2 \
---go-version 1.25.4 \
+--go-version 1.27.1 \
 export --path=/tmp/go/build/ \
 --progress plain \
 -vv

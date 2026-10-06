@@ -32,8 +32,9 @@ func New(
 	goLangContainer *dagger.Container,
 	// +optional
 	koContainer *dagger.Container,
+	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.25.5"
+	// +default="1.27.1"
 	goLangVersion string,
 	// +optional
 	// +default="alpine"
