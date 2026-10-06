@@ -109,22 +109,18 @@ func (m *Ansible) executePlaybooks(
 			cmd = append(cmd, "-i", "inventory")
 		}
 
-		// Build extra-vars string
-		var extraVars []string
-
 		if sshUser != nil && sshPassword != nil { // pragma: allowlist secret
-			extraVars = append(extraVars,
+			cmd = append(cmd, "--extra-vars", strings.Join([]string{
 				"ansible_user='{{ lookup(\"env\", \"ANSIBLE_USER\") }}'",
 				"ansible_password='{{ lookup(\"env\", \"ANSIBLE_PASSWORD\") }}'",
-			)
+			}, " "))
 		}
 
+		// Parameters get their own --extra-vars so they can be a JSON object
+		// ('{"bin": {...}}', typed) or @file, not only key=value pairs.
+		// Later --extra-vars win, as before when they were appended last.
 		if parameters != "" {
-			extraVars = append(extraVars, parameters)
-		}
-
-		if len(extraVars) > 0 {
-			cmd = append(cmd, "--extra-vars", strings.Join(extraVars, " "))
+			cmd = append(cmd, "--extra-vars", parameters)
 		}
 
 		var err error
@@ -147,6 +143,8 @@ func (m *Ansible) Execute(
 	requirements *dagger.File,
 	// +optional
 	inventory *dagger.File,
+	// Passed as one --extra-vars: space-separated key=value pairs, a JSON
+	// object (typed, e.g. nested dicts/lists) or @file
 	// +optional
 	parameters string,
 	// +optional
@@ -193,6 +191,8 @@ func (m *Ansible) ExecuteAndExport(
 	requirements *dagger.File,
 	// +optional
 	inventory *dagger.File,
+	// Passed as one --extra-vars: space-separated key=value pairs, a JSON
+	// object (typed, e.g. nested dicts/lists) or @file
 	// +optional
 	parameters string,
 	// +optional
