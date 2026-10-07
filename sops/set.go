@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
+	"crypto/rand"
 	"dagger/sops/internal/dagger"
 	"encoding/hex"
 	"encoding/json"
@@ -78,7 +78,13 @@ func encodeSetValue(ctx context.Context, value *dagger.Secret, jsonValue bool) (
 		}
 	}
 
-	// Content-derived name, so two values never share one secret name.
-	sum := sha256.Sum256(encoded)
-	return dag.SetSecret("sops-set-value-"+hex.EncodeToString(sum[:8]), string(encoded)), nil
+	// A random name, never one derived from the value: secret names are not
+	// secret (they can show up in traces), and a hash of a short value can be
+	// confirmed offline with a dictionary. Random also means two calls never
+	// share one secret name.
+	nonce := make([]byte, 16)
+	if _, err := rand.Read(nonce); err != nil {
+		return nil, fmt.Errorf("failed to name the value secret: %w", err)
+	}
+	return dag.SetSecret("sops-set-value-"+hex.EncodeToString(nonce), string(encoded)), nil
 }
