@@ -16,6 +16,23 @@
         "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
       ],
       "enabled": false
+    },
+    {
+      "description": "Go dependencies written by the Dagger Go SDK codegen (`dagger develop`): GraphQL client, querybuilder, OpenTelemetry, grpc, x/sync. Renovate cannot update their go.sum without running the codegen (renovate/artifacts fails), and the SDK pins them to versions it is tested with. They move with the engine version, via `dagger develop`.",
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchPackageNames": [
+        "github.com/vektah/gqlparser/v2",
+        "github.com/Khan/genqlient",
+        "github.com/99designs/gqlgen",
+        "github.com/dagger/otel-go",
+        "github.com/dagger/querybuilder",
+        "/^go\\.opentelemetry\\.io\\//",
+        "golang.org/x/sync",
+        "google.golang.org/grpc"
+      ],
+      "enabled": false
     }
   ],
   "customManagers": [
