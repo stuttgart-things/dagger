@@ -12,6 +12,25 @@
 
 package main
 
+import "dagger/sops/internal/dagger"
+
+// sopsConfigPath is where a caller's .sops.yaml is mounted. sops looks for
+// .sops.yaml from the working directory upwards, so the old mount at
+// /root/.sops.yaml was never found and --sops-config was ignored (#404). It
+// is also passed explicitly with --config.
+const sopsConfigPath = "/src/.sops.yaml"
+
+// withSopsConfig mounts the optional config and returns the sops command
+// with the matching --config flag, followed by args.
+func withSopsConfig(ctr **dagger.Container, sopsConfig *dagger.File, args ...string) []string {
+	cmd := []string{"sops"}
+	if sopsConfig != nil {
+		*ctr = (*ctr).WithMountedFile(sopsConfigPath, sopsConfig)
+		cmd = append(cmd, "--config", sopsConfigPath)
+	}
+	return append(cmd, args...)
+}
+
 type Sops struct {
 	BaseImage string
 }

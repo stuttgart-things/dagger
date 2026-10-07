@@ -455,6 +455,11 @@ tasks:
     cmds:
       - ./tests/smoke/kyverno.sh
 
+  test-sops:
+    desc: Test sops (throwaway age keys, no credentials needed)
+    cmds:
+      - ./tests/smoke/sops.sh
+
   test-cosign:
     desc: Test cosign verification and signing refusals (public registries, no credentials needed)
     cmds:

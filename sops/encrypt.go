@@ -7,15 +7,24 @@ import (
 	"strings"
 )
 
+// Encrypt encrypts a file with SOPS for the given AGE recipient(s). With
+// --sops-config or --encrypted-regex only matching values are encrypted, so a
+// Kubernetes Secret keeps apiVersion, kind and metadata readable.
 func (m *Sops) Encrypt(
 	ctx context.Context,
+	// AGE public key(s), comma-separated
 	ageKey *dagger.Secret,
 	plaintextFile *dagger.File,
 	// +optional
 	// +default="yaml"
 	fileExtension string, // e.g., "yaml", "json", "env"
+	// .sops.yaml whose creation_rules apply (recipients, encrypted_regex, ...)
 	// +optional
-	sopsConfig *dagger.File, // ~/.sops.yaml config file
+	sopsConfig *dagger.File,
+	// Encrypt only the values whose keys match, e.g. '^(data|stringData)$'
+	// for a Kubernetes Secret that Flux applies. Overrides the config.
+	// +optional
+	encryptedRegex string,
 ) (*dagger.File, error) {
 	// Set default file extension to "yaml" if none provided
 	if fileExtension == "" {
@@ -37,9 +46,9 @@ func (m *Sops) Encrypt(
 		WithMountedFile(workDir+"/"+plainFile, plaintextFile).
 		WithWorkdir(workDir)
 
-	// Mount the optional .sops.yaml config file
-	if sopsConfig != nil {
-		ctr = ctr.WithMountedFile("/root/.sops.yaml", sopsConfig)
+	cmd := withSopsConfig(&ctr, sopsConfig, "--encrypt", "--in-place")
+	if encryptedRegex != "" {
+		cmd = append(cmd, "--encrypted-regex", encryptedRegex)
 	}
 
 	// Provide the SOPS secret key (required for encryption)
@@ -53,7 +62,7 @@ func (m *Sops) Encrypt(
 	ctr = ctr.
 		WithEntrypoint([]string{}).
 		WithExec([]string{"cp", plainFile, encryptedFile}).
-		WithExec([]string{"sops", "--encrypt", "--in-place", encryptedFile})
+		WithExec(append(cmd, encryptedFile))
 
 	// Return the encrypted file
 	return ctr.File(encryptedFile), nil
