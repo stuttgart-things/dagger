@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"strings"
 
 	"dagger/gitlab/internal/dagger"
 )
@@ -16,18 +16,19 @@ func (g *Gitlab) CloneWithToken(
 	token dagger.Secret,
 	branch string,
 ) (*dagger.Directory, error) {
-	authToken, err := token.Plaintext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read token: %w", err)
-	}
+	// The token stays a Secret: it is only expanded inside the shell, so it is
+	// neither an op argument (printed by --progress plain) nor left in the
+	// cloned repo's .git/config (#318).
+	repoPath := strings.TrimPrefix(repoURL, "https://")
 
-	// Prepare the URL with token for private repo access
-	// Example: https://oauth2:<token>@gitlab.com/yourgroup/yourrepo.git
-	authenticatedRepoURL := fmt.Sprintf("https://oauth2:%s@%s", authToken, repoURL[len("https://"):])
-
-	// Start a container with Git installed
-	container := dag.Container().From("alpine/git")
-	container = container.WithExec([]string{"git", "clone", "--branch", branch, authenticatedRepoURL, "/repo"})
+	container := dag.Container().From("alpine/git").
+		WithSecretVariable("GITLAB_TOKEN", &token).
+		WithEnvVariable("REPO_PATH", repoPath).
+		WithEnvVariable("BRANCH", branch).
+		WithExec([]string{"sh", "-c",
+			`git clone --branch "$BRANCH" "https://oauth2:${GITLAB_TOKEN}@${REPO_PATH}" /repo && ` +
+				`git -C /repo remote set-url origin "https://${REPO_PATH}"`,
+		})
 
 	// Return the directory where the repo is cloned
 	return container.Directory("/repo"), nil
