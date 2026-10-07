@@ -1,3 +1,10 @@
+## [0.137.1](https://github.com/stuttgart-things/dagger/compare/v0.137.0...v0.137.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* **sops:** random set-secret names, config recipients for encrypt, verified age, pinned base image ([#411](https://github.com/stuttgart-things/dagger/issues/411)) ([ee3d04c](https://github.com/stuttgart-things/dagger/commit/ee3d04c507d7e0e5dda5a334f6cea79f5d658098))
+
 # [0.137.0](https://github.com/stuttgart-things/dagger/compare/v0.136.3...v0.137.0) (2026-10-07)
 
 
