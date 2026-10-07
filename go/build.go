@@ -55,8 +55,9 @@ func (m *Go) build(
 func (m *Go) BuildBinary(
 	ctx context.Context,
 	src *dagger.Directory,
+	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.25.5"
+	// +default="1.27.1"
 	goVersion string,
 	// +optional
 	// +default="linux"

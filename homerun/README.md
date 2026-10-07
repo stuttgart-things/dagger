@@ -228,7 +228,7 @@ Run Go tests with Redis service automatically started
 **Parameters:**
 - `source` (required) - Directory containing your Go code
 - `test-path` (required) - Path to test (e.g., "." for current dir)
-- `go-version` (optional, default: "1.25.4") - Go version
+- `go-version` (optional, default: "1.27.1") - Go version
 - `redis-version` (optional, default: "7.2.0-v18") - Redis version
 
 **Example:**
@@ -236,7 +236,7 @@ Run Go tests with Redis service automatically started
 dagger call -m homerun run-test-with-redis \
   --source=./tests/homerun \
   --test-path=. \
-  --go-version=1.25.4 \
+  --go-version=1.27.1 \
   --redis-version=7.2.0-v18
 ```
 
@@ -292,7 +292,7 @@ func (m *MyModule) Test(ctx context.Context, source *dagger.Directory) (string, 
 
     // Run your tests with Redis
     return dag.Container().
-        From("golang:1.25-alpine").
+        From("golang:1.27-alpine").
         WithMountedDirectory("/src", source).
         WithWorkdir("/src").
         WithServiceBinding("redis", redis).
@@ -364,7 +364,7 @@ func (m *MyModule) IntegrationTest(ctx context.Context, src *dagger.Directory) e
 
     // Run tests
     _, err := dag.Container().
-        From("golang:1.25").
+        From("golang:1.27").
         WithMountedDirectory("/src", src).
         WithServiceBinding("redis", redis).
         WithEnvVariable("REDIS_PASSWORD", pass).
@@ -501,7 +501,7 @@ func (m *Ci) RunIntegrationTests(
 
     // Run your tests with Redis available
     return dag.Container().
-        From("golang:1.25-alpine").
+        From("golang:1.27-alpine").
         WithMountedDirectory("/src", source).
         WithWorkdir("/src").
         WithServiceBinding("redis", redis).
@@ -526,7 +526,7 @@ func (m *Ci) RunWithGeneratedPassword(
     redis := dag.Homerun().RedisService("7.2.0-v18", password)
 
     return dag.Container().
-        From("golang:1.25-alpine").
+        From("golang:1.27-alpine").
         WithMountedDirectory("/src", source).
         WithWorkdir("/src").
         WithServiceBinding("redis", redis).
@@ -563,7 +563,7 @@ func (m *Ci) TestRedisCompatibility(ctx context.Context, source *dagger.Director
         redis := dag.Homerun().RedisService(version, "testpass")
 
         output, err := dag.Container().
-            From("golang:1.25-alpine").
+            From("golang:1.27-alpine").
             WithMountedDirectory("/src", source).
             WithWorkdir("/src").
             WithServiceBinding("redis", redis).
@@ -693,7 +693,7 @@ task test-homerun
 - Starts Redis service automatically
 - Runs Go tests from `tests/homerun/`
 - Tests Redis connection, basic operations, and streams
-- Uses Go 1.25.4 and Redis 7.2.0-v18 by default
+- Uses Go 1.27.1 and Redis 7.2.0-v18 by default
 
 ---
 

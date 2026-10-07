@@ -133,8 +133,10 @@ func (m *Homerun) TestRedisConnection(
 func (m *Homerun) RunTestWithRedis(
 	ctx context.Context,
 	source *dagger.Directory,
+	// Go version of the golang test image
+	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.25.4"
+	// +default="1.27.1"
 	goVersion string,
 	// +optional
 	// +default="7.2.0-v18"

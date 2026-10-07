@@ -68,8 +68,9 @@ func (m *Go) Govulncheck(
 	format string, // text | json | sarif | openvex
 	// Base toolchain for the scan container. A floor, not a pin: GOTOOLCHAIN
 	// is set to auto, so a go.mod requiring something newer wins.
+	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.25.5"
+	// +default="1.27.1"
 	goVersion string,
 	// +optional
 	// +default="alpine"

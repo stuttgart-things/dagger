@@ -23,7 +23,7 @@ dagger call run-test-with-redis --source=/home/sthings/projects/dagger/tests/hom
 dagger call run-test-with-redis \
   --source=/home/sthings/projects/dagger/tests/homerun \
   --test-path=. \
-  --go-version=1.25.4 \
+  --go-version=1.27.1 \
   --redis-version=7.2.0-v18
 ```
 

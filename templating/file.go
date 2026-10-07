@@ -92,16 +92,9 @@ func (m *Templating) RenderFromFile(
 		return nil, fmt.Errorf("no templates provided")
 	}
 
-	// Create a container to work with templates
-	container := dag.Container().
-		From("golang:1.22-alpine")
-
-	// Only mount src directory if it's provided (not nil)
-	if src != nil {
-		container = container.WithMountedDirectory("/src", src)
-	}
-
-	container = container.WithWorkdir("/output")
+	// Collect the rendered files. Rendering happens here in the module, so no
+	// container (and no image pull) is needed.
+	output := dag.Directory()
 
 	// Process each template
 	for _, tmplPath := range templatePaths {
@@ -160,12 +153,12 @@ func (m *Templating) RenderFromFile(
 		// Remove .tmpl extension if present
 		outputName = strings.TrimSuffix(outputName, ".tmpl")
 
-		// Write rendered content to container
-		container = container.WithNewFile(outputName, rendered.String())
+		// Write rendered content to the output directory
+		output = output.WithNewFile(outputName, rendered.String())
 	}
 
 	// Return the directory with rendered templates
-	return container.Directory("/output"), nil
+	return output, nil
 }
 
 // downloadURLContent downloads content from a URL and returns it as a string,
