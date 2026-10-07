@@ -1,3 +1,10 @@
+## [0.136.3](https://github.com/stuttgart-things/dagger/compare/v0.136.2...v0.136.3) (2026-10-07)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/creasty/defaults to v1.11.0 ([#375](https://github.com/stuttgart-things/dagger/issues/375)) ([2f2d32d](https://github.com/stuttgart-things/dagger/commit/2f2d32d1ebb937f782d8d5c5781ab62a416acad4))
+
 ## [0.136.2](https://github.com/stuttgart-things/dagger/compare/v0.136.1...v0.136.2) (2026-10-07)
 
 
