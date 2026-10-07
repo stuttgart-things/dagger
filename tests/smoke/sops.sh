@@ -116,4 +116,22 @@ got=$(call decrypt --age-key "file:${TMP}/key2.txt" --encrypted-file "${TMP}/two
 [ "${got}" = "bar" ] || fail "update-keys: key2 cannot decrypt after update"
 echo "OK: update-keys adds a second recipient"
 
+# --- encrypt with recipients from the config only ------------------------
+# --age-key used to be required and, set as SOPS_AGE_RECIPIENTS, replaced the
+# config's recipients: a .sops.yaml naming two keys still produced a file only
+# one of them could open.
+call encrypt --plaintext-file "${FIXTURE}" --sops-config "${TMP}/two.sops.yaml" \
+  export --path "${TMP}/config-only.enc.yaml" >/dev/null
+[ "$(grep -c 'recipient: age1' "${TMP}/config-only.enc.yaml")" -eq 2 ] \
+  || fail "encrypt --sops-config: expected both recipients from the config"
+for k in key1 key2; do
+  got=$(call decrypt --age-key "file:${TMP}/${k}.txt" --encrypted-file "${TMP}/config-only.enc.yaml" \
+    --extract '["stringData"]["foo"]' contents)
+  [ "${got}" = "bar" ] || fail "encrypt --sops-config: ${k} cannot decrypt"
+done
+if call encrypt --plaintext-file "${FIXTURE}" contents >/dev/null 2>&1; then
+  fail "encrypt without --age-key and --sops-config should be refused"
+fi
+echo "OK: encrypt takes the recipients from --sops-config"
+
 echo "ALL OK: sops"
