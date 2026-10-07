@@ -272,6 +272,9 @@ creation_rules:
 
 Encrypts a file. `--age-key` takes the public key(s). With `--sops-config` its creation rule applies (recipients, `encrypted_regex`, ...); `--encrypted-regex` works without a config file.
 
+- `--age-key` is optional with `--sops-config`: the recipients of the matching creation rule are used. If you pass both, `--age-key` replaces the config's recipients (sops reads them like `--age`), while `encrypted_regex` from the config still applies.
+- The rule is matched against the name the file has inside the module, `encrypted.<file-extension>`, not against your file name. A `path_regex` such as `'.*\.enc\.yaml$'` therefore does not match there; use the per-extension rules (`generate-sops-config` without `--path-regex`) for `encrypt`.
+
 ```bash
 dagger call -m sops encrypt \
   --age-key env:AGE_PUB \

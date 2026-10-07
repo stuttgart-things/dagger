@@ -7,12 +7,17 @@ import (
 	"strings"
 )
 
-// Encrypt encrypts a file with SOPS for the given AGE recipient(s). With
-// --sops-config or --encrypted-regex only matching values are encrypted, so a
-// Kubernetes Secret keeps apiVersion, kind and metadata readable.
+// Encrypt encrypts a file with SOPS for the given AGE recipient(s), or for the
+// recipients a --sops-config names. With --sops-config or --encrypted-regex
+// only matching values are encrypted, so a Kubernetes Secret keeps
+// apiVersion, kind and metadata readable.
 func (m *Sops) Encrypt(
 	ctx context.Context,
-	// AGE public key(s), comma-separated
+	// AGE public key(s), comma-separated. Optional with --sops-config: then
+	// the recipients of the matching creation rule are used. When both are
+	// given, these keys replace the config's recipients (sops treats keys
+	// from the environment like --age).
+	// +optional
 	ageKey *dagger.Secret,
 	plaintextFile *dagger.File,
 	// +optional
@@ -51,11 +56,12 @@ func (m *Sops) Encrypt(
 		cmd = append(cmd, "--encrypted-regex", encryptedRegex)
 	}
 
-	// Provide the SOPS secret key (required for encryption)
-	if ageKey != nil {
+	// Recipients: from --age-key, or else from the config's creation rule.
+	switch {
+	case ageKey != nil:
 		ctr = ctr.WithSecretVariable("SOPS_AGE_RECIPIENTS", ageKey)
-	} else {
-		return nil, fmt.Errorf("ageKey is required for encryption")
+	case sopsConfig == nil:
+		return nil, fmt.Errorf("ageKey or sopsConfig is required for encryption")
 	}
 
 	// Copy file and encrypt it using sops
