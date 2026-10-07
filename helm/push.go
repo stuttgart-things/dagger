@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"dagger/helm/internal/dagger"
 	reg "dagger/helm/registry"
+	"encoding/hex"
 	"fmt"
 )
 
@@ -46,7 +48,7 @@ func (m *Helm) Push(
 	result, err := helmContainer.
 		WithDirectory(projectDir, src).
 		WithFile(projectDir+"/"+archiveFileName, packedChart).
-		WithNewFile("/root/.docker/config.json", configJSON).
+		WithMountedSecret("/root/.docker/config.json", dockerConfigSecret(configJSON)).
 		WithWorkdir(projectDir).
 		WithExec([]string{
 			"helm",
@@ -60,4 +62,13 @@ func (m *Helm) Push(
 	}
 
 	return result, nil
+}
+
+// dockerConfigSecret wraps a docker config.json as a Secret, so it is mounted
+// instead of passed as an op argument, which --progress plain prints (#318).
+// The name is derived from the content, so different credentials never share
+// one secret name within a session.
+func dockerConfigSecret(configJSON string) *dagger.Secret {
+	sum := sha256.Sum256([]byte(configJSON))
+	return dag.SetSecret("docker-config-"+hex.EncodeToString(sum[:8]), configJSON)
 }

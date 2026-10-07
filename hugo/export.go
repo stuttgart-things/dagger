@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"dagger/hugo/internal/dagger"
+	"encoding/hex"
 	"fmt"
 	"strconv"
 	"strings"
@@ -166,6 +168,10 @@ func (m *Hugo) SyncMinioBucket(
 		return nil, fmt.Errorf("FAILED TO GET SECRET KEY SECRET: %w", err)
 	}
 
+	mcHostURL := fmt.Sprintf("https://%s:%s@%s", accessKeyStr, secretKeyStr, endpoint) // # pragma: allowlist secret
+	mcHostSum := sha256.Sum256([]byte(mcHostURL))
+	mcHost := dag.SetSecret("mc-host-"+hex.EncodeToString(mcHostSum[:8]), mcHostURL)
+
 	var repoContent *dagger.Directory
 	repoContent = dag.Directory()
 
@@ -173,7 +179,9 @@ func (m *Hugo) SyncMinioBucket(
 		WithMountedDirectory("/sync", repoContent).
 		From("minio/mc:latest").
 		WithEnvVariable("MC_INSECURE", notSecure).
-		WithEnvVariable("MC_HOST_"+strings.ToLower(aliasName), fmt.Sprintf("https://%s:%s@%s", accessKeyStr, secretKeyStr, endpoint)) // # pragma: allowlist secret
+		// A secret, not a plain env var: the keys would otherwise be an op
+		// argument that --progress plain prints (#318).
+		WithSecretVariable("MC_HOST_"+strings.ToLower(aliasName), mcHost)
 
 	output, err := ctr.WithExec([]string{
 		"mc", "ls",

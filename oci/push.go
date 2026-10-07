@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"dagger/oci/internal/dagger"
 	reg "dagger/oci/registry"
+	"encoding/hex"
 	"fmt"
 )
 
@@ -57,7 +59,7 @@ func (m *Oci) PushArtifact(
 	}
 
 	result, err := fluxContainer.
-		WithNewFile("/root/.docker/config.json", configJSON).
+		WithMountedSecret("/root/.docker/config.json", dockerConfigSecret(configJSON)).
 		WithDirectory("/workspace", src).
 		WithWorkdir("/workspace").
 		WithExec(cmd).
@@ -117,7 +119,7 @@ func (m *Oci) PushArtifacts(
 	}
 
 	fluxContainer := m.container().
-		WithNewFile("/root/.docker/config.json", configJSON)
+		WithMountedSecret("/root/.docker/config.json", dockerConfigSecret(configJSON))
 
 	var output string
 
@@ -147,4 +149,13 @@ func (m *Oci) PushArtifacts(
 	}
 
 	return output, nil
+}
+
+// dockerConfigSecret wraps a docker config.json as a Secret, so it is mounted
+// instead of passed as an op argument, which --progress plain prints (#318).
+// The name is derived from the content, so different credentials never share
+// one secret name within a session.
+func dockerConfigSecret(configJSON string) *dagger.Secret {
+	sum := sha256.Sum256([]byte(configJSON))
+	return dag.SetSecret("docker-config-"+hex.EncodeToString(sum[:8]), configJSON)
 }

@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"dagger/crossplane/internal/dagger"
 	reg "dagger/crossplane/registry"
+	"encoding/hex"
 )
 
 // Push Crossplane Package
@@ -34,7 +36,7 @@ func (m *Crossplane) Push(
 	}
 
 	status, err := m.XplaneContainer.
-		WithNewFile("/root/.docker/config.json", configJSON).
+		WithMountedSecret("/root/.docker/config.json", dockerConfigSecret(configJSON)).
 		WithDirectory("/src", dirWithPackage).
 		WithWorkdir("/src").
 		WithExec([]string{"crossplane", "xpkg", "push", destination}).
@@ -45,4 +47,13 @@ func (m *Crossplane) Push(
 	}
 
 	return status
+}
+
+// dockerConfigSecret wraps a docker config.json as a Secret, so it is mounted
+// instead of passed as an op argument, which --progress plain prints (#318).
+// The name is derived from the content, so different credentials never share
+// one secret name within a session.
+func dockerConfigSecret(configJSON string) *dagger.Secret {
+	sum := sha256.Sum256([]byte(configJSON))
+	return dag.SetSecret("docker-config-"+hex.EncodeToString(sum[:8]), configJSON)
 }
