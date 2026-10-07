@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
+	"crypto/rand"
 	"dagger/hugo/internal/dagger"
-	"encoding/hex"
 	"fmt"
 	"strconv"
 	"strings"
@@ -169,8 +168,9 @@ func (m *Hugo) SyncMinioBucket(
 	}
 
 	mcHostURL := fmt.Sprintf("https://%s:%s@%s", accessKeyStr, secretKeyStr, endpoint) // # pragma: allowlist secret
-	mcHostSum := sha256.Sum256([]byte(mcHostURL))
-	mcHost := dag.SetSecret("mc-host-"+hex.EncodeToString(mcHostSum[:8]), mcHostURL)
+	// Random name: secret names can appear in traces, and a hash of the URL
+	// would let guessed MinIO keys be confirmed offline.
+	mcHost := dag.SetSecret("mc-host-"+rand.Text(), mcHostURL)
 
 	var repoContent *dagger.Directory
 	repoContent = dag.Directory()

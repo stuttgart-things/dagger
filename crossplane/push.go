@@ -2,10 +2,9 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
+	"crypto/rand"
 	"dagger/crossplane/internal/dagger"
 	reg "dagger/crossplane/registry"
-	"encoding/hex"
 )
 
 // Push Crossplane Package
@@ -51,9 +50,9 @@ func (m *Crossplane) Push(
 
 // dockerConfigSecret wraps a docker config.json as a Secret, so it is mounted
 // instead of passed as an op argument, which --progress plain prints (#318).
-// The name is derived from the content, so different credentials never share
-// one secret name within a session.
+// The name is random per call: secret names can appear in traces, and a name
+// derived from the content (an unsalted hash of the base64 credential) lets a
+// guessed password be confirmed offline.
 func dockerConfigSecret(configJSON string) *dagger.Secret {
-	sum := sha256.Sum256([]byte(configJSON))
-	return dag.SetSecret("docker-config-"+hex.EncodeToString(sum[:8]), configJSON)
+	return dag.SetSecret("docker-config-"+rand.Text(), configJSON)
 }
