@@ -1,3 +1,10 @@
+# [0.137.0](https://github.com/stuttgart-things/dagger/compare/v0.136.3...v0.137.0) (2026-10-07)
+
+
+### Features
+
+* **sops:** partial encryption, extract, set, update-keys, age-public-key; pin sops/age ([#407](https://github.com/stuttgart-things/dagger/issues/407)) ([0bad2ea](https://github.com/stuttgart-things/dagger/commit/0bad2ea361022e8b53adbf5bafb3f0c0bd12dc5f)), closes [#404](https://github.com/stuttgart-things/dagger/issues/404) [#404](https://github.com/stuttgart-things/dagger/issues/404) [#124](https://github.com/stuttgart-things/dagger/issues/124) [#404](https://github.com/stuttgart-things/dagger/issues/404)
+
 ## [0.136.3](https://github.com/stuttgart-things/dagger/compare/v0.136.2...v0.136.3) (2026-10-07)
 
 
