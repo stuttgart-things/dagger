@@ -12,8 +12,13 @@ func (m *Sops) Decrypt(
 	ctx context.Context,
 	ageKey *dagger.Secret,
 	encryptedFile *dagger.File,
+	// .sops.yaml to use
 	// +optional
-	sopsConfig *dagger.File, // ~/.sops.yaml config file
+	sopsConfig *dagger.File,
+	// Return a single value instead of the whole file, as a sops path,
+	// e.g. '["stringData"]["KEY"]'
+	// +optional
+	extract string,
 ) (*dagger.File, error) {
 	ctr, err := m.container(ctx)
 	if err != nil {
@@ -33,9 +38,9 @@ func (m *Sops) Decrypt(
 		WithMountedFile(workDir+"/"+fileName, encryptedFile).
 		WithWorkdir(workDir)
 
-	// Mount the optional .sops.yaml config file
-	if sopsConfig != nil {
-		ctr = ctr.WithMountedFile("/root/.sops.yaml", sopsConfig)
+	cmd := withSopsConfig(&ctr, sopsConfig, "-d", "--output", decryptedFile)
+	if extract != "" {
+		cmd = append(cmd, "--extract", extract)
 	}
 
 	// Provide the SOPS secret key (required for decryption)
@@ -48,7 +53,7 @@ func (m *Sops) Decrypt(
 	// Decrypt file to output file
 	ctr = ctr.
 		WithEntrypoint([]string{}).
-		WithExec([]string{"sops", "-d", "--output", decryptedFile, fileName})
+		WithExec(append(cmd, fileName))
 
 	return ctr.File(decryptedFile), nil
 }
