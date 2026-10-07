@@ -1,3 +1,11 @@
+## [0.136.1](https://github.com/stuttgart-things/dagger/compare/v0.136.0...v0.136.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* **ansible:** pass parameters as their own --extra-vars ([#402](https://github.com/stuttgart-things/dagger/issues/402)) ([c01f079](https://github.com/stuttgart-things/dagger/commit/c01f07918ca8070ff65f54213ba59358be3a0a80)), closes [stuttgart-things/blueprints#217](https://github.com/stuttgart-things/blueprints/issues/217)
+* drop golang:1.22 image from templating, Go 1.27.1 build defaults ([#400](https://github.com/stuttgart-things/dagger/issues/400)) ([#401](https://github.com/stuttgart-things/dagger/issues/401)) ([2a2d1fc](https://github.com/stuttgart-things/dagger/commit/2a2d1fca77611bb455bdfc756069cd48ffdd09ae))
+
 # [0.136.0](https://github.com/stuttgart-things/dagger/compare/v0.135.0...v0.136.0) (2026-10-05)
 
 
