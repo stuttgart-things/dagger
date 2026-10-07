@@ -1,3 +1,10 @@
+## [0.137.3](https://github.com/stuttgart-things/dagger/compare/v0.137.2...v0.137.3) (2026-10-07)
+
+
+### Bug Fixes
+
+* random secret names for registry and MinIO credentials ([#417](https://github.com/stuttgart-things/dagger/issues/417)) ([172bc68](https://github.com/stuttgart-things/dagger/commit/172bc68575847c3770b72505ada3e0a411adbb32)), closes [#403](https://github.com/stuttgart-things/dagger/issues/403) [#411](https://github.com/stuttgart-things/dagger/issues/411)
+
 ## [0.137.2](https://github.com/stuttgart-things/dagger/compare/v0.137.1...v0.137.2) (2026-10-07)
 
 
