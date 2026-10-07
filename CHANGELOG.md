@@ -1,3 +1,10 @@
+## [0.137.2](https://github.com/stuttgart-things/dagger/compare/v0.137.1...v0.137.2) (2026-10-07)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/redis/go-redis/v9 to v9.23.0 ([#413](https://github.com/stuttgart-things/dagger/issues/413)) ([e823f01](https://github.com/stuttgart-things/dagger/commit/e823f01560a830325f47f675bcfb8439f1be3ef4))
+
 ## [0.137.1](https://github.com/stuttgart-things/dagger/compare/v0.137.0...v0.137.1) (2026-10-07)
 
 
