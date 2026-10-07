@@ -1,3 +1,10 @@
+## [0.136.2](https://github.com/stuttgart-things/dagger/compare/v0.136.1...v0.136.2) (2026-10-07)
+
+
+### Bug Fixes
+
+* keep registry and git credentials out of --progress plain ([#318](https://github.com/stuttgart-things/dagger/issues/318)) ([#403](https://github.com/stuttgart-things/dagger/issues/403)) ([0c2769a](https://github.com/stuttgart-things/dagger/commit/0c2769a7e4612ab24093307a2df10b1885484988)), closes [#285](https://github.com/stuttgart-things/dagger/issues/285)
+
 ## [0.136.1](https://github.com/stuttgart-things/dagger/compare/v0.136.0...v0.136.1) (2026-10-07)
 
 
