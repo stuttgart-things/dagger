@@ -1,3 +1,10 @@
+## [0.137.4](https://github.com/stuttgart-things/dagger/compare/v0.137.3...v0.137.4) (2026-10-15)
+
+
+### Bug Fixes
+
+* **linting:** install ruby-dev and build-base so mdl builds ([#422](https://github.com/stuttgart-things/dagger/issues/422)) ([5a94da8](https://github.com/stuttgart-things/dagger/commit/5a94da89d4bcf30e268ecf36eb4c709aeb86b7f5))
+
 ## [0.137.3](https://github.com/stuttgart-things/dagger/compare/v0.137.2...v0.137.3) (2026-10-07)
 
 
