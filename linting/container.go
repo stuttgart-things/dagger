@@ -21,6 +21,10 @@ func (m *Linting) container() *dagger.Container {
 		"wget",
 		"yamllint",
 		"ruby",
+		// mdl pulls in gems with native extensions (racc); without the Ruby
+		// headers and a compiler `gem install mdl` fails on extconf.rb.
+		"ruby-dev",
+		"build-base",
 		"python3",
 		"py3-pip",
 		"git",
