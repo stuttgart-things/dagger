@@ -12,7 +12,7 @@ func (m *Go) Test(
 	// Go version to use for testing
 	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.27.1"
+	// +default="1.27.2"
 	goVersion string,
 	// Test arguments to pass to `go test`
 	// +optional

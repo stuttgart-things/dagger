@@ -70,7 +70,7 @@ func (m *Go) Govulncheck(
 	// is set to auto, so a go.mod requiring something newer wins.
 	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.27.1"
+	// +default="1.27.2"
 	goVersion string,
 	// +optional
 	// +default="alpine"

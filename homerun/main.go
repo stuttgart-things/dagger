@@ -136,7 +136,7 @@ func (m *Homerun) RunTestWithRedis(
 	// Go version of the golang test image
 	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.27.1"
+	// +default="1.27.2"
 	goVersion string,
 	// +optional
 	// +default="7.2.0-v18"
