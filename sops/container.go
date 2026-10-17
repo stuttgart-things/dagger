@@ -29,7 +29,7 @@ var ageSHA256 = map[string]string{
 // are used from it, but "latest" alone changes underneath every run. Renovate
 // moves the digest.
 // renovate: datasource=docker depName=cgr.dev/chainguard/wolfi-base
-const baseImageTag = "latest@sha256:238642d42c5613936474d00b900c4e65fb6f637d8991c913403ff09a09cf43a3"
+const baseImageTag = "latest@sha256:c2a4815b6ca49b9bbafd451b4bde690d567a86b2b6b54877faac8082a7bc4296"
 
 const defaultBaseImage = "cgr.dev/chainguard/wolfi-base:" + baseImageTag
 
