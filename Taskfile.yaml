@@ -460,6 +460,11 @@ tasks:
     cmds:
       - ./tests/smoke/sops.sh
 
+  test-techdocs:
+    desc: Test techdocs (builds the fixture, no bucket or credentials needed)
+    cmds:
+      - ./tests/smoke/techdocs.sh
+
   test-cosign:
     desc: Test cosign verification and signing refusals (public registries, no credentials needed)
     cmds:

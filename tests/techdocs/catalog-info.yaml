@@ -1,0 +1,16 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: techdocs-smoke-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: techdocs-smoke
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: library
+  lifecycle: experimental
+  owner: stuttgart-things

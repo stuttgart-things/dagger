@@ -29,6 +29,7 @@ modular collection of Dagger building blocks for infrastructure, containers, sec
 | [OCI](./oci/README.md)             | OCI Artifact Management         | Flux push, batch push, local TLS registry testing |
 | [Flux](./flux/README.md)           | Flux GitOps Artifacts           | Build/push OCI artifacts, batch push, registry auth |
 | [Slidev](./slidev/README.md)       | Presentations / Decks           | Scaffold, dev server, static build from a single `slides.md` |
+| [TechDocs](./techdocs/README.md)   | Backstage TechDocs              | Build docs in CI, publish to S3/MinIO for `builder: external` |
 | [Python](./python/README.md)       | Python Development              | Lint (ruff), tests (pytest), security (bandit), Docker build |
 | [Linting](./linting/README.md)     | Linting                         | YAML, Markdown, pre-commit hooks |
 | [Templating](./templating/README.md) | Go Templating                 | Render Go text/template from file or URL with YAML/CLI vars |
