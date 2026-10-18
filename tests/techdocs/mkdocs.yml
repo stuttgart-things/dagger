@@ -1,0 +1,5 @@
+site_name: techdocs-smoke
+nav:
+  - Home: index.md
+plugins:
+  - techdocs-core
