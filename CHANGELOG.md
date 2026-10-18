@@ -1,3 +1,10 @@
+# [0.138.0](https://github.com/stuttgart-things/dagger/compare/v0.137.4...v0.138.0) (2026-10-18)
+
+
+### Features
+
+* **techdocs:** build Backstage TechDocs in CI and publish them to S3/MinIO ([#425](https://github.com/stuttgart-things/dagger/issues/425)) ([978d3aa](https://github.com/stuttgart-things/dagger/commit/978d3aa399e4680147fe030609003de711236e3e))
+
 ## [0.137.4](https://github.com/stuttgart-things/dagger/compare/v0.137.3...v0.137.4) (2026-10-15)
 
 
