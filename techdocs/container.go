@@ -12,7 +12,7 @@ import (
 const techdocsCoreVersion = "1.7.1"
 
 // renovate: datasource=npm depName=@techdocs/cli
-const techdocsCliVersion = "1.12.0"
+const techdocsCliVersion = "1.13.0"
 
 // Node.js is downloaded from nodejs.org and checked against the release's
 // SHASUMS256.txt instead of installed with apt, so the version does not
