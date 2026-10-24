@@ -1,3 +1,10 @@
+# [0.139.0](https://github.com/stuttgart-things/dagger/compare/v0.138.0...v0.139.0) (2026-10-24)
+
+
+### Features
+
+* **go:** pin golangci-lint version in lint, bump go defaults to 1.27.3 ([#430](https://github.com/stuttgart-things/dagger/issues/430)) ([955a597](https://github.com/stuttgart-things/dagger/commit/955a5975302ae5929523338c7a010410cbb4817c))
+
 # [0.138.0](https://github.com/stuttgart-things/dagger/compare/v0.137.4...v0.138.0) (2026-10-18)
 
 
