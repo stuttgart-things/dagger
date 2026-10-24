@@ -104,6 +104,11 @@ dagger call -m go lint \
   --progress plain
 ```
 
+`--lint-version` (default `v2.15.0`) pins the golangci-lint image, `--go-version`
+(default `1.27.3`) the Go image it runs in. golangci-lint refuses a module whose
+`go` directive is newer than the Go it was built with, so bump `--lint-version`
+together with the Go version.
+
 ### Binary Building
 
 ```bash

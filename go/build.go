@@ -57,7 +57,7 @@ func (m *Go) BuildBinary(
 	src *dagger.Directory,
 	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.27.1"
+	// +default="1.27.3"
 	goVersion string,
 	// +optional
 	// +default="linux"
