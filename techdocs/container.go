@@ -19,7 +19,7 @@ const techdocsCliVersion = "1.12.0"
 // depend on the day of the run. The tarball is .tar.gz: the slim python
 // image has no xz.
 // renovate: datasource=node-version depName=node
-const nodeVersion = "22.23.3"
+const nodeVersion = "24.22.1"
 
 // The base image, pinned by digest. It brings python3 + pip for mkdocs;
 // node comes from nodejs.org above. Renovate moves the digest.
