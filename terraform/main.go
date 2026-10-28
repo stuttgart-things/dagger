@@ -33,7 +33,7 @@ func New(
 	// Terraform version to install (from releases.hashicorp.com)
 	// renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.*)$
 	// +optional
-	// +default="1.16.5"
+	// +default="1.17.1"
 	terraformVersion string,
 ) *Terraform {
 	return &Terraform{

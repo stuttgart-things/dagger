@@ -10,7 +10,7 @@ import (
 // Keep in step with the +default of New's terraformVersion (main.go); Renovate
 // bumps both.
 // renovate: datasource=github-releases depName=hashicorp/terraform extractVersion=^v(?<version>.*)$
-const defaultTerraformVersion = "1.16.5"
+const defaultTerraformVersion = "1.17.1"
 
 func (m *Terraform) container(ctx context.Context) (*dagger.Container, error) {
 	if m.BaseImage == "" {
