@@ -24,7 +24,7 @@ const nodeVersion = "22.23.3"
 // The base image, pinned by digest. It brings python3 + pip for mkdocs;
 // node comes from nodejs.org above. Renovate moves the digest.
 // renovate: datasource=docker depName=python
-const baseImageTag = "3.13-slim@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f"
+const baseImageTag = "3.15-slim@sha256:e97b88e416c3c01eb427b21fd8cd3ebf006e6ee38afcfcc3cae1c54ee2ab0a75"
 
 const defaultBaseImage = "python:" + baseImageTag
 
