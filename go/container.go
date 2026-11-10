@@ -64,7 +64,7 @@ func (m *Go) KoBuild(
 func (m *Go) GetGoLangContainer(
 	// renovate: datasource=golang-version depName=golang
 	// +optional
-	// +default="1.27.3"
+	// +default="1.27.4"
 	goVersion string,
 
 	// +optional
