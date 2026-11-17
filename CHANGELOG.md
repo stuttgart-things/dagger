@@ -1,3 +1,10 @@
+## [0.139.1](https://github.com/stuttgart-things/dagger/compare/v0.139.0...v0.139.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **ansible:** set Vault AppRole env inline instead of via the vault module ([#432](https://github.com/stuttgart-things/dagger/issues/432)) ([3c46652](https://github.com/stuttgart-things/dagger/commit/3c46652871417710d75c45813427510587990cd3)), closes [stuttgart-things/stuttgart-things#4681](https://github.com/stuttgart-things/stuttgart-things/issues/4681)
+
 # [0.139.0](https://github.com/stuttgart-things/dagger/compare/v0.138.0...v0.139.0) (2026-10-24)
 
 
