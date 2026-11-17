@@ -37,11 +37,20 @@ func (m *Ansible) executePlaybooks(
 			WithEnvVariable("ANSIBLE_HOST_KEY_CHECKING", "False")
 	}
 
-	ansible = dag.Vault().WithAppRoleEnv(ansible, dagger.VaultWithAppRoleEnvOpts{
-		RoleID:   vaultAppRoleID,
-		SecretID: vaultSecretID, // pragma: allowlist secret
-		Addr:     vaultUrl,
-	})
+	// Vault AppRole env for playbooks that log in themselves (hashi_vault
+	// lookups). Set inline rather than through the vault module: calling a
+	// dependency module makes the engine load it (git fetch + go build) on
+	// every run, ~1.5 min for three env vars, and on 2026-11-16 a LabUL deploy
+	// hung there for 70 min (stuttgart-things/stuttgart-things#4681).
+	if vaultAppRoleID != nil {
+		ansible = ansible.WithSecretVariable("VAULT_ROLE_ID", vaultAppRoleID)
+	}
+	if vaultSecretID != nil { // pragma: allowlist secret
+		ansible = ansible.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
+	}
+	if vaultUrl != nil {
+		ansible = ansible.WithSecretVariable("VAULT_ADDR", vaultUrl)
+	}
 
 	// Set SSH credentials as env vars for lookup inside extra-vars
 	if sshUser != nil {
