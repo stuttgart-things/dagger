@@ -1,3 +1,10 @@
+## [0.139.2](https://github.com/stuttgart-things/dagger/compare/v0.139.1...v0.139.2) (2026-11-17)
+
+
+### Bug Fixes
+
+* **ansible:** engineVersion back to v0.21.9 ([#433](https://github.com/stuttgart-things/dagger/issues/433)) ([07e7c4e](https://github.com/stuttgart-things/dagger/commit/07e7c4e573ba917cc941766883f40faa1686fec6)), closes [#432](https://github.com/stuttgart-things/dagger/issues/432) [stuttgart-things/stuttgart-things#4681](https://github.com/stuttgart-things/stuttgart-things/issues/4681)
+
 ## [0.139.1](https://github.com/stuttgart-things/dagger/compare/v0.139.0...v0.139.1) (2026-11-17)
 
 
