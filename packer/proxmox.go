@@ -2,23 +2,23 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"dagger/packer/internal/dagger"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
-	"strings"
+	"strconv"
+
+	"github.com/stuttgart-things/pvectl/pkg/pve"
 )
 
-type proxmoxClient struct {
-	baseURL    string
-	authHeader string
-	http       *http.Client
-}
+// The Proxmox functions use the pvectl library
+// (github.com/stuttgart-things/pvectl/pkg/pve): API token login, verified
+// TLS (cluster CA or a pinned certificate fingerprint), and VM descriptions
+// never leave the library. Every function returns {"data": ...} JSON.
 
-func newProxmoxClient(ctx context.Context, pmURL, tokenID, tokenSecret *dagger.Secret) (*proxmoxClient, error) {
+// newProxmoxClient builds a pvectl client. TLS needs proxmoxCaCert (the
+// cluster CA, /etc/pve/pve-root-ca.pem) or proxmoxFingerprint (the SHA-256
+// of the API certificate as the web UI shows it).
+func newProxmoxClient(ctx context.Context, pmURL, tokenID, tokenSecret, caCert *dagger.Secret, fingerprint string) (*pve.Client, error) {
 	base, err := pmURL.Plaintext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("read proxmoxUrl: %w", err)
@@ -31,61 +31,39 @@ func newProxmoxClient(ctx context.Context, pmURL, tokenID, tokenSecret *dagger.S
 	if err != nil {
 		return nil, fmt.Errorf("read tokenSecret: %w", err)
 	}
-
-	return &proxmoxClient{
-		baseURL:    strings.TrimRight(base, "/") + "/api2/json",
-		authHeader: fmt.Sprintf("PVEAPIToken=%s=%s", id, sec),
-		http: &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		},
-	}, nil
+	o := pve.Options{URL: base, TokenID: id, TokenSecret: sec}
+	switch {
+	case caCert != nil:
+		if o.CACert, err = caCert.Plaintext(ctx); err != nil {
+			return nil, fmt.Errorf("read proxmoxCaCert: %w", err)
+		}
+	case fingerprint != "":
+		if o.KnownHosts, err = pve.PinnedKnownHosts(base, fingerprint); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("TLS: pass --proxmox-ca-cert (cluster CA, /etc/pve/pve-root-ca.pem) " +
+			"or --proxmox-fingerprint (SHA-256 of the API certificate: node > System > Certificates)")
+	}
+	return pve.New(o)
 }
 
-func (c *proxmoxClient) do(ctx context.Context, method, path string, form url.Values) (string, error) {
-	var body io.Reader
-	if form != nil {
-		body = strings.NewReader(form.Encode())
-	}
-	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Authorization", c.authHeader)
-	if form != nil {
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	}
-
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	raw, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode >= 400 {
-		return "", fmt.Errorf("proxmox %s %s: %s: %s", method, path, resp.Status, string(raw))
-	}
-	return prettyJSON(raw), nil
+// result wraps v as {"data": v}, indented.
+func result(v any) (string, error) {
+	out, err := json.MarshalIndent(map[string]any{"data": v}, "", "  ")
+	return string(out), err
 }
 
-func prettyJSON(raw []byte) string {
-	var v any
-	if err := json.Unmarshal(raw, &v); err != nil {
-		return string(raw)
+func parseVMID(vmid string) (int, error) {
+	n, err := strconv.Atoi(vmid)
+	if err != nil || n <= 0 {
+		return 0, fmt.Errorf("vmid %q is not a VMID", vmid)
 	}
-	out, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return string(raw)
-	}
-	return string(out)
+	return n, nil
 }
 
-// Proxmoxoperation performs move/rename/delete on a Proxmox VM or template.
+// Proxmoxoperation performs move/rename/delete on a Proxmox VM or template
+// and returns the task UPID.
 func (m *Packer) Proxmoxoperation(
 	ctx context.Context,
 	// Operation: move | rename | delete
@@ -100,63 +78,78 @@ func (m *Packer) Proxmoxoperation(
 	proxmoxUrl *dagger.Secret,
 	tokenId *dagger.Secret,
 	tokenSecret *dagger.Secret,
+	// Cluster CA (PEM) to verify the API certificate
+	// +optional
+	proxmoxCaCert *dagger.Secret,
+	// SHA-256 of the API certificate (AB:CD:...), instead of a CA
+	// +optional
+	proxmoxFingerprint string,
 ) (string, error) {
 	if node == "" || vmid == "" {
 		return "", fmt.Errorf("node and vmid must be specified")
 	}
-	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret)
+	id, err := parseVMID(vmid)
 	if err != nil {
 		return "", err
 	}
-
-	switch operation {
-	case "move":
-		if target == "" {
-			return "", fmt.Errorf("target (destination node) must be specified for move")
-		}
-		return c.do(ctx, http.MethodPost,
-			fmt.Sprintf("/nodes/%s/qemu/%s/migrate", node, vmid),
-			url.Values{"target": {target}})
-
-	case "rename":
-		if target == "" {
-			return "", fmt.Errorf("target (new VM name) must be specified for rename")
-		}
-		// POST (async) on the qemu config endpoint: PVE returns
-		// "501 Method 'PUT ...' not implemented" for PUT here.
-		return c.do(ctx, http.MethodPost,
-			fmt.Sprintf("/nodes/%s/qemu/%s/config", node, vmid),
-			url.Values{"name": {target}})
-
-	case "delete":
-		return c.do(ctx, http.MethodDelete,
-			fmt.Sprintf("/nodes/%s/qemu/%s?purge=1&destroy-unreferenced-disks=1", node, vmid),
-			nil)
-
-	default:
+	if (operation == "move" || operation == "rename") && target == "" {
+		return "", fmt.Errorf("target must be specified for %s (move: destination node, rename: new name)", operation)
+	}
+	if operation != "move" && operation != "rename" && operation != "delete" {
 		return "", fmt.Errorf("unsupported operation: %s", operation)
 	}
+	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret, proxmoxCaCert, proxmoxFingerprint)
+	if err != nil {
+		return "", err
+	}
+	var upid string
+	switch operation {
+	case "move":
+		upid, err = c.Migrate(ctx, pve.MigrateRequest{Node: node, VMID: id, Target: target})
+	case "rename":
+		upid, err = c.Rename(ctx, node, id, target)
+	case "delete":
+		upid, err = c.Delete(ctx, node, id)
+	}
+	if err != nil {
+		return "", err
+	}
+	return result(upid)
 }
 
-// CheckProxmoxStorage lists storage pools (cluster-wide or per-node) with usage.
+// CheckProxmoxStorage lists storages with usage: cluster-wide (every node),
+// or the VM-disk storages of one node.
 func (m *Packer) CheckProxmoxStorage(
 	ctx context.Context,
 	proxmoxUrl *dagger.Secret,
 	tokenId *dagger.Secret,
 	tokenSecret *dagger.Secret,
-	// Node to query (e.g. "pve1"); if empty, queries cluster-wide /storage
+	// Node to query (e.g. "pve1"); if empty, every storage on every node
 	// +optional
 	node string,
+	// Cluster CA (PEM) to verify the API certificate
+	// +optional
+	proxmoxCaCert *dagger.Secret,
+	// SHA-256 of the API certificate (AB:CD:...), instead of a CA
+	// +optional
+	proxmoxFingerprint string,
 ) (string, error) {
-	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret)
+	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret, proxmoxCaCert, proxmoxFingerprint)
 	if err != nil {
 		return "", err
 	}
-	path := "/storage"
 	if node != "" {
-		path = fmt.Sprintf("/nodes/%s/storage", node)
+		ss, err := c.Storages(ctx, node)
+		if err != nil {
+			return "", err
+		}
+		return result(ss)
 	}
-	return c.do(ctx, http.MethodGet, path, nil)
+	ss, err := c.ClusterStorages(ctx)
+	if err != nil {
+		return "", err
+	}
+	return result(ss)
 }
 
 // CheckProxmoxNetworks lists network interfaces/bridges on a node.
@@ -167,15 +160,25 @@ func (m *Packer) CheckProxmoxNetworks(
 	tokenSecret *dagger.Secret,
 	// Node to query (e.g. "pve1")
 	node string,
+	// Cluster CA (PEM) to verify the API certificate
+	// +optional
+	proxmoxCaCert *dagger.Secret,
+	// SHA-256 of the API certificate (AB:CD:...), instead of a CA
+	// +optional
+	proxmoxFingerprint string,
 ) (string, error) {
 	if node == "" {
 		return "", fmt.Errorf("node must be specified")
 	}
-	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret)
+	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret, proxmoxCaCert, proxmoxFingerprint)
 	if err != nil {
 		return "", err
 	}
-	return c.do(ctx, http.MethodGet, fmt.Sprintf("/nodes/%s/network", node), nil)
+	ns, err := c.Networks(ctx, node)
+	if err != nil {
+		return "", err
+	}
+	return result(ns)
 }
 
 // GetProxmoxTemplateIdByName looks up a VM/template VMID by its name.
@@ -193,73 +196,75 @@ func (m *Packer) GetProxmoxTemplateIdByName(
 	// Restrict search to this node
 	// +optional
 	node string,
+	// Cluster CA (PEM) to verify the API certificate
+	// +optional
+	proxmoxCaCert *dagger.Secret,
+	// SHA-256 of the API certificate (AB:CD:...), instead of a CA
+	// +optional
+	proxmoxFingerprint string,
 ) (string, error) {
 	if name == "" {
 		return "", fmt.Errorf("name must be specified")
 	}
-	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret)
+	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret, proxmoxCaCert, proxmoxFingerprint)
 	if err != nil {
 		return "", err
 	}
-
-	body, err := c.do(ctx, http.MethodGet, "/cluster/resources?type=vm", nil)
+	r, err := c.FindByName(ctx, name, pool, node)
 	if err != nil {
 		return "", err
 	}
-
-	var resp struct {
-		Data []struct {
-			VMID int    `json:"vmid"`
-			Name string `json:"name"`
-			Node string `json:"node"`
-			Pool string `json:"pool"`
-		} `json:"data"`
-	}
-	if err := json.Unmarshal([]byte(body), &resp); err != nil {
-		return "", fmt.Errorf("parse cluster resources: %w", err)
-	}
-
-	var matches []int
-	for _, r := range resp.Data {
-		if r.Name != name {
-			continue
-		}
-		if pool != "" && r.Pool != pool {
-			continue
-		}
-		if node != "" && r.Node != node {
-			continue
-		}
-		matches = append(matches, r.VMID)
-	}
-
-	switch len(matches) {
-	case 0:
-		return "", fmt.Errorf("no VM/template found with name %q (pool=%q, node=%q)", name, pool, node)
-	case 1:
-		return fmt.Sprintf("%d", matches[0]), nil
-	default:
-		return "", fmt.Errorf("multiple VMs/templates found with name %q: vmids=%v", name, matches)
-	}
+	return strconv.Itoa(r.VMID), nil
 }
 
-// ListProxmoxResources returns datacenter-wide resources (nodes, VMs, storage, sdn).
+// ListProxmoxResources returns datacenter-wide resources: VMs/templates,
+// storages, nodes.
 func (m *Packer) ListProxmoxResources(
 	ctx context.Context,
 	proxmoxUrl *dagger.Secret,
 	tokenId *dagger.Secret,
 	tokenSecret *dagger.Secret,
-	// Resource type filter: vm | storage | node | sdn (empty = all)
+	// Resource type filter: vm | storage | node (empty = all three)
 	// +optional
 	resourceType string,
+	// Cluster CA (PEM) to verify the API certificate
+	// +optional
+	proxmoxCaCert *dagger.Secret,
+	// SHA-256 of the API certificate (AB:CD:...), instead of a CA
+	// +optional
+	proxmoxFingerprint string,
 ) (string, error) {
-	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret)
+	if resourceType != "" && resourceType != "vm" && resourceType != "storage" && resourceType != "node" {
+		return "", fmt.Errorf("unsupported resource type %q: vm | storage | node", resourceType)
+	}
+	c, err := newProxmoxClient(ctx, proxmoxUrl, tokenId, tokenSecret, proxmoxCaCert, proxmoxFingerprint)
 	if err != nil {
 		return "", err
 	}
-	path := "/cluster/resources"
-	if resourceType != "" {
-		path += "?type=" + url.QueryEscape(resourceType)
+	all := map[string]any{}
+	if resourceType == "" || resourceType == "vm" {
+		vms, err := c.Resources(ctx)
+		if err != nil {
+			return "", err
+		}
+		all["vm"] = vms
 	}
-	return c.do(ctx, http.MethodGet, path, nil)
+	if resourceType == "" || resourceType == "storage" {
+		ss, err := c.ClusterStorages(ctx)
+		if err != nil {
+			return "", err
+		}
+		all["storage"] = ss
+	}
+	if resourceType == "" || resourceType == "node" {
+		ns, err := c.Nodes(ctx)
+		if err != nil {
+			return "", err
+		}
+		all["node"] = ns
+	}
+	if resourceType != "" {
+		return result(all[resourceType])
+	}
+	return result(all)
 }
