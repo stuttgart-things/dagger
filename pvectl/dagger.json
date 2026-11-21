@@ -1,0 +1,7 @@
+{
+  "name": "pvectl",
+  "engineVersion": "v0.21.9",
+  "sdk": {
+    "source": "go"
+  }
+}
