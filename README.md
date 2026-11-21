@@ -18,6 +18,7 @@ modular collection of Dagger building blocks for infrastructure, containers, sec
 | [Crossplane](./crossplane/README.md)| Cloud Infrastructure           | Package management, OCI push, custom packages |
 | [GitLab](./gitlab/README.md)       | GitLab Integration              | API, merge requests, repo management |
 | [Packer](./packer/README.md)       | Image Building                  | VM templates, vCenter, Vault |
+| [pvectl](./pvectl/README.md)       | Proxmox Template Work           | VMs/templates, config checks, template promote (dry-run by default), verified TLS |
 | [Kyverno](./kyverno/README.md)     | Policy Management               | Policy validation, compliance, GitOps |
 | [Trivy](./trivy/README.md)         | Security Scanning               | Vulnerability scan, container, compliance |
 | [Cosign](./cosign/README.md)       | Supply-Chain Signing            | Keyless sign by digest, SBOM attestation, verify and prove refusal |
