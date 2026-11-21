@@ -1,3 +1,10 @@
+# [0.140.0](https://github.com/stuttgart-things/dagger/compare/v0.139.2...v0.140.0) (2026-11-21)
+
+
+### Features
+
+* **pvectl:** module for LabUL Proxmox template work via pvectl ([#434](https://github.com/stuttgart-things/dagger/issues/434)) ([40b910c](https://github.com/stuttgart-things/dagger/commit/40b910ca9c7eea700030097540b1ea5858a9c971))
+
 ## [0.139.2](https://github.com/stuttgart-things/dagger/compare/v0.139.1...v0.139.2) (2026-11-17)
 
 
