@@ -61,8 +61,8 @@ github.com/sosodev/duration v1.4.0 h1:35ed0KiVFriGHHzZZJaZLgmTEEICIyt8Sx0RQfj9Ij
 github.com/sosodev/duration v1.4.0/go.mod h1:RQIBBX0+fMLc/D9+Jb/fwvVmo0eZvDDEERAikUR6SDg=
 github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWDWE=
 github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
-github.com/stuttgart-things/pvectl v0.5.1-0.20261121165411-f3abb501a507 h1:hPq17jJHUqBzdKOuw7KQO9PmHulODzQy1rMtivQp6tk=
-github.com/stuttgart-things/pvectl v0.5.1-0.20261121165411-f3abb501a507/go.mod h1:xLB4qC5AKPRBJqQI6mwpcLn/KMny+kYvD8HwTas/M+Y=
+github.com/stuttgart-things/pvectl v0.5.1-0.20261121170226-32c918721b9e h1:HTxKzYnCBg4Q8YVGe99WTUN0OMvao92XTbpACtwHq50=
+github.com/stuttgart-things/pvectl v0.5.1-0.20261121170226-32c918721b9e/go.mod h1:84W+A4K1oOnkeERq+rajxpImp3Kkf0cOqkTSt7QcQVQ=
 github.com/ulikunitz/xz v0.5.15 h1:9DNdB5s+SgV3bQ2ApL10xRc35ck0DuIX/isZvIk+ubY=
 github.com/ulikunitz/xz v0.5.15/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/vektah/gqlparser/v2 v2.5.37 h1:jbb1Ilv+xBklV6653tKb4oVUupPNTLb5LmrnBKVI12Y=
