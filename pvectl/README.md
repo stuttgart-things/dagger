@@ -29,7 +29,7 @@ pvectl prints with `-o json`.
 | `password` | Secret | | instead of a token |
 | `ca-cert` | Secret | | cluster CA (`/etc/pve/pve-root-ca.pem`), PEM; survives certificate renewals |
 | `fingerprint` | string | | SHA-256 of the API certificate (`AB:CD:…`, as in the web UI under node > System > Certificates) |
-| `image` | string | `ghcr.io/stuttgart-things/pvectl:v0.5.0` | pvectl image; API tokens need v0.5.0 or later |
+| `image` | string | `ghcr.io/stuttgart-things/pvectl:v0.6.1` | pvectl image; API tokens need v0.5.0 or later |
 
 Credentials: a token (`token-id` + `token-secret`) or `user` + `password`.
 `tls` needs neither.
