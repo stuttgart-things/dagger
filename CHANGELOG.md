@@ -1,3 +1,10 @@
+## [0.141.1](https://github.com/stuttgart-things/dagger/compare/v0.141.0...v0.141.1) (2026-11-22)
+
+
+### Bug Fixes
+
+* **pvectl:** default image pvectl v0.6.1 ([#436](https://github.com/stuttgart-things/dagger/issues/436)) ([530986d](https://github.com/stuttgart-things/dagger/commit/530986d906d1396ad160c7acf94d6049a29983c8))
+
 # [0.141.0](https://github.com/stuttgart-things/dagger/compare/v0.140.0...v0.141.0) (2026-11-22)
 
 
