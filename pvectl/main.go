@@ -31,7 +31,7 @@ import (
 
 // defaultImage is the pvectl image used when image is empty. Keep it in
 // step with the +default of New, which has to be a literal.
-const defaultImage = "ghcr.io/stuttgart-things/pvectl:v0.5.0"
+const defaultImage = "ghcr.io/stuttgart-things/pvectl:v0.6.1"
 
 // knownHostsPath is where a given fingerprint is pinned in the container.
 const knownHostsPath = "/tmp/pvectl/known_hosts"
@@ -80,7 +80,7 @@ func New(
 	fingerprint string,
 	// pvectl image
 	// +optional
-	// +default="ghcr.io/stuttgart-things/pvectl:v0.5.0"
+	// +default="ghcr.io/stuttgart-things/pvectl:v0.6.1"
 	image string,
 ) *Pvectl {
 	return &Pvectl{
