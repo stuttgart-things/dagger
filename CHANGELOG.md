@@ -1,3 +1,10 @@
+# [0.141.0](https://github.com/stuttgart-things/dagger/compare/v0.140.0...v0.141.0) (2026-11-22)
+
+
+### Features
+
+* **packer:** Proxmox functions on the pvectl library with verified TLS ([#435](https://github.com/stuttgart-things/dagger/issues/435)) ([b426404](https://github.com/stuttgart-things/dagger/commit/b426404dad7e2c7ce0aba8a122548ce6479dfb9f))
+
 # [0.140.0](https://github.com/stuttgart-things/dagger/compare/v0.139.2...v0.140.0) (2026-11-21)
 
 
