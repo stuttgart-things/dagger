@@ -6,7 +6,7 @@ This module provides Dagger functions for Packer operations including image buil
 
 - ✅ Packer image building with HCL configurations
 - ✅ vCenter VM template operations (move, rename, delete) + datastore/network inspection
-- ✅ Proxmox VE operations (move/migrate, rename, delete, lookup VMID by name) + storage/network/resource inspection via REST API (pure Go, API token auth)
+- ✅ Proxmox VE operations (move/migrate, rename, delete, lookup VMID by name) + storage/network/resource inspection via the [pvectl](https://github.com/stuttgart-things/pvectl) library (API token auth, verified TLS)
 - ✅ Vault integration for secure credential management
 - ✅ Build variables via comma-separated CLI string (`--vars`)
 - ✅ Build variables via plain YAML file (`--vars-file`)
@@ -233,117 +233,100 @@ dagger call -m packer vcenteroperation \
 
 ### Proxmox Operations
 
-All Proxmox functions talk to the Proxmox VE REST API directly in Go
-(`net/http`, no extra deps, no `curl`/`jq`). Authentication uses an API token:
+All Proxmox functions use the [pvectl](https://github.com/stuttgart-things/pvectl)
+library (`pkg/pve`). Authentication uses an API token:
 
-- `--proxmox-url` — base URL, e.g. `https://pve.example.com:8006`
+- `--proxmox-url` — API URL, e.g. `https://pve.example.com:8006` (`/api2/json` is optional)
 - `--token-id` — token identifier, e.g. `automation@pam!dagger`
 - `--token-secret` — token UUID
 
-TLS verification is currently skipped (homelab-friendly).
+**TLS is verified**, one of these is required:
+
+- `--proxmox-ca-cert` — the cluster CA (`/etc/pve/pve-root-ca.pem` on any node), PEM;
+  survives certificate renewals
+- `--proxmox-fingerprint` — the SHA-256 of the API certificate (`AB:CD:…`, as the web UI shows
+  it under *node → System → Certificates*, or `pvectl tls`)
+
+Every function returns `{"data": …}` JSON (the operations: the task UPID);
+`get-proxmox-template-id-by-name` returns the plain VMID. VM descriptions are never returned.
+
+For a LabUL template round (checks, migrate to ul-pve11, FS9100 copy,
+repins) use the [pvectl module](../pvectl/README.md) (`template-promote`).
 
 #### Create a Proxmox API token
 
 1. **Create the token** — in the Proxmox web UI: *Datacenter → Permissions → API Tokens → Add*.
    - **User**: an existing user, e.g. `phermann@LabUL` (or `automation@pam`).
-   - **Token ID**: a short name, e.g. `dagger`. The full token ID becomes `phermann@LabUL!dagger`.
+   - **Token ID**: a short name, e.g. `pvectl`. The full token ID becomes `phermann@LabUL!pvectl`.
    - **Privilege Separation**: leave **unchecked** if you want the token to inherit the user's permissions. If you keep it checked, you must grant permissions to the token itself (see step 2).
    - Copy the generated **secret UUID** immediately — it is only shown once.
 
-2. **Grant permissions** — *Datacenter → Permissions → Add → API Token Permission* (or *User Permission* if privilege separation is disabled):
-   - **Path**: `/` for full visibility, or scope it down (e.g. `/storage`, `/nodes/<node>`, `/vms`).
-   - **API Token**: the token from step 1 (e.g. `phermann@LabUL!dagger`).
-   - **Role**:
-     - `PVEAuditor` — read-only, sufficient for `check-proxmox-storage`, `check-proxmox-networks`, `list-proxmox-resources`.
-     - `PVEVMAdmin` on `/vms` — required for `proxmoxoperation` (move/rename/delete).
-     - `PVEDatastoreAdmin` on `/storage` — if you need to manage storage.
+2. **Grant permissions** (only with privilege separation) — *Datacenter → Permissions → Add → API Token Permission*:
+   - `PVEAuditor` — read-only, sufficient for `check-proxmox-storage`, `check-proxmox-networks`, `list-proxmox-resources`, `get-proxmox-template-id-by-name`.
+   - `PVEVMAdmin` on `/vms` — required for `proxmoxoperation` (move/rename/delete).
 
-3. **Export and use**:
+   > **Note:** If you see `{ "data": [] }` from `check-proxmox-storage` despite a successful call, the token authenticated but lacks `Datastore.Audit` on `/storage`.
 
-   ```bash
-   export PVE_URL="https://pve.example.com:8006"
-   export PVE_TOKEN_ID='phermann@LabUL!dagger'   # single quotes — ! triggers bash history expansion
-   export PVE_TOKEN_SECRET="<uuid-from-step-1>"
-   ```
+#### LabUL start commands
 
-   > **Note:** If you see `{ "data": [] }` from `check-proxmox-storage` despite a successful call, the token authenticated but lacks `Datastore.Audit` on `/storage`. Re-check step 2.
+The token and URL live in the sops file `~/.secrets.d/labul/proxmox.env`
+(`PVE_API_URL`, `PVE_API_TOKEN_ID`, `PVE_API_TOKEN_SECRET`):
+
+```bash
+E=~/.secrets.d/labul/proxmox.env
+M=github.com/stuttgart-things/dagger/packer
+FP=33:91:DF:48:E5:34:B2:BC:76:AD:5C:92:AE:DB:8E:7D:3B:17:6D:A1:45:41:2C:44:12:1F:C1:EB:9D:65:57:13
+PVE="--proxmox-url env:PVE_API_URL --token-id env:PVE_API_TOKEN_ID --token-secret env:PVE_API_TOKEN_SECRET --proxmox-fingerprint $FP"
+
+# templates (VMID, node, name)
+sops exec-env $E "dagger call -m $M list-proxmox-resources $PVE --resource-type vm" \
+  | jq -r '.data[] | select(.template) | "\(.vmid) \(.node) \(.name)"'
+
+# VMID of a template by name
+sops exec-env $E "dagger call -m $M get-proxmox-template-id-by-name $PVE --name ubuntu26-base-20261116-0842 --pool stuttgart-things"
+
+# VM-disk storages and bridges of ul-pve11
+sops exec-env $E "dagger call -m $M check-proxmox-storage $PVE --node ul-pve11" | jq -r '.data[].storage'
+sops exec-env $E "dagger call -m $M check-proxmox-networks $PVE --node ul-pve11" | jq -r '.data[].iface'
+```
+
+The fingerprint is the one of `ul-pve01.labul.sva.de` until 2028-01-28.
+
+#### Generic examples
 
 ```bash
 export PVE_URL=https://pve.example.com:8006
-export PVE_TOKEN_ID='automation@pam!dagger'
+export PVE_TOKEN_ID='automation@pam!dagger'   # single quotes: ! triggers bash history expansion
 export PVE_TOKEN_SECRET=<uuid>
+export PVE_FP=AB:CD:...                       # or --proxmox-ca-cert file:./pve-root-ca.pem
+PVE="--proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET --proxmox-fingerprint $PVE_FP"
 
-# Migrate VM 9001 from pve1 → pve2
-dagger call -m packer proxmoxoperation \
-  --operation move \
-  --node pve1 --vmid 9001 --target pve2 \
-  --proxmox-url env:PVE_URL \
-  --token-id env:PVE_TOKEN_ID \
-  --token-secret env:PVE_TOKEN_SECRET
+# Migrate VM 9001 from pve1 → pve2 (offline)
+dagger call -m packer proxmoxoperation $PVE --operation move --node pve1 --vmid 9001 --target pve2
 
 # Rename VM 9001
-dagger call -m packer proxmoxoperation \
-  --operation rename \
-  --node pve1 --vmid 9001 --target new-template-name \
-  --proxmox-url env:PVE_URL \
-  --token-id env:PVE_TOKEN_ID \
-  --token-secret env:PVE_TOKEN_SECRET
+dagger call -m packer proxmoxoperation $PVE --operation rename --node pve1 --vmid 9001 --target new-template-name
 
 # Delete VM 9001 (purges disks + unreferenced)
-dagger call -m packer proxmoxoperation \
-  --operation delete \
-  --node pve1 --vmid 9001 \
-  --proxmox-url env:PVE_URL \
-  --token-id env:PVE_TOKEN_ID \
-  --token-secret env:PVE_TOKEN_SECRET
+dagger call -m packer proxmoxoperation $PVE --operation delete --node pve1 --vmid 9001
 
 # Look up VMID by template name (optional --pool / --node narrow the search)
-dagger call -m packer get-proxmox-template-id-by-name \
-  --name ubuntu26-labul-proxmox-base-os \
-  --pool stuttgart-things \
-  --proxmox-url env:PVE_URL \
-  --token-id env:PVE_TOKEN_ID \
-  --token-secret env:PVE_TOKEN_SECRET
+dagger call -m packer get-proxmox-template-id-by-name $PVE --name ubuntu26-labul-proxmox-base-os --pool stuttgart-things
 
-# Golden image promote: lookup → delete old → rename new
-OLD_ID=$(dagger call -m packer get-proxmox-template-id-by-name \
-  --name ubuntu26-labul-proxmox-base-os \
-  --proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET)
+# Golden image swap: lookup → delete old → rename new
+OLD_ID=$(dagger call -m packer get-proxmox-template-id-by-name $PVE --name ubuntu26-labul-proxmox-base-os)
+dagger call -m packer proxmoxoperation $PVE --operation delete --node ul-pve01 --vmid "$OLD_ID"
+NEW_ID=$(dagger call -m packer get-proxmox-template-id-by-name $PVE --name 2026-04-25-ubuntu26-labul-proxmox)
+dagger call -m packer proxmoxoperation $PVE --operation rename --node ul-pve01 --vmid "$NEW_ID" --target ubuntu26-labul-proxmox-base-os
 
-dagger call -m packer proxmoxoperation --operation delete \
-  --node ul-pve01 --vmid "$OLD_ID" \
-  --proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET
+# Datacenter-wide resources (optional filter: vm | storage | node)
+dagger call -m packer list-proxmox-resources $PVE --resource-type vm
 
-NEW_ID=$(dagger call -m packer get-proxmox-template-id-by-name \
-  --name 2026-04-25-ubuntu26-labul-proxmox \
-  --proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET)
-
-dagger call -m packer proxmoxoperation --operation rename \
-  --node ul-pve01 --vmid "$NEW_ID" --target ubuntu26-labul-proxmox-base-os \
-  --proxmox-url env:PVE_URL --token-id env:PVE_TOKEN_ID --token-secret env:PVE_TOKEN_SECRET
-```
-
-```bash
-# Datacenter-wide resources (optional filter: vm | storage | node | sdn)
-dagger call -m packer list-proxmox-resources \
-  --proxmox-url env:PVE_URL \
-  --token-id env:PVE_TOKEN_ID \
-  --token-secret env:PVE_TOKEN_SECRET \
-  --resource-type vm
-
-# Storage pools (cluster-wide or per-node)
-dagger call -m packer check-proxmox-storage \
-  --proxmox-url env:PVE_URL \
-  --token-id env:PVE_TOKEN_ID \
-  --token-secret env:PVE_TOKEN_SECRET \
-  --node pve1
+# Storages: every storage on every node, or the VM-disk storages of one node
+dagger call -m packer check-proxmox-storage $PVE --node pve1
 
 # Network interfaces/bridges on a node
-dagger call -m packer check-proxmox-networks \
-  --proxmox-url env:PVE_URL \
-  --token-id env:PVE_TOKEN_ID \
-  --token-secret env:PVE_TOKEN_SECRET \
-  --node pve1
+dagger call -m packer check-proxmox-networks $PVE --node pve1
 ```
 
 **Proxmox function reference:**
@@ -352,9 +335,9 @@ dagger call -m packer check-proxmox-networks \
 | --- | --- |
 | `proxmoxoperation` | `move` (migrate to target node), `rename` (set new VM name), `delete` (destroy + purge disks) |
 | `get-proxmox-template-id-by-name` | Returns VMID for a VM/template by `--name`; optional `--pool` / `--node` narrow the search; errors on zero or multiple matches |
-| `check-proxmox-storage` | Lists storage pools with usage; cluster-wide if `--node` omitted |
+| `check-proxmox-storage` | Lists storages with usage: every storage on every node, or with `--node` the VM-disk storages of that node |
 | `check-proxmox-networks` | Lists interfaces/bridges on a node |
-| `list-proxmox-resources` | Datacenter-wide resources, optional `--resource-type vm\|storage\|node\|sdn` |
+| `list-proxmox-resources` | Datacenter-wide resources (VMs/templates, storages, nodes), optional `--resource-type vm\|storage\|node` |
 
 ## Configuration Example
 
