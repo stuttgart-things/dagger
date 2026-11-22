@@ -6,7 +6,7 @@ require (
 	github.com/Khan/genqlient v0.8.1
 	github.com/dagger/otel-go v1.43.0
 	github.com/dagger/querybuilder v0.0.0-20260402040506-574a5e81cb59
-	github.com/stuttgart-things/pvectl v0.5.1-0.20261121170226-32c918721b9e
+	github.com/stuttgart-things/pvectl v0.6.0
 	github.com/vektah/gqlparser/v2 v2.5.37
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/sdk v1.46.0
