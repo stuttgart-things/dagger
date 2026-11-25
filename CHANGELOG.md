@@ -1,3 +1,11 @@
+## [0.141.3](https://github.com/stuttgart-things/dagger/compare/v0.141.2...v0.141.3) (2026-11-25)
+
+
+### Bug Fixes
+
+* **helm:** set Vault AppRole env inline instead of via the vault module ([#438](https://github.com/stuttgart-things/dagger/issues/438)) ([f8733c7](https://github.com/stuttgart-things/dagger/commit/f8733c76de7f9044c31722c662d8a5bb9a9bfad3)), closes [#432](https://github.com/stuttgart-things/dagger/issues/432) [stuttgart-things/blueprints#235](https://github.com/stuttgart-things/blueprints/issues/235)
+* **homerun:** default Go version 1.27.3, in line with the go module ([#439](https://github.com/stuttgart-things/dagger/issues/439)) ([f5695eb](https://github.com/stuttgart-things/dagger/commit/f5695ebcce7b04471f8838f4d7785ad5624a7f09)), closes [#400](https://github.com/stuttgart-things/dagger/issues/400) [stuttgart-things/blueprints#235](https://github.com/stuttgart-things/blueprints/issues/235)
+
 ## [0.141.2](https://github.com/stuttgart-things/dagger/compare/v0.141.1...v0.141.2) (2026-11-25)
 
 
