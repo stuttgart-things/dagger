@@ -62,11 +62,18 @@ func (m *Helm) HelmfileOperation(
 		helmContainer = helmContainer.WithMountedSecret(dockerConfigPath, registrySecret)
 	}
 
-	helmContainer = dag.Vault().WithAppRoleEnv(helmContainer, dagger.VaultWithAppRoleEnvOpts{
-		RoleID:   vaultAppRoleID,
-		SecretID: vaultSecretID, // pragma: allowlist secret
-		Addr:     vaultUrl,
-	})
+	// Vault AppRole env, set inline: going through dag.Vault() made the engine
+	// load (git fetch + go build) the vault module on every run just for three
+	// env vars -- same fix as ansible in #432.
+	if vaultAppRoleID != nil {
+		helmContainer = helmContainer.WithSecretVariable("VAULT_ROLE_ID", vaultAppRoleID)
+	}
+	if vaultSecretID != nil { // pragma: allowlist secret
+		helmContainer = helmContainer.WithSecretVariable("VAULT_SECRET_ID", vaultSecretID)
+	}
+	if vaultUrl != nil {
+		helmContainer = helmContainer.WithSecretVariable("VAULT_ADDR", vaultUrl)
+	}
 
 	// DOWNLOAD SECRET FILES FROM VAULT WITH VALS
 	if secretPathKubeconfig != "" {
