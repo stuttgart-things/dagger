@@ -1,3 +1,10 @@
+## [0.141.2](https://github.com/stuttgart-things/dagger/compare/v0.141.1...v0.141.2) (2026-11-25)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/gorilla/websocket to v1.5.3 [security] ([#437](https://github.com/stuttgart-things/dagger/issues/437)) ([d2cb070](https://github.com/stuttgart-things/dagger/commit/d2cb070f0e0791bf5d53f5c8a55382a1a07a8ec3))
+
 ## [0.141.1](https://github.com/stuttgart-things/dagger/compare/v0.141.0...v0.141.1) (2026-11-22)
 
 
